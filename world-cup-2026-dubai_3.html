@@ -7,13 +7,17 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>World Cup 2026 · Your Time</title>
+<meta property="og:title" content="World Cup 2026 — every kick-off in your local time">
+<meta property="og:description" content="All 104 matches with live scores, group tables, the bracket and player stats. Pick your team and never miss a kick-off.">
+<meta property="og:type" content="website">
+<meta name="description" content="World Cup 2026 schedule with live scores, tables, bracket and player stats — kick-offs shown in your local time.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#070b16; --card:#111829; --card2:#161e33; --seg:rgba(7,11,22,.55);
-    --line:#232d49; --line2:#2f3b5e; --txt:#f3f1ea; --mut:#aab3cc; --low:#6b76a0;
+    --line:#232d49; --line2:#2f3b5e; --txt:#f3f1ea; --mut:#aab3cc; --low:#8b96bd;
     --pitch:#16d96a; --pitch2:#0fae54; --fav:#e01030; --fav-glow:#ff3b54; --fav-ink:#ff8593;
     --gold:#f5c542; --gold-ink:#f5c542; --live:#ff2d55; --lfc:#ff4d63;
     --grid:rgba(255,255,255,.018); --fav-tint:rgba(224,16,48,.18);
@@ -25,7 +29,7 @@
   }
   [data-theme="light"]{
     --bg:#eceff5; --card:#ffffff; --card2:#f3f6fc; --seg:#eef1f8;
-    --line:#e0e4ee; --line2:#cfd6e6; --txt:#0f1320; --mut:#46506c; --low:#7a85a2;
+    --line:#e0e4ee; --line2:#cfd6e6; --txt:#0f1320; --mut:#46506c; --low:#5d6885;
     --pitch:#089247; --pitch2:#089247; --fav:#d20e2c; --fav-glow:#b00c25; --fav-ink:#c20d29;
     --gold:#e8b21f; --gold-ink:#8a6500; --live:#e30038; --lfc:#c8102e;
     --grid:rgba(0,0,0,.03); --fav-tint:rgba(210,14,44,.10);
@@ -144,7 +148,9 @@
     box-shadow:0 0 0 1px var(--fav-tint),0 10px 30px -16px var(--fav)}
   .match.ko{border-color:var(--ko-border);background:linear-gradient(102deg,var(--gold-tint),var(--card) 60%)}
   .match.poss{border-style:dashed;border-color:var(--gold)}
-  .match.played{opacity:.5}
+  .match.played{opacity:.78;background:transparent}
+  .match.played .teams,.match.played .sc{color:var(--mut)}
+  .match.played .teams .winner{color:var(--txt)}
   .match.scored.played{opacity:.78}
   .match.live{border-color:var(--live);box-shadow:0 0 0 1px var(--live),0 0 28px -8px var(--live)}
   .match.live::after{content:'';position:absolute;inset:0;border-radius:14px;border:1px solid var(--live);animation:livepulse 1.8s ease-out infinite;pointer-events:none}
@@ -183,10 +189,10 @@
 
   /* ── ACTION COLUMN ── */
   .actcol{display:flex;flex-direction:column;align-items:center;gap:4px}
-  .calbtn{background:transparent;border:1px solid var(--line2);color:var(--mut);padding:7px 9px;border-radius:8px;
-    font-size:9px;cursor:pointer;letter-spacing:.06em;font-weight:800;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:44px}
+  .calbtn{background:transparent;border:1px solid var(--line2);color:var(--mut);padding:10px;border-radius:9px;
+    font-size:10px;cursor:pointer;letter-spacing:.05em;font-weight:800;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:46px;min-height:44px;justify-content:center}
   .calbtn:active{transform:scale(.94)}
-  .calbtn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+  .calbtn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
   .fav .calbtn{border-color:var(--gold);color:var(--gold-ink)}
   .editbtn{background:transparent;border:1px solid var(--line);color:var(--low);width:34px;height:28px;border-radius:7px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:.15s;font-family:inherit}
   .editbtn:hover,.editbtn:active{border-color:var(--pitch);color:var(--pitch)}
@@ -249,7 +255,9 @@
   .vtab:active{transform:scale(.97)}
   #tablesView{display:none}
   body.tab2 #tablesView{display:block}
-  body.tab2 .hero,body.tab2 .progwrap,body.tab2 .searchwrap,body.tab2 .stickynav,body.tab2 #sch,body.tab2 .fabs{display:none}
+  body.tab2 .hero,body.tab2 .stickynav,body.tab2 #sch,body.tab2 .fab.fav{display:none}
+  .tv-jump{display:flex;gap:7px;margin-bottom:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tv-jump .chip{flex:0 0 auto}
   .tv-h{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;text-transform:uppercase;color:var(--txt);margin:16px 0 6px}
   .tv-status{font-size:11.5px;color:var(--low);margin:2px 0 8px}
   .tv-note{font-size:11px;color:var(--low);margin:0 0 10px;line-height:1.5}
@@ -296,6 +304,19 @@
   .pk-team{display:flex;align-items:center;gap:7px;padding:11px 11px;border:1px solid var(--line);border-radius:11px;background:var(--card2);color:var(--txt);font-size:13.5px;font-weight:600;cursor:pointer;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:inherit}
   .pk-team:active{transform:scale(.97)}
   .pk-team .pkf{font-size:18px;flex:0 0 auto}
+  /* a11y + comfort */
+  button:focus-visible,.match:focus-visible,select:focus-visible,input:focus-visible,[role=button]:focus-visible{outline:2px solid var(--pitch);outline-offset:2px}
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important;transition:none!important}
+    html{scroll-behavior:auto}
+  }
+  body.modal-open{overflow:hidden}
+  .gt tr.q2 td{border-bottom:2px solid var(--line2)}
+  .tznote{font-size:12px;color:var(--mut);padding:10px 2px 2px;text-align:center}
+  .toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--card);border:1px solid var(--line2);color:var(--txt);font-size:13px;font-weight:600;padding:11px 18px;border-radius:12px;box-shadow:0 14px 40px -10px rgba(0,0,0,.5);z-index:400;opacity:0;transition:opacity .25s;pointer-events:none;max-width:88vw;text-align:center}
+  .toast.show{opacity:1}
+  .st-upd{font-size:11px;color:var(--low);text-align:center;margin:-4px 0 8px}
+  .st-next .golink{color:var(--gold-ink);font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
   .brkt{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 10px;-webkit-overflow-scrolling:touch}
   .brkt-round{flex:0 0 210px}
   .brkt-round h5{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);margin:0 0 8px}
@@ -397,9 +418,6 @@
     <button class="apibtn" id="apiBtn" aria-label="Live scores status" title="Live scores status">
       <svg viewBox="0 0 24 24"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9c3.9 3.9 3.9 10.3 0 14.2"/></svg>
     </button>
-    <button class="apibtn" id="statsBtn" aria-label="Betting stats" title="Betting stats">
-      <svg viewBox="0 0 24 24"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
-    </button>
     <button class="themebtn" id="themeBtn" aria-label="Toggle light or dark theme">
       <svg class="ico-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       <svg class="ico-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.6" y1="4.6" x2="6.7" y2="6.7"/><line x1="17.3" y1="17.3" x2="19.4" y2="19.4"/><line x1="4.6" y1="19.4" x2="6.7" y2="17.3"/><line x1="17.3" y1="6.7" x2="19.4" y2="4.6"/></svg>
@@ -411,15 +429,15 @@
     <div class="api-hint">
       Automatic, nothing to set up.<br>
       Scores come straight from FIFA's public feed and refresh every 60s while matches are on.<br>
-      You can still tap any card's edit button to set a score by hand; manual entries always win.<br>
-      Build 12 Jun 2026 v9 (family-first redesign: team picker, match detail, readability, suspensions, freshness) - if features look missing, refresh the page once.
+      Tap any match, then Edit score, to set one by hand; manual entries always win and get an "edited" badge.<br>
+      <span id="buildTag"></span> - if features look missing, refresh the page once.
     </div>
     <div class="api-status-txt" id="apiStatusTxt"></div>
   </div>
 
   <div class="viewtabs">
-    <button class="vtab on" id="tabSched" type="button">&#128197; Schedule</button>
-    <button class="vtab" id="tabStats" type="button">&#127942; Tables &amp; Stats</button>
+    <button class="vtab on" id="tabSched" type="button" aria-pressed="true">&#128197; Schedule</button>
+    <button class="vtab" id="tabStats" type="button" aria-pressed="false">&#127942; Tables &amp; Players</button>
   </div>
 
   <div class="controls">
@@ -428,8 +446,8 @@
       <span class="fl">Times</span>
       <select id="tzSelect" aria-label="Choose the timezone for kick-off times"></select>
     </label>
-    <button class="statschip" id="statsOpen" aria-label="Open team betting stats">
-      <span class="big">&#128202; Stats</span>
+    <button class="statschip" id="statsOpen" aria-label="Open betting stats">
+      <span class="big">&#128202; Betting stats</span>
       <span class="sub">pens &middot; corners &middot; cards</span>
     </button>
     <span class="freshpill" id="freshPill" style="display:none"></span>
@@ -447,26 +465,21 @@
     </div>
   </div>
 
-  <div class="progwrap">
-    <div class="progbar"><i id="progFill" style="width:0%"></i></div>
-    <div class="proglab"><span id="progTxt">0 of 104 matches played</span><span id="progPct">0%</span></div>
-  </div>
-
-  <div class="searchwrap">
-    <svg class="sico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
-    <input type="text" class="search" id="sr" placeholder="Search team, group, or host city" autocomplete="off" autocorrect="off" autocapitalize="off">
-  </div>
-</header>
+  </header>
 
 <div class="stickynav">
+  <div class="searchwrap">
+    <svg class="sico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+    <input type="text" class="search" id="sr" placeholder="Find your team, a group, or a host city" autocomplete="off" autocorrect="off" autocapitalize="off">
+  </div>
   <div class="datestrip" id="ds"></div>
   <div class="filterstrip" id="fr">
-    <button class="chip" data-f="evening">Evening</button>
     <button class="chip on" data-f="all">All</button>
+    <button class="chip" data-f="today">Today</button>
     <button class="chip fav" data-f="fav">England</button>
     <button class="chip" data-f="upcoming">Upcoming</button>
-    <button class="chip" data-f="today">Today</button>
-    <button class="chip" data-f="marquee">&#9733; Picks</button>
+    <button class="chip" data-f="marquee">&#9733; Big games</button>
+    <button class="chip" data-f="evening">Evening</button>
     <button class="chip" data-f="late">Late night</button>
     <button class="chip" data-f="group">Groups</button>
     <button class="chip" data-f="knockout">Knockouts</button>
@@ -476,17 +489,27 @@
 <main id="sch"></main>
 
 <div id="tablesView">
+  <div class="tv-jump">
+    <button class="chip" data-j="tvSecGroups">Groups</button>
+    <button class="chip" data-j="tvSecThirds">3rd place</button>
+    <button class="chip" data-j="tvSecBracket">Bracket</button>
+    <button class="chip" data-j="tvSecPlayers">Players</button>
+  </div>
+  <div class="progwrap">
+    <div class="progbar"><i id="progFill" style="width:0%"></i></div>
+    <div class="proglab"><span id="progTxt">0 of 104 matches played</span><span id="progPct">0%</span></div>
+  </div>
   <div class="tv-status" id="tvStatus"></div>
-  <h2 class="tv-h">Group Tables</h2>
+  <h2 class="tv-h" id="tvSecGroups">Group Tables</h2>
   <div class="tv-note" id="tvLiveNote"></div>
   <div id="tvGroups" class="tv-groups"></div>
-  <h2 class="tv-h">Best Third-Placed Teams</h2>
+  <h2 class="tv-h" id="tvSecThirds">Best Third-Placed Teams</h2>
   <div class="tv-note">Eight of the twelve group-third teams reach the Round of 32. Ranked by points, then goal difference, then goals scored.</div>
   <div class="tv-card" id="tvThirdsCard"><div id="tvThirds"></div></div>
-  <h2 class="tv-h">Knockout Bracket</h2>
+  <h2 class="tv-h" id="tvSecBracket">Knockout Bracket</h2>
   <div class="tv-note">Fills in automatically as groups finish. Swipe sideways through the rounds.</div>
   <div class="brkt" id="tvBracket"></div>
-  <h2 class="tv-h">Tournament Player Stats</h2>
+  <h2 class="tv-h" id="tvSecPlayers">Tournament Player Stats</h2>
   <div class="tv-note">Counted from FIFA's official match feeds. Suspension rule: two yellows before the quarter-finals, or any red, means a one-match ban.</div>
   <div class="tv-cards">
     <div class="tv-card"><h4>&#9917; Golden Boot</h4><div id="tvGoals"></div></div>
@@ -514,7 +537,7 @@
 
 <!-- First-visit team picker -->
 <div class="smodal-overlay" id="pkOverlay">
-  <div class="smodal">
+  <div class="smodal" role="dialog" aria-modal="true">
     <h3 class="md-title">Follow your team?</h3>
     <div class="md-tz" style="margin-bottom:14px;font-size:12.5px;line-height:1.5">Pick a team to put their fixtures, countdown and kick-off times front and centre. You can change or clear it any time.</div>
     <div class="pk-grid" id="pkGrid"></div>
@@ -524,13 +547,14 @@
 
 <!-- Match Detail Modal (opened by tapping a card) -->
 <div class="smodal-overlay" id="mdOverlay">
-  <div class="smodal">
+  <div class="smodal" role="dialog" aria-modal="true">
     <div class="md-stage" id="mdStage"></div>
     <h3 class="md-title" id="mdTitle"></h3>
     <div class="md-score" id="mdScore" style="display:none"></div>
     <div class="md-when" id="mdWhen"></div>
     <div class="md-tz" id="mdTz"></div>
     <div class="md-edited" id="mdEdited" style="display:none">Score edited by hand &middot; tap Edit score to clear</div>
+    <div class="md-tz" id="mdScorers" style="display:none;margin-bottom:12px"></div>
     <button class="md-action md-bet" id="mdBet">&#128202; Betting stats &rsaquo;</button>
     <div class="md-row">
       <button class="md-action" id="mdCal">&#128197; Add to calendar</button>
@@ -542,7 +566,7 @@
 
 <!-- Score Edit Modal -->
 <div class="smodal-overlay" id="sModalOverlay">
-  <div class="smodal">
+  <div class="smodal" role="dialog" aria-modal="true">
     <h3 id="smTitle">Edit Score</h3>
     <div class="sm-stage" id="smStage"></div>
     <div class="sm-row">
@@ -566,6 +590,7 @@
         <option value="PEN">Penalties</option>
       </select>
     </div>
+    <div class="st-note" style="margin:0 0 10px">Saving sets the score by hand on THIS device only - it overrides the live feed and the card gets an "edited" badge. Use Clear Score to go back to live data.</div>
     <div class="sm-btns">
       <button class="sm-cancel" id="smCancel">Cancel</button>
       <button class="sm-save" id="smSave">Save</button>
@@ -575,7 +600,7 @@
 </div>
 
 <div class="smodal-overlay" id="stOverlay">
-  <div class="smodal">
+  <div class="smodal" role="dialog" aria-modal="true">
     <h3>Betting Stats</h3>
     <div class="sm-stage">Corners &amp; cards from FIFA feeds &middot; penalty takers hand-researched</div>
     <div class="st-mtitle" id="stMatchTitle" style="display:none"></div>
@@ -765,6 +790,42 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+  var BUILD_TAG='Build 12 Jun 2026 v10';
+  // ── modal hygiene: one overlay at a time, Escape closes, body scroll locked, focus moved ──
+  var OVERLAYS=['pkOverlay','mdOverlay','stOverlay','sModalOverlay'];
+  var lastFocus=null;
+  function syncModalState(){
+    var open=false;
+    for(var i=0;i<OVERLAYS.length;i++){var el=document.getElementById(OVERLAYS[i]);
+      if(el&&el.classList.contains('open'))open=true;}
+    if(open)document.body.classList.add('modal-open');
+    else document.body.classList.remove('modal-open');
+  }
+  function openOverlay(id){
+    for(var i=0;i<OVERLAYS.length;i++){var el=document.getElementById(OVERLAYS[i]);
+      if(el&&OVERLAYS[i]!==id)el.classList.remove('open');}
+    lastFocus=document.activeElement;
+    var ov=document.getElementById(id);
+    ov.classList.add('open');
+    var box=ov.querySelector('.smodal');
+    if(box){box.setAttribute('tabindex','-1');box.focus();}
+    syncModalState();
+  }
+  function closeOverlay(id){
+    var ov=document.getElementById(id);
+    if(ov)ov.classList.remove('open');
+    syncModalState();
+    if(lastFocus&&lastFocus.focus){try{lastFocus.focus();}catch(e){}lastFocus=null;}
+  }
+  var toastTimer=null;
+  function showToast(msg){
+    var el=document.getElementById('toast');
+    if(!el){el=document.createElement('div');el.id='toast';el.className='toast';document.body.appendChild(el);}
+    el.textContent=msg;el.classList.add('show');
+    if(toastTimer)clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){el.classList.remove('show');},2600);
+  }
+
   // ══════════════════════════════════════
   //  SCORES MANAGEMENT
   // ══════════════════════════════════════
@@ -839,7 +900,7 @@
   function flagsFor(m){return (F[m.a]||'')+' '+(F[m.b]||'');}
 
   function isFav(m){return m.a===FOLLOW||m.b===FOLLOW;}
-  function favPoss(m){return FOLLOW==='England'&&!!m.ep;}
+  function favPoss(m){return !!m.ep&&!!FOLLOW&&GROUPS.L.indexOf(FOLLOW)>=0;}
   function isGroup(m){return m.s.indexOf('GROUP')===0;}
   function isMarquee(m){return !!m.big||!!marqueeSet[m.n];}
   function isEvening(o){var h=hourOf(o);return h>=17||h<1;}
@@ -1083,7 +1144,8 @@
 
   function updateFabCode(){var el=document.getElementById('fabFav');
     if(!FOLLOW){el.style.display='none';return;}
-    el.style.display='';el.textContent=CODE[FOLLOW]||FOLLOW.substr(0,3).toUpperCase();el.title='Jump to '+FOLLOW;}
+    el.style.display='';el.textContent=CODE[FOLLOW]||FOLLOW.substr(0,3).toUpperCase();el.title='Jump to '+FOLLOW;
+    el.setAttribute('aria-label','Jump to the next '+FOLLOW+' match');}
 
   // sensible team for the team-stats view when nobody is followed
   function defaultTeam(){
@@ -1109,8 +1171,18 @@
       h+='<button type="button" class="pk-team" data-team="'+escapeHtml(nm)+'"><span class="pkf">'+(F[nm]||'')+'</span> '+escapeHtml(nm)+'</button>';}
     document.getElementById('pkGrid').innerHTML=h;
   }
-  function openPicker(){buildPicker();document.getElementById('pkOverlay').classList.add('open');}
-  function setFollow(team){FOLLOW=(team&&F[team])?team:'';save('wc26_follow',FOLLOW||'__none__');buildFollowSelect();refresh();}
+  function openPicker(){buildPicker();openOverlay('pkOverlay');}
+  function setFollow(team){
+    FOLLOW=(team&&F[team])?team:'';
+    save('wc26_follow',FOLLOW||'__none__');
+    // never strand the schedule on an empty followed-team filter
+    if(!FOLLOW&&current==='fav'){
+      current='all';
+      var chips=document.querySelectorAll('#fr .chip');
+      for(var i=0;i<chips.length;i++)chips[i].classList.toggle('on',chips[i].getAttribute('data-f')==='all');
+    }
+    buildFollowSelect();refresh();
+  }
   function buildTzSelect(){
     var sel=document.getElementById('tzSelect'),html='';
     html+='<option value="device"'+(TZSEL==='device'?' selected':'')+'>My device · '+escapeHtml(cityOf(deviceTz))+' '+fmtOffset(offMin(deviceTz))+'</option>';
@@ -1170,11 +1242,11 @@
     document.getElementById('smGoalsA').value=sc?sc.ga:0;
     document.getElementById('smGoalsB').value=sc?sc.gb:0;
     document.getElementById('smStatus').value=sc?sc.status:'FT';
-    document.getElementById('sModalOverlay').classList.add('open');
+    openOverlay('sModalOverlay');
   }
   function closeScoreEdit(){
     editingMatch=null;
-    document.getElementById('sModalOverlay').classList.remove('open');
+    closeOverlay('sModalOverlay');
   }
   function saveScoreFromModal(){
     if(!editingMatch)return;
@@ -1512,23 +1584,47 @@
       h+='<div class="st-row"><span>v <b>'+escapeHtml(e.o)+'</b>'+(e.pre?' <span class="prewc">pre-WC</span>':'')+'</span><span class="num">'+val+'</span></div>';}
     return h;
   }
-  // Per-team card tally from match data, for suspension watch.
-  function teamCardAgg(team){
-    var agg={},k,id;
-    for(k in pstats){var P=pstats[k].p;for(id in P){var v=P[id];
-      if(v[1]!==team)continue;
-      if(!agg[id])agg[id]={n:v[0],y:0,r:0};
-      agg[id].y+=v[4];agg[id].r+=v[5];}}
-    return agg;
-  }
-  // Derived (approximate) suspension picture: a red or 2+ yellows = likely banned next game;
-  // one yellow = a booking away from it. Group-stage convention; always flagged "verify".
+  // Suspension picture, walked chronologically so SERVED bans clear:
+  // - red, or 2 accumulated yellows -> banned for the NEXT match; once the team has
+  //   played another match (in our data) the ban is treated as served and the
+  //   triggering yellows are spent;
+  // - FIFA wipes accumulated yellows before the semi-finals (matches 101+).
   function teamSuspensions(team){
-    var a=teamCardAgg(team),banned=[],risk=[],id;
-    for(id in a){var p=a[id];
-      if(p.r>0||p.y>=2)banned.push(p.n);
-      else if(p.y===1)risk.push(p.n);}
+    var games=[],k,i,id;
+    for(k in pstats){var ms=pstats[k];if(ms.sq&&ms.sq[team]&&ms.sq[team].length)games.push(ms);}
+    games.sort(function(x,y){return x.d-y.d;});
+    var yc={},names={},pendingBan={};
+    for(i=0;i<games.length;i++){var g=games[i];
+      if(g.n>=101){yc={};}                 // yellow-card wipe before the semis
+      // a ban pending from an earlier game is served by playing day arriving
+      for(id in pendingBan)if(pendingBan[id]<i)delete pendingBan[id];
+      for(id in g.p){var v=g.p[id];
+        if(v[1]!==team)continue;
+        names[id]=v[0];
+        if(v[5]>0){pendingBan[id]=i;yc[id]=0;continue;}   // red: ban next game, yellows spent
+        if(v[4]>0){
+          yc[id]=(yc[id]||0)+v[4];
+          if(yc[id]>=2){pendingBan[id]=i;yc[id]=0;}        // 2 yellows: ban next game
+        }
+      }
+    }
+    var banned=[],risk=[];
+    for(id in pendingBan)banned.push(names[id]);
+    for(id in yc)if(yc[id]===1&&!pendingBan[id])risk.push(names[id]);
     return {banned:banned,risk:risk};
+  }
+  // latest matchday squad, for ambiguity checks on short research names
+  function teamLatestSquad(team){
+    var best=null,k;
+    for(k in pstats){var ms=pstats[k];
+      if(ms.sq&&ms.sq[team]&&ms.sq[team].length&&(!best||ms.d>best.d))best=ms;}
+    return best?best.sq[team]:[];
+  }
+  // banned chip only when the match is unambiguous (e.g. bare 'Isak' must not
+  // inherit Isak Hien's ban) - mirrors the promotion guard in effTakers
+  function bannedChip(name,team,banned){
+    if(!nameInList(name,banned))return false;
+    return nameMatchCount(name,teamLatestSquad(team))<2;
   }
   function suspensionHtml(team){
     var s=teamSuspensions(team);
@@ -1594,7 +1690,7 @@
     for(var i=0;i<lst.length&&i<4;i++){var e=lst[i];
       var chips='';
       if(e.obs)chips+=' <span class="lu lu-pen">took last pen</span>';
-      if(nameInList(e.name,banned))chips+=' <span class="lu lu-ban">banned?</span>';
+      if(bannedChip(e.name,team,banned))chips+=' <span class="lu lu-ban">banned?</span>';
       if(e.nsq)chips+=' <span class="lu lu-bn">not in last 2 squads</span>';
       var dep=(i>=2);
       h+=(dep?'<span class="st-depth">':'')+(e.nsq?'<span class="nsq">':'')+'<span class="rank">'+(i+1)+'</span> '+escapeHtml(e.name)+(e.nsq?'</span>':'')+chips+(dep?'</span>':'')+'<br>';
@@ -1664,9 +1760,23 @@
     document.getElementById('mdTz').textContent='Your time ('+escapeHtml(cityOf(TZ()))+') · '+escapeHtml(mm.v);
     document.getElementById('mdEdited').style.display=(sc&&sc.source==='manual')?'':'none';
     document.getElementById('mdBet').style.display=(realA||realB)?'':'none';
-    document.getElementById('mdOverlay').classList.add('open');
+    // scorers, when we have this match's player data cached
+    var scEl2=document.getElementById('mdScorers'),scHtml='';
+    if(sc&&sc.ga!=null){
+      var entry=null,kk;
+      for(kk in pstats){var pe=pstats[kk];
+        if(pe.sq&&pe.sq[mm.a]&&pe.sq[mm.b]&&Math.abs(pe.d-kickoffUTC(mm).getTime())<36*3600000){entry=pe;break;}}
+      if(entry){
+        var parts=[],id2;
+        for(id2 in entry.p){var v2=entry.p[id2];
+          if(v2[2]>0)parts.push(escapeHtml(v2[0])+(v2[2]>1?' x'+v2[2]:'')+' ('+escapeHtml(v2[1])+')');}
+        if(parts.length)scHtml='&#9917; '+parts.join(' &middot; ');
+      }
+    }
+    scEl2.innerHTML=scHtml;scEl2.style.display=scHtml?'':'none';
+    openOverlay('mdOverlay');
   }
-  function closeMatchDetail(){document.getElementById('mdOverlay').classList.remove('open');}
+  function closeMatchDetail(){closeOverlay('mdOverlay');}
 
   function openStats(){
     if(!stViewTeam||!F[stViewTeam])stViewTeam=defaultTeam();
@@ -1674,15 +1784,19 @@
     document.getElementById('stTeam').style.display='';
     document.getElementById('stMatchTitle').style.display='none';
     buildStatsSelect();
-    document.getElementById('stOverlay').classList.add('open');
-    document.getElementById('stBody').innerHTML='<div class="st-load">Pulling match data from FIFA…</div>';
+    openOverlay('stOverlay');
+    renderStats(null); // instant, from whatever is cached - feeds top it up below
     var w1=null;
-    ensureStats(function(warn){w1=warn;renderStats(warn);});
+    ensureStats(function(warn){w1=warn;if(!stMatch)renderStats(warn);});
     ensurePstats(function(w2){ // refresh taker evidence (pens taken, squad lists)
       if(!stMatch&&document.getElementById('stOverlay').classList.contains('open'))renderStats(w2||w1);
     });
   }
-  function closeStats(){document.getElementById('stOverlay').classList.remove('open');}
+  var stLuTimer=null;
+  function closeStats(){
+    closeOverlay('stOverlay');
+    if(stLuTimer){clearInterval(stLuTimer);stLuTimer=null;}
+  }
 
   // ── head-to-head stats for one fixture (tap a match card) ──
   var stMatch=null;
@@ -1696,19 +1810,28 @@
     var t=document.getElementById('stMatchTitle');
     t.style.display='';
     t.innerHTML=(F[mm.a]||'')+' '+escapeHtml(mm.a)+'<span class="vsx">v</span>'+(F[mm.b]||'')+' '+escapeHtml(mm.b);
-    document.getElementById('stOverlay').classList.add('open');
-    document.getElementById('stBody').innerHTML='<div class="st-load">Pulling match data from FIFA…</div>';
+    openOverlay('stOverlay');
+    renderMatchStats(null); // instant, from cache
     var w1=null;
+    function luPull(){
+      fetchLineup(mm,function(lu){
+        if(lu&&stMatch===mm&&document.getElementById('stOverlay').classList.contains('open')){stLineup=lu;renderMatchStats(w1);}
+      });
+    }
     ensureStats(function(warn){
       w1=warn;
       if(stMatch===mm)renderMatchStats(warn);
-      fetchLineup(mm,function(lu){
-        if(lu&&stMatch===mm){stLineup=lu;renderMatchStats(w1);}
-      });
+      luPull();
     });
     ensurePstats(function(w2){ // refresh taker evidence (pens taken, squad lists)
       if(stMatch===mm&&document.getElementById('stOverlay').classList.contains('open'))renderMatchStats(w2||w1);
     });
+    // keep lineup tags fresh while the panel stays open during the match window
+    if(stLuTimer)clearInterval(stLuTimer);
+    stLuTimer=setInterval(function(){
+      if(stMatch===mm&&document.getElementById('stOverlay').classList.contains('open'))luPull();
+      else{clearInterval(stLuTimer);stLuTimer=null;}
+    },95000);
   }
   function h2hCol(team){
     var real=!!F[team];
@@ -1835,8 +1958,8 @@
           else if(nameInList(E.name,lu.bench))tag=' <span class="lu lu-bn">bench</span>';
           else tag=' <span class="lu lu-bn">out</span>';
         }
-        if(E.obs)tag+=' <span class="lu lu-pen">pen</span>';
-        if(nameInList(E.name,banned))tag+=' <span class="lu lu-ban">banned?</span>';
+        if(E.obs)tag+=' <span class="lu lu-pen">took last pen</span>';
+        if(bannedChip(E.name,C.team,banned))tag+=' <span class="lu lu-ban">banned?</span>';
         if(E.nsq&&!lu)tag+=' <span class="lu lu-bn">not in last 2</span>';
         var depth=(i>=2);
         h+=(depth?'<span class="st-depth">':'')+(E.nsq?'<span class="nsq">':'')+'<span class="rank">'+(i+1)+'</span> '+escapeHtml(E.name)+(E.nsq?'</span>':'')+tag+(depth?'</span>':'')+'<br>';
@@ -1858,7 +1981,7 @@
     function suspLine(team){var s=teamSuspensions(team);
       if(!s.banned.length)return '<div class="susp-mini">&#10003; none</div>';
       return '<div class="susp-mini ban">&#128683; '+escapeHtml(s.banned.join(', '))+'</div>';}
-    if(stLineup)html+='<div class="lu-note">Live lineup - on = on the pitch now, off = subbed/sent off, bench = available</div>';
+    if(stLineup)html+='<div class="lu-note">Live lineup: on = on the pitch · off = subbed or sent off · bench = available · out = not in the matchday squad</div>';
     var anyPre=(A.nPre||0)+(B.nPre||0)>0;
     html+='<div class="st-sec"><h4>Penalty takers</h4><div class="h2h">'+
       '<div class="col">'+h2hHead(stMatch.a)+penCol(A,banA)+'</div>'+
@@ -2294,7 +2417,7 @@
     if(card.getAttribute('data-n')){e.preventDefault();openMatchDetail(parseInt(card.getAttribute('data-n'),10));}
   });
 
-  document.getElementById('followSelect').addEventListener('change',function(){if(F[this.value]){FOLLOW=this.value;save('wc26_follow',FOLLOW);refresh();}});
+  document.getElementById('followSelect').addEventListener('change',function(){var v=this.value;if(v===''||F[v])setFollow(v);});
   document.getElementById('tzSelect').addEventListener('change',function(){var v=this.value;if(v==='device'||validTz[v]){TZSEL=v;save('wc26_tz',TZSEL);refresh();}});
   document.getElementById('themeBtn').addEventListener('click',function(){
     var isLight=document.documentElement.getAttribute('data-theme')==='light';var next=isLight?'dark':'light';applyTheme(next);save('wc26_theme',next);
@@ -2320,9 +2443,17 @@
   // First-visit team picker
   document.getElementById('pkGrid').addEventListener('click',function(e){
     var b=e.target;while(b&&b!==this&&!(b.classList&&b.classList.contains('pk-team')))b=b.parentNode;
-    if(b&&b.getAttribute('data-team')){setFollow(b.getAttribute('data-team'));document.getElementById('pkOverlay').classList.remove('open');}
+    if(b&&b.getAttribute('data-team')){setFollow(b.getAttribute('data-team'));closeOverlay('pkOverlay');}
   });
-  document.getElementById('pkSkip').addEventListener('click',function(){save('wc26_follow','__none__');document.getElementById('pkOverlay').classList.remove('open');});
+  document.getElementById('pkSkip').addEventListener('click',function(){save('wc26_follow','__none__');closeOverlay('pkOverlay');});
+
+  // Escape closes whichever overlay is open
+  document.addEventListener('keydown',function(e){
+    if(e.key!=='Escape')return;
+    if(document.getElementById('sModalOverlay').classList.contains('open'))closeScoreEdit();
+    else if(document.getElementById('stOverlay').classList.contains('open'))closeStats();
+    else if(document.getElementById('mdOverlay').classList.contains('open'))closeMatchDetail();
+  });
 
   // Match detail modal
   document.getElementById('mdClose').addEventListener('click',closeMatchDetail);
