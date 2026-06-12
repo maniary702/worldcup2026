@@ -242,6 +242,35 @@
   .lu-on{background:rgba(22,217,106,.14);color:var(--pitch);border:1px solid rgba(22,217,106,.45)}
   .lu-bn{background:transparent;color:var(--low);border:1px solid var(--line2)}
   .lu-note{font-size:11px;color:var(--pitch);font-weight:700;margin:0 0 10px;text-align:center}
+  /* ── tab 2: tables & tournament stats ── */
+  .viewtabs{display:flex;gap:8px;margin-bottom:12px}
+  .vtab{flex:1;padding:11px;border-radius:14px;border:1px solid var(--line2);background:var(--card);color:var(--mut);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:.12s}
+  .vtab.on{border-color:var(--pitch);color:var(--txt);background:linear-gradient(135deg,rgba(22,217,106,.10),transparent 70%),var(--card)}
+  .vtab:active{transform:scale(.97)}
+  #tablesView{display:none}
+  body.tab2 #tablesView{display:block}
+  body.tab2 .hero,body.tab2 .progwrap,body.tab2 .searchwrap,body.tab2 .stickynav,body.tab2 #sch,body.tab2 .fabs{display:none}
+  .tv-h{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;text-transform:uppercase;color:var(--txt);margin:16px 0 6px}
+  .tv-status{font-size:11.5px;color:var(--low);margin:2px 0 8px}
+  .tv-note{font-size:11px;color:var(--low);margin:0 0 10px;line-height:1.5}
+  .tv-groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:6px}
+  .tv-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+  .tv-card h4{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);margin-bottom:8px}
+  table.gt{width:100%;border-collapse:collapse;font-size:12px;color:var(--mut)}
+  .gt th{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--low);text-align:center;padding:3px 2px;border-bottom:1px solid var(--line)}
+  .gt td{text-align:center;padding:5px 2px;border-bottom:1px dashed var(--line);font-family:'JetBrains Mono',monospace;font-size:11.5px}
+  .gt td.tn,.gt th.tn{text-align:left;font-family:'Barlow',sans-serif;font-weight:600;color:var(--txt);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:132px}
+  .gt td.pts{font-weight:800;color:var(--txt)}
+  .gt tr.q td{box-shadow:inset 3px 0 0 var(--pitch)}
+  .gt tr.q3 td{box-shadow:inset 3px 0 0 var(--gold)}
+  .gt tr.meRow td{background:var(--fav-tint)}
+  .lb-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px dashed var(--line);font-size:13px;color:var(--txt)}
+  .lb-rank{flex:0 0 18px;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:11px;color:var(--low)}
+  .lb-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+  .lb-val{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:var(--txt);white-space:nowrap}
+  .lb-row.meRow{background:var(--fav-tint);border-radius:6px;padding-left:4px}
+  .tv-empty{font-size:12.5px;color:var(--low);padding:4px 0}
+  .lu-ban{background:rgba(224,16,48,.15);color:var(--lfc);border:1px solid rgba(224,16,48,.4)}
   .st-empty,.st-load{font-size:13px;color:var(--mut);padding:6px 0 2px;line-height:1.5}
   .st-warn{font-size:12px;color:var(--lfc);margin-bottom:10px;line-height:1.4}
   .st-note{font-size:10.5px;color:var(--low);line-height:1.55;margin:4px 0 12px}
@@ -342,6 +371,11 @@
     <div class="api-status-txt" id="apiStatusTxt"></div>
   </div>
 
+  <div class="viewtabs">
+    <button class="vtab on" id="tabSched" type="button">&#128197; Schedule</button>
+    <button class="vtab" id="tabStats" type="button">&#127942; Tables &amp; Stats</button>
+  </div>
+
   <div class="controls">
     <label class="followsel">
       <svg class="gico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3c2.6 2.7 2.6 15.3 0 18M12 3c-2.6 2.7-2.6 15.3 0 18"/></svg>
@@ -393,6 +427,23 @@
 </div>
 
 <main id="sch"></main>
+
+<div id="tablesView">
+  <div class="tv-status" id="tvStatus"></div>
+  <h2 class="tv-h">Group Tables</h2>
+  <div class="tv-note" id="tvLiveNote"></div>
+  <div id="tvGroups" class="tv-groups"></div>
+  <h2 class="tv-h">Tournament Player Stats</h2>
+  <div class="tv-note">Counted from FIFA's official match feeds. Suspension rule: two yellows before the quarter-finals, or any red, means a one-match ban.</div>
+  <div class="tv-cards">
+    <div class="tv-card"><h4>&#9917; Golden Boot</h4><div id="tvGoals"></div></div>
+    <div class="tv-card"><h4>&#127919; Assists</h4><div id="tvAssists"></div></div>
+    <div class="tv-card"><h4>&#128293; Form - goal involvements per 90</h4><div id="tvForm"></div></div>
+    <div class="tv-card"><h4>&#9201; Minutes Played</h4><div id="tvMinutes"></div></div>
+    <div class="tv-card"><h4>&#129000; Cards &amp; Suspension Watch</h4><div id="tvCards"></div></div>
+    <div class="tv-card"><h4>&#11088; Standout of Each Match</h4><div id="tvStars"></div><div class="tv-note" style="margin-top:8px">Auto-picked from goals and assists - not FIFA's official award</div></div>
+  </div>
+</div>
 
 <div class="fabs">
   <button class="fab top" id="fabTop" title="Back to top"><svg viewBox="0 0 24 24"><polyline points="6 14 12 8 18 14"/></svg></button>
@@ -1531,6 +1582,174 @@
     },600000);
   }
 
+  // ══════════════════════════════════════
+  //  TAB 2: GROUP TABLES + TOURNAMENT PLAYER STATS
+  // ══════════════════════════════════════
+  var pstats={};   // per finished match: {d, lbl, star, p:{idPlayer:[name,team,g,a,y,r,min]}}
+  function loadPstats(){try{var s=load('wc26_pstats');if(s)pstats=JSON.parse(s);}catch(e){pstats={};}}
+  function savePstats(){try{save('wc26_pstats',JSON.stringify(pstats));}catch(e){}}
+  function parseMin(s){var m=/^(\d+)/.exec(String(s||''));return m?parseInt(m[1],10):null;}
+
+  // One finished match -> per-player goals/assists/cards/minutes (90' baseline).
+  function buildMatchPlayers(fm,tl,det){
+    var idx={},i,j,p;
+    var hn=mapTeam(fm.Home.TeamName[0].Description),an=mapTeam(fm.Away.TeamName[0].Description);
+    var sideNames={};sideNames[String(fm.Home.IdTeam)]=hn;sideNames[String(fm.Away.IdTeam)]=an;
+    var packs=[det&&(det.HomeTeam||det.Home),det&&(det.AwayTeam||det.Away)];
+    for(i=0;i<2;i++){var tm=packs[i];if(!tm||!tm.Players)continue;
+      var tname=sideNames[String(tm.IdTeam)]||'?';
+      for(j=0;j<tm.Players.length;j++){p=tm.Players[j];
+        var nm=(p.PlayerName&&p.PlayerName[0]&&p.PlayerName[0].Description)||'';
+        if(!nm)continue;
+        idx[String(p.IdPlayer)]={n:nm,t:tname,st:p.Status,on:null,off:null,g:0,a:0,y:0,r:0};
+      }}
+    var ev=(tl&&tl.Event)||[];
+    for(i=0;i<ev.length;i++){var e=ev[i],rec=idx[String(e.IdPlayer||'')],mn=parseMin(e.MatchMinute);
+      if(e.Type===5){ // substitution: IdPlayer comes on, IdSubPlayer goes off
+        if(rec)rec.on=mn;
+        var offRec=idx[String(e.IdSubPlayer||'')];if(offRec)offRec.off=mn;
+      }else if(rec){
+        if(e.Type===0)rec.g++;
+        else if(e.Type===1)rec.a++;
+        else if(e.Type===2)rec.y++;
+        else if(e.Type===3){rec.r++;if(rec.off==null)rec.off=mn;}
+      }
+    }
+    var players={},star=null,starPts=0;
+    for(var k in idx){p=idx[k];
+      var endAt=(p.off!=null)?p.off:90;
+      var startAt=(p.st===1)?0:(p.on!=null?p.on:null);
+      var min=(startAt==null)?0:Math.max(0,Math.min(90,endAt-startAt));
+      if(!(min>0||p.g||p.a||p.y||p.r))continue;
+      players[k]=[p.n,p.t,p.g,p.a,p.y,p.r,min];
+      var pts=p.g*3+p.a;
+      if(pts>starPts){starPts=pts;star=p.n+' ('+p.t+') '+(p.g?p.g+'G':'')+(p.a?(p.g?' ':'')+p.a+'A':'');}
+    }
+    var hs=(fm.Home.Score!=null)?fm.Home.Score:'',as2=(fm.Away.Score!=null)?fm.Away.Score:'';
+    return {d:new Date(fm.Date).getTime(),lbl:hn+' '+hs+'-'+as2+' '+an,star:star,p:players};
+  }
+
+  function ensurePstats(cb){
+    if(!calCache||Date.now()-calCacheAt>600000){
+      fetch(FIFA_CAL)
+      .then(function(r){if(!r.ok)throw new Error('FIFA '+r.status);return r.json();})
+      .then(function(d){calCache=d;calCacheAt=Date.now();ensurePstats(cb);})
+      .catch(function(e){cb('FIFA feed unreachable - showing cached data',0);});
+      return;
+    }
+    var rs=calCache.Results||[],fin=[],missing=[],i;
+    for(i=0;i<rs.length;i++){var m=rs[i];
+      if(m.MatchStatus===0&&m.Home&&m.Away&&m.Home.TeamName&&m.Away.TeamName)fin.push(m);}
+    for(i=0;i<fin.length;i++){if(!pstats[fin[i].IdMatch])missing.push(fin[i]);}
+    if(!missing.length){cb(null,fin.length);return;}
+    var k=0,fails=0;
+    function nextBatch(){
+      if(k>=missing.length){savePstats();cb(fails?fails+' match feed(s) skipped':null,fin.length);return;}
+      var batch=missing.slice(k,k+3);k+=3;var ps=[];
+      for(var b=0;b<batch.length;b++){
+        (function(fm){
+          var base='17/285023/'+fm.IdStage+'/'+fm.IdMatch+'?language=en';
+          ps.push(Promise.all([
+            fetch('https://api.fifa.com/api/v3/timelines/'+base).then(function(r){return r.ok?r.json():null;}),
+            fetch('https://api.fifa.com/api/v3/live/football/'+base).then(function(r){return r.ok?r.json():null;})
+          ]).then(function(pair){
+            if(pair[0]&&pair[1])pstats[fm.IdMatch]=buildMatchPlayers(fm,pair[0],pair[1]);
+            else fails++;
+          }).catch(function(e){fails++;}));
+        })(batch[b]);
+      }
+      Promise.all(ps).then(nextBatch);
+    }
+    nextBatch();
+  }
+
+  // Group standings computed from this page's own scores (live games included).
+  function computeGroups(){
+    var letters=['A','B','C','D','E','F','G','H','I','J','K','L'],out={},anyLive=false,li,t;
+    for(li=0;li<letters.length;li++){var L=letters[li],rows={};
+      for(t=0;t<GROUPS[L].length;t++)rows[GROUPS[L][t]]={team:GROUPS[L][t],p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};
+      out[L]=rows;}
+    for(var i=0;i<matches.length;i++){var m=matches[i];
+      if(m.s.indexOf('GROUP')!==0)continue;
+      var sc=scores[m.n];if(!sc)continue;
+      var L2=m.s.split(' ')[1],rs=out[L2];if(!rs||!rs[m.a]||!rs[m.b])continue;
+      if(sc.status!=='FT')anyLive=true;
+      var A=rs[m.a],B=rs[m.b];
+      A.p++;B.p++;A.gf+=sc.ga;A.ga+=sc.gb;B.gf+=sc.gb;B.ga+=sc.ga;
+      if(sc.ga>sc.gb){A.w++;B.l++;A.pts+=3;}
+      else if(sc.ga<sc.gb){B.w++;A.l++;B.pts+=3;}
+      else{A.d++;B.d++;A.pts++;B.pts++;}
+    }
+    return {groups:out,live:anyLive};
+  }
+  function renderTablesView(){
+    var cg=computeGroups(),letters=['A','B','C','D','E','F','G','H','I','J','K','L'],html='';
+    for(var li=0;li<letters.length;li++){var L=letters[li],arr=[],rows=cg.groups[L],k;
+      for(k in rows)arr.push(rows[k]);
+      arr.sort(function(x,y){return y.pts-x.pts||((y.gf-y.ga)-(x.gf-x.ga))||(y.gf-x.gf)||(x.team<y.team?-1:1);});
+      html+='<div class="tv-card tv-table"><h4>Group '+L+'</h4><table class="gt"><tr><th></th><th class="tn">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>+/-</th><th>GD</th><th>Pts</th></tr>';
+      for(var i2=0;i2<arr.length;i2++){var r2=arr[i2],gd=r2.gf-r2.ga;
+        var cls2=[];if(i2<2)cls2.push('q');else if(i2===2)cls2.push('q3');
+        if(r2.team===FOLLOW)cls2.push('meRow');
+        html+='<tr'+(cls2.length?' class="'+cls2.join(' ')+'"':'')+'><td>'+(i2+1)+'</td><td class="tn">'+(F[r2.team]||'')+' '+escapeHtml(r2.team)+'</td><td>'+r2.p+'</td><td>'+r2.w+'</td><td>'+r2.d+'</td><td>'+r2.l+'</td><td>'+r2.gf+'-'+r2.ga+'</td><td>'+(gd>0?'+':'')+gd+'</td><td class="pts">'+r2.pts+'</td></tr>';}
+      html+='</table></div>';}
+    document.getElementById('tvGroups').innerHTML=html;
+    document.getElementById('tvLiveNote').textContent=
+      (cg.live?'Live scores included - the table moves as goals go in. ':'')+
+      'Green edge: top two qualify. Gold edge: third place, in the hunt for the eight best-third spots.';
+  }
+  function renderPlayerStats(warn,finCount){
+    var agg={},stars=[],k,id,covered=0;
+    for(k in pstats){var ms2=pstats[k];covered++;
+      if(ms2.star)stars.push({d:ms2.d,lbl:ms2.lbl,star:ms2.star});
+      for(id in ms2.p){var v=ms2.p[id],a2=agg[id];
+        if(!a2)a2=agg[id]={n:v[0],t:v[1],g:0,a:0,y:0,r:0,min:0};
+        a2.g+=v[2];a2.a+=v[3];a2.y+=v[4];a2.r+=v[5];a2.min+=v[6];
+      }}
+    var all=[];for(id in agg)all.push(agg[id]);
+    function row(i,p2,val){return '<div class="lb-row'+(p2.t===FOLLOW?' meRow':'')+'"><span class="lb-rank">'+(i+1)+'</span><span class="lb-name">'+(F[p2.t]||'')+' '+escapeHtml(p2.n)+'</span><span class="lb-val">'+val+'</span></div>';}
+    function board(elId,arr2,fmt,empty){
+      var h='';
+      for(var i3=0;i3<arr2.length&&i3<10;i3++)h+=row(i3,arr2[i3],fmt(arr2[i3]));
+      document.getElementById(elId).innerHTML=h||'<div class="tv-empty">'+empty+'</div>';
+    }
+    var g2=all.filter(function(p){return p.g>0;}).sort(function(x,y){return y.g-x.g||y.a-x.a||x.min-y.min;});
+    board('tvGoals',g2,function(p){return p.g+'G'+(p.a?' '+p.a+'A':'');},'No goals yet.');
+    var as3=all.filter(function(p){return p.a>0;}).sort(function(x,y){return y.a-x.a||y.g-x.g;});
+    board('tvAssists',as3,function(p){return p.a+'A';},'No assists logged yet.');
+    var fm2=all.filter(function(p){return p.min>=60&&(p.g+p.a)>0;}).sort(function(x,y){return (y.g+y.a)/y.min-(x.g+x.a)/x.min;});
+    board('tvForm',fm2,function(p){return ((p.g+p.a)/p.min*90).toFixed(2)+' /90';},'Needs 60+ minutes and a goal involvement.');
+    var mins=all.slice().sort(function(x,y){return y.min-x.min;});
+    board('tvMinutes',mins,function(p){return p.min+"'";},'No minutes data yet.');
+    var cds=all.filter(function(p){return p.y>0||p.r>0;}).sort(function(x,y){return (y.r*2+y.y)-(x.r*2+x.y);});
+    board('tvCards',cds,function(p){
+      var s2=(p.y?p.y+'Y':'')+(p.r?(p.y?' ':'')+p.r+'R':'');
+      if(p.r>0||p.y>=2)s2+=' <span class="lu lu-ban">ban</span>';
+      else if(p.y===1)s2+=' &#9888;';
+      return s2;
+    },'All clean so far.');
+    stars.sort(function(x,y){return x.d-y.d;});
+    var sh='';
+    for(var i4=0;i4<stars.length;i4++)sh+='<div class="lb-row"><span class="lb-name">'+escapeHtml(stars[i4].lbl)+'</span><span class="lb-val">'+escapeHtml(stars[i4].star||'-')+'</span></div>';
+    document.getElementById('tvStars').innerHTML=sh||'<div class="tv-empty">Appears after each final whistle.</div>';
+    document.getElementById('tvStatus').textContent=
+      (warn?warn+' · ':'')+'Player stats cover '+covered+(finCount?' of '+finCount:'')+' finished matches.';
+  }
+  function setTab(n){
+    var two=(n===2);
+    if(two)document.body.classList.add('tab2');else document.body.classList.remove('tab2');
+    var ts=document.getElementById('tabSched'),tt=document.getElementById('tabStats');
+    if(two){ts.classList.remove('on');tt.classList.add('on');}
+    else{ts.classList.add('on');tt.classList.remove('on');}
+    save('wc26_tab',two?'2':'1');
+    if(two){
+      renderTablesView();
+      renderPlayerStats(null,0);
+      ensurePstats(function(warn,finCount){renderPlayerStats(warn,finCount);});
+      window.scrollTo({top:0});
+    }
+  }
+
   // ── EVENTS ──
   document.getElementById('fr').addEventListener('click',function(e){
     var t=e.target;while(t&&t!==this&&!t.classList.contains('chip'))t=t.parentNode;
@@ -1609,6 +1828,10 @@
     if(F[this.value]){stViewTeam=this.value;renderStats(null);}
   });
 
+  // View tabs
+  document.getElementById('tabSched').addEventListener('click',function(){setTab(1);});
+  document.getElementById('tabStats').addEventListener('click',function(){setTab(2);});
+
   // ── INIT ──
   applyTheme(load('wc26_theme')==='light'?'light':'dark');
   var sf=load('wc26_follow');FOLLOW=(sf&&F[sf])?sf:'England';
@@ -1616,13 +1839,18 @@
   loadScoresLS();
   applySeed();
   loadMstats();
+  loadPstats();
   buildFollowSelect();
   buildTzSelect();
   updateProgress();
   refresh();
   startPolling();
+  if(load('wc26_tab')==='2')setTab(2);
   setInterval(tickHero,1000);
-  setInterval(function(){updateProgress();refresh();},60000);
+  setInterval(function(){
+    updateProgress();refresh();
+    if(document.body.classList.contains('tab2'))renderTablesView();
+  },60000);
 
   setTimeout(function(){
     var now=Date.now();
