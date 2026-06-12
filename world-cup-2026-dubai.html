@@ -216,6 +216,7 @@
   .st-row{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--mut);padding:4px 0;border-top:1px dashed var(--line)}
   .st-row b{color:var(--txt);font-weight:700}
   .st-row .num{font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap}
+  .prewc{display:inline-block;margin-left:6px;padding:1px 5px;border:1px solid var(--line2);border-radius:6px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--low);font-weight:700;vertical-align:1px}
   .st-empty,.st-load{font-size:13px;color:var(--mut);padding:6px 0 2px;line-height:1.5}
   .st-warn{font-size:12px;color:var(--lfc);margin-bottom:10px;line-height:1.4}
   .st-note{font-size:10.5px;color:var(--low);line-height:1.55;margin:4px 0 12px}
@@ -415,7 +416,7 @@
     <div class="sm-stage">Tournament form, straight from FIFA match feeds</div>
     <select class="st-teamsel" id="stTeam" aria-label="Choose a team"></select>
     <div class="statsbody" id="stBody"></div>
-    <div class="st-note">Corners and cards are counted from FIFA's official event feed, World Cup games only, rolling last 4. Penalty takers are a hand-kept list seeded before the tournament - always check team news before you stake. Bet responsibly.</div>
+    <div class="st-note">Corners and cards are counted from FIFA's official event feed: rolling last 4 games, World Cup matches first, topped up with pre-tournament internationals (tagged pre-WC). Penalty takers were researched against the official squads in June 2026 - always check team news before you stake. Bet responsibly.</div>
     <div class="sm-btns">
       <button class="sm-cancel" id="stClose" style="flex:1">Close</button>
     </div>
@@ -1095,6 +1096,60 @@
     'Uzbekistan':['Shomurodov','TBC'],'Tunisia':['TBC','TBC']
   };
 
+  // Last <=4 pre-tournament internationals per team (newest first), counted from
+  // FIFA timelines on 2026-06-12 by build_prestats.py. Tops up the rolling window
+  // until each team has 4 WC games. Cape Verde and Iran have thinner coverage.
+  var PRE_STATS={
+    'Algeria':[{o:'Netherlands',c:3,y:0,r:0},{o:'Uruguay',c:5,y:4,r:0},{o:'Guatemala',c:8,y:0,r:0},{o:'Nigeria',c:2,y:5,r:0}],
+    'Argentina':[{o:'Iceland',c:2,y:2,r:0},{o:'Honduras',c:6,y:4,r:0},{o:'Zambia',c:6,y:0,r:0},{o:'Mauritania',c:4,y:1,r:0}],
+    'Australia':[{o:'Switzerland',c:2,y:2,r:0},{o:'Mexico',c:3,y:1,r:0},{o:'Curacao',c:1,y:0,r:0},{o:'Cameroon',c:3,y:2,r:0}],
+    'Austria':[{o:'Tunisia',c:2,y:2,r:1},{o:'South Korea',c:4,y:1,r:0},{o:'Ghana',c:5,y:1,r:0},{o:'Bosnia & Herzegovina',c:4,y:1,r:0}],
+    'Belgium':[{o:'Tunisia',c:14,y:1,r:0},{o:'Croatia',c:4,y:2,r:0},{o:'Mexico',c:2,y:3,r:0},{o:'USA',c:6,y:0,r:0}],
+    'Bosnia & Herzegovina':[{o:'Italy',c:10,y:3,r:0},{o:'Wales',c:3,y:4,r:0},{o:'Austria',c:2,y:2,r:0},{o:'Romania',c:4,y:5,r:0}],
+    'Brazil':[{o:'Egypt',c:5,y:1,r:0},{o:'Panama',c:1,y:0,r:0},{o:'Croatia',c:2,y:1,r:0},{o:'France',c:5,y:4,r:0}],
+    'Canada':[{o:'Republic of Ireland',c:12,y:2,r:0},{o:'Uzbekistan',c:7,y:2,r:0},{o:'Tunisia',c:9,y:4,r:0},{o:'Iceland',c:8,y:0,r:1}],
+    'Cape Verde':[{o:'Finland',c:8,y:2,r:0},{o:'Chile',c:4,y:1,r:1}],
+    'Colombia':[{o:'Jordan',c:3,y:0,r:0},{o:'Costa Rica',c:5,y:2,r:0},{o:'France',c:9,y:1,r:0},{o:'Croatia',c:6,y:0,r:0}],
+    'Croatia':[{o:'Slovenia',c:8,y:0,r:0},{o:'Belgium',c:3,y:2,r:0},{o:'Brazil',c:2,y:3,r:0},{o:'Colombia',c:4,y:3,r:0}],
+    'Curacao':[{o:'Scotland',c:2,y:2,r:1},{o:'Australia',c:2,y:0,r:0},{o:'China PR',c:4,y:2,r:0},{o:'Jamaica',c:3,y:2,r:0}],
+    'Czech Republic':[{o:'Denmark',c:7,y:1,r:0},{o:'Republic of Ireland',c:6,y:1,r:0},{o:'Gibraltar',c:12,y:0,r:0},{o:'Faroe Islands',c:7,y:1,r:0}],
+    'DR Congo':[{o:'Chile',c:7,y:1,r:0},{o:'Denmark',c:4,y:0,r:0},{o:'Jamaica',c:5,y:0,r:0},{o:'Algeria',c:6,y:2,r:0}],
+    'Ecuador':[{o:'Guatemala',c:6,y:3,r:0},{o:'Saudi Arabia',c:2,y:1,r:0},{o:'Netherlands',c:10,y:2,r:0},{o:'Morocco',c:1,y:0,r:0}],
+    'Egypt':[{o:'Brazil',c:3,y:1,r:0},{o:'Russia',c:5,y:1,r:0},{o:'Spain',c:0,y:4,r:0},{o:'Saudi Arabia',c:1,y:0,r:0}],
+    'England':[{o:'Costa Rica',c:11,y:0,r:0},{o:'New Zealand',c:8,y:0,r:0},{o:'Japan',c:11,y:0,r:0},{o:'Uruguay',c:7,y:1,r:0}],
+    'France':[{o:'Northern Ireland',c:5,y:0,r:0},{o:'Ivory Coast',c:8,y:0,r:0},{o:'Colombia',c:5,y:3,r:0},{o:'Brazil',c:2,y:3,r:1}],
+    'Germany':[{o:'USA',c:2,y:3,r:0},{o:'Finland',c:10,y:0,r:0},{o:'Ghana',c:9,y:1,r:0},{o:'Switzerland',c:10,y:0,r:0}],
+    'Ghana':[{o:'Wales',c:4,y:2,r:0},{o:'Mexico',c:3,y:1,r:0},{o:'Germany',c:4,y:3,r:0},{o:'Austria',c:3,y:2,r:0}],
+    'Haiti':[{o:'Peru',c:3,y:1,r:0},{o:'New Zealand',c:5,y:0,r:0},{o:'Iceland',c:1,y:2,r:0},{o:'Tunisia',c:7,y:3,r:0}],
+    'Iran':[{o:'Russia',c:6,y:1,r:0},{o:'Korea DPR',c:2,y:1,r:0},{o:'Qatar',c:3,y:3,r:0}],
+    'Iraq':[{o:'Spain',c:3,y:2,r:0},{o:'Bolivia',c:2,y:3,r:0},{o:'Jordan',c:12,y:0,r:0},{o:'Algeria',c:1,y:0,r:1}],
+    'Ivory Coast':[{o:'France',c:2,y:1,r:0},{o:'Scotland',c:5,y:0,r:0},{o:'South Korea',c:5,y:0,r:0},{o:'Egypt',c:7,y:0,r:0}],
+    'Japan':[{o:'Iceland',c:5,y:0,r:0},{o:'England',c:1,y:2,r:0},{o:'Scotland',c:8,y:2,r:0},{o:'Bolivia',c:1,y:2,r:0}],
+    'Jordan':[{o:'Colombia',c:1,y:1,r:0},{o:'Switzerland',c:4,y:0,r:0},{o:'Morocco',c:2,y:2,r:0},{o:'Saudi Arabia',c:4,y:1,r:0}],
+    'Mexico':[{o:'Serbia',c:6,y:2,r:0},{o:'Australia',c:5,y:1,r:0},{o:'Ghana',c:9,y:1,r:0},{o:'Belgium',c:3,y:2,r:0}],
+    'Morocco':[{o:'Norway',c:3,y:1,r:0},{o:'Madagascar',c:12,y:2,r:0},{o:'Paraguay',c:1,y:3,r:0},{o:'Ecuador',c:2,y:1,r:0}],
+    'Netherlands':[{o:'Uzbekistan',c:3,y:1,r:1},{o:'Algeria',c:6,y:0,r:0},{o:'Ecuador',c:2,y:0,r:1},{o:'Norway',c:8,y:0,r:0}],
+    'New Zealand':[{o:'England',c:1,y:0,r:0},{o:'Haiti',c:8,y:1,r:0},{o:'Chile',c:7,y:2,r:0},{o:'Finland',c:2,y:1,r:0}],
+    'Norway':[{o:'Morocco',c:11,y:1,r:0},{o:'Sweden',c:6,y:0,r:0},{o:'Switzerland',c:4,y:0,r:0},{o:'Netherlands',c:2,y:1,r:0}],
+    'Panama':[{o:'Brazil',c:1,y:1,r:0},{o:'South Africa',c:1,y:4,r:0},{o:'South Africa',c:1,y:2,r:0},{o:'Mexico',c:1,y:1,r:0}],
+    'Paraguay':[{o:'Morocco',c:3,y:6,r:0},{o:'Greece',c:3,y:0,r:0},{o:'Mexico',c:3,y:3,r:0},{o:'USA',c:8,y:3,r:1}],
+    'Portugal':[{o:'Nigeria',c:3,y:2,r:0},{o:'Chile',c:9,y:0,r:1},{o:'USA',c:8,y:1,r:0},{o:'Mexico',c:4,y:1,r:0}],
+    'Qatar':[{o:'El Salvador',c:3,y:1,r:0},{o:'Republic of Ireland',c:3,y:0,r:1},{o:'Tunisia',c:10,y:0,r:0},{o:'Syria',c:7,y:2,r:0}],
+    'Saudi Arabia':[{o:'Senegal',c:1,y:3,r:0},{o:'Puerto Rico',c:5,y:0,r:0},{o:'Ecuador',c:2,y:1,r:0},{o:'Serbia',c:1,y:2,r:0}],
+    'Scotland':[{o:'Bolivia',c:6,y:1,r:0},{o:'Curacao',c:8,y:2,r:0},{o:'Ivory Coast',c:7,y:0,r:0},{o:'Japan',c:3,y:0,r:0}],
+    'Senegal':[{o:'Saudi Arabia',c:3,y:2,r:0},{o:'USA',c:7,y:0,r:0},{o:'Peru',c:7,y:1,r:0},{o:'Morocco',c:8,y:5,r:0}],
+    'South Africa':[{o:'Nicaragua',c:6,y:0,r:0},{o:'Panama',c:1,y:3,r:0},{o:'Panama',c:5,y:1,r:0},{o:'Cameroon',c:6,y:5,r:0}],
+    'South Korea':[{o:'El Salvador',c:8,y:4,r:0},{o:'Trinidad and Tobago',c:7,y:1,r:0},{o:'Austria',c:6,y:0,r:0},{o:'Ivory Coast',c:7,y:0,r:0}],
+    'Spain':[{o:'Peru',c:6,y:0,r:0},{o:'Iraq',c:5,y:2,r:0},{o:'Egypt',c:11,y:0,r:0},{o:'Serbia',c:5,y:0,r:0}],
+    'Sweden':[{o:'Greece',c:1,y:0,r:0},{o:'Norway',c:1,y:1,r:0},{o:'Poland',c:2,y:2,r:0},{o:'Ukraine',c:3,y:1,r:0}],
+    'Switzerland':[{o:'Australia',c:7,y:3,r:0},{o:'Jordan',c:6,y:0,r:0},{o:'Norway',c:2,y:0,r:0},{o:'Germany',c:0,y:0,r:0}],
+    'Tunisia':[{o:'Belgium',c:0,y:1,r:0},{o:'Austria',c:4,y:1,r:0},{o:'Canada',c:1,y:2,r:0},{o:'Haiti',c:3,y:2,r:0}],
+    'Turkey':[{o:'Venezuela',c:12,y:1,r:0},{o:'North Macedonia',c:13,y:0,r:0},{o:'Kosovo',c:2,y:5,r:0},{o:'Romania',c:9,y:2,r:0}],
+    'USA':[{o:'Germany',c:10,y:1,r:0},{o:'Senegal',c:4,y:1,r:0},{o:'Portugal',c:2,y:1,r:0},{o:'Belgium',c:6,y:2,r:0}],
+    'Uruguay':[{o:'Algeria',c:6,y:3,r:0},{o:'England',c:0,y:2,r:0},{o:'USA',c:5,y:2,r:1},{o:'Mexico',c:0,y:6,r:0}],
+    'Uzbekistan':[{o:'Netherlands',c:3,y:1,r:0},{o:'Canada',c:3,y:2,r:0},{o:'Venezuela',c:9,y:0,r:0},{o:'Gabon',c:14,y:0,r:0}]
+  };
+
   var calCache=null,calCacheAt=0;
   var mstats={};   // per finished match: {d:kickoffMs, teams:{name:{c,y,r,opp}}}, keyed by FIFA IdMatch
   function loadMstats(){try{var s=load('wc26_mstats');if(s)mstats=JSON.parse(s);}catch(e){mstats={};}}
@@ -1148,27 +1203,33 @@
     nextBatch();
   }
 
-  function teamLastGames(team){
-    var rows=[];
-    for(var k in mstats){var ms=mstats[k];if(ms.teams&&ms.teams[team])rows.push({d:ms.d,me:ms.teams[team]});}
+  // Rolling 4-game window: WC games first (newest first), topped up with
+  // pre-tournament internationals baked in at build time (PRE_STATS).
+  function teamWindow(team){
+    var rows=[],k,i;
+    for(k in mstats){var ms=mstats[k];if(ms.teams&&ms.teams[team])rows.push({d:ms.d,me:ms.teams[team]});}
     rows.sort(function(x,y){return y.d-x.d;});
-    return rows.slice(0,4);
+    var win=[];
+    for(i=0;i<rows.length&&win.length<4;i++)win.push({o:rows[i].me.opp,c:rows[i].me.c,y:rows[i].me.y,r:rows[i].me.r,pre:false});
+    var pre=PRE_STATS[team]||[];
+    for(i=0;i<pre.length&&win.length<4;i++)win.push({o:pre[i].o,c:pre[i].c,y:pre[i].y,r:pre[i].r,pre:true});
+    return win;
   }
 
   var stViewTeam=null;
   function avg1(t,n){return (Math.round(t/n*10)/10).toFixed(1);}
   function stRows(g,kind){
     var h='';
-    for(var i=0;i<g.length;i++){var e=g[i].me;
+    for(var i=0;i<g.length;i++){var e=g[i];
       var val=kind==='c'?e.c+' corners':e.y+'Y '+e.r+'R';
-      h+='<div class="st-row"><span>v <b>'+escapeHtml(e.opp)+'</b></span><span class="num">'+val+'</span></div>';}
+      h+='<div class="st-row"><span>v <b>'+escapeHtml(e.o)+'</b>'+(e.pre?' <span class="prewc">pre-WC</span>':'')+'</span><span class="num">'+val+'</span></div>';}
     return h;
   }
   function renderStats(warn){
     var team=stViewTeam,body=document.getElementById('stBody');
     var pens=PEN_TAKERS[team]||['TBC','TBC'];
-    var g=teamLastGames(team),n=g.length,c=0,y=0,r=0;
-    for(var i=0;i<n;i++){c+=g[i].me.c;y+=g[i].me.y;r+=g[i].me.r;}
+    var g=teamWindow(team),n=g.length,c=0,y=0,r=0;
+    for(var i=0;i<n;i++){c+=g[i].c;y+=g[i].y;r+=g[i].r;}
     var html='';
     if(warn)html+='<div class="st-warn">'+escapeHtml(warn)+'</div>';
     var now=Date.now(),next=null;
@@ -1186,7 +1247,7 @@
         +'<span class="rank">1</span> '+escapeHtml(pens[0]||'TBC')+'<br>'
         +'<span class="rank">2</span> '+escapeHtml(pens[1]||'TBC')+'</div></div>';
     if(!n){
-      html+='<div class="st-sec"><h4>Corners &amp; cards</h4><div class="st-empty">No World Cup games played yet. Averages appear right after their first match.</div></div>';
+      html+='<div class="st-sec"><h4>Corners &amp; cards</h4><div class="st-empty">No covered games for this team yet. Averages appear right after their first match.</div></div>';
     }else{
       var lbl=n===1?'last game':'last '+n+' games';
       html+='<div class="st-sec"><h4>Corners - '+lbl+'</h4><div class="st-big">'+avg1(c,n)+'<small>per game</small></div>'+stRows(g,'c')+'</div>';
