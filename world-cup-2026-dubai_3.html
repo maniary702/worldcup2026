@@ -271,6 +271,18 @@
   .lb-row.meRow{background:var(--fav-tint);border-radius:6px;padding-left:4px}
   .tv-empty{font-size:12.5px;color:var(--low);padding:4px 0}
   .lu-ban{background:rgba(224,16,48,.15);color:var(--lfc);border:1px solid rgba(224,16,48,.4)}
+  .brkt{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 10px;-webkit-overflow-scrolling:touch}
+  .brkt-round{flex:0 0 210px}
+  .brkt-round h5{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);margin:0 0 8px}
+  .brkt-cell{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px}
+  .brkt-cell.livegame{border-color:var(--live)}
+  .brkt-cell.meCell{border-color:var(--ko-border);background:linear-gradient(135deg,var(--gold-tint),transparent 70%),var(--card)}
+  .brkt-cell .t{display:flex;justify-content:space-between;gap:6px;font-size:12.5px;font-weight:600;color:var(--txt);padding:1px 0}
+  .brkt-cell .t .nm{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brkt-cell .t .ph{color:var(--low);font-weight:500;font-size:11.5px}
+  .brkt-cell .t .sc{font-family:'JetBrains Mono',monospace;font-weight:800}
+  .brkt-cell .t.w .nm,.brkt-cell .t.w .sc{color:var(--pitch)}
+  .brkt-cell .meta{font-size:9.5px;color:var(--low);margin-top:3px;letter-spacing:.04em}
   .st-empty,.st-load{font-size:13px;color:var(--mut);padding:6px 0 2px;line-height:1.5}
   .st-warn{font-size:12px;color:var(--lfc);margin-bottom:10px;line-height:1.4}
   .st-note{font-size:10.5px;color:var(--low);line-height:1.55;margin:4px 0 12px}
@@ -366,7 +378,7 @@
       Automatic, nothing to set up.<br>
       Scores come straight from FIFA's public feed and refresh every 60s while matches are on.<br>
       You can still tap any card's edit button to set a score by hand; manual entries always win.<br>
-      Build 12 Jun 2026 v4 (Tables &amp; Stats tab) - if features look missing, refresh the page once.
+      Build 12 Jun 2026 v5 (bracket, golden glove, qualification chips) - if features look missing, refresh the page once.
     </div>
     <div class="api-status-txt" id="apiStatusTxt"></div>
   </div>
@@ -433,6 +445,9 @@
   <h2 class="tv-h">Group Tables</h2>
   <div class="tv-note" id="tvLiveNote"></div>
   <div id="tvGroups" class="tv-groups"></div>
+  <h2 class="tv-h">Knockout Bracket</h2>
+  <div class="tv-note">Fills in automatically as groups finish. Swipe sideways through the rounds.</div>
+  <div class="brkt" id="tvBracket"></div>
   <h2 class="tv-h">Tournament Player Stats</h2>
   <div class="tv-note">Counted from FIFA's official match feeds. Suspension rule: two yellows before the quarter-finals, or any red, means a one-match ban.</div>
   <div class="tv-cards">
@@ -440,6 +455,7 @@
     <div class="tv-card"><h4>&#127919; Assists</h4><div id="tvAssists"></div></div>
     <div class="tv-card"><h4>&#128293; Form - goal involvements per 90</h4><div id="tvForm"></div></div>
     <div class="tv-card"><h4>&#9201; Minutes Played</h4><div id="tvMinutes"></div></div>
+    <div class="tv-card"><h4>&#129508; Golden Glove - clean sheets</h4><div id="tvGlove"></div></div>
     <div class="tv-card"><h4>&#129000; Cards &amp; Suspension Watch</h4><div id="tvCards"></div></div>
     <div class="tv-card"><h4>&#11088; Standout of Each Match</h4><div id="tvStars"></div><div class="tv-note" style="margin-top:8px">Auto-picked from goals and assists - not FIFA's official award</div></div>
   </div>
@@ -1585,9 +1601,9 @@
   // ══════════════════════════════════════
   //  TAB 2: GROUP TABLES + TOURNAMENT PLAYER STATS
   // ══════════════════════════════════════
-  var pstats={};   // per finished match: {d, lbl, star, p:{idPlayer:[name,team,g,a,y,r,min]}}
-  function loadPstats(){try{var s=load('wc26_pstats');if(s)pstats=JSON.parse(s);}catch(e){pstats={};}}
-  function savePstats(){try{save('wc26_pstats',JSON.stringify(pstats));}catch(e){}}
+  var pstats={};   // per finished match: {d, lbl, star, p:{idPlayer:[name,team,g,a,y,r,min,gk,cleanSheet]}}
+  function loadPstats(){try{var s=load('wc26_pstats2');if(s)pstats=JSON.parse(s);}catch(e){pstats={};}}
+  function savePstats(){try{save('wc26_pstats2',JSON.stringify(pstats));}catch(e){}}
   function parseMin(s){var m=/^(\d+)/.exec(String(s||''));return m?parseInt(m[1],10):null;}
 
   // One finished match -> per-player goals/assists/cards/minutes (90' baseline).
@@ -1601,8 +1617,11 @@
       for(j=0;j<tm.Players.length;j++){p=tm.Players[j];
         var nm=(p.PlayerName&&p.PlayerName[0]&&p.PlayerName[0].Description)||'';
         if(!nm)continue;
-        idx[String(p.IdPlayer)]={n:nm,t:tname,st:p.Status,on:null,off:null,g:0,a:0,y:0,r:0};
+        idx[String(p.IdPlayer)]={n:nm,t:tname,st:p.Status,pos:p.Position,on:null,off:null,g:0,a:0,y:0,r:0};
       }}
+    var conceded={};
+    conceded[hn]=(fm.Away.Score!=null)?fm.Away.Score:null;
+    conceded[an]=(fm.Home.Score!=null)?fm.Home.Score:null;
     var ev=(tl&&tl.Event)||[];
     for(i=0;i<ev.length;i++){var e=ev[i],rec=idx[String(e.IdPlayer||'')],mn=parseMin(e.MatchMinute);
       if(e.Type===5){ // substitution: IdPlayer comes on, IdSubPlayer goes off
@@ -1621,7 +1640,9 @@
       var startAt=(p.st===1)?0:(p.on!=null?p.on:null);
       var min=(startAt==null)?0:Math.max(0,Math.min(90,endAt-startAt));
       if(!(min>0||p.g||p.a||p.y||p.r))continue;
-      players[k]=[p.n,p.t,p.g,p.a,p.y,p.r,min];
+      var isGk=(p.pos===0)?1:0;
+      var cs=(isGk&&min>=90&&conceded[p.t]===0)?1:0;
+      players[k]=[p.n,p.t,p.g,p.a,p.y,p.r,min,isGk,cs];
       var pts=p.g*3+p.a;
       if(pts>starPts){starPts=pts;star=p.n+' ('+p.t+') '+(p.g?p.g+'G':'')+(p.a?(p.g?' ':'')+p.a+'A':'');}
     }
@@ -1667,7 +1688,7 @@
   function computeGroups(){
     var letters=['A','B','C','D','E','F','G','H','I','J','K','L'],out={},anyLive=false,li,t;
     for(li=0;li<letters.length;li++){var L=letters[li],rows={};
-      for(t=0;t<GROUPS[L].length;t++)rows[GROUPS[L][t]]={team:GROUPS[L][t],p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};
+      for(t=0;t<GROUPS[L].length;t++)rows[GROUPS[L][t]]={team:GROUPS[L][t],p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0,rem:3};
       out[L]=rows;}
     for(var i=0;i<matches.length;i++){var m=matches[i];
       if(m.s.indexOf('GROUP')!==0)continue;
@@ -1675,36 +1696,61 @@
       var L2=m.s.split(' ')[1],rs=out[L2];if(!rs||!rs[m.a]||!rs[m.b])continue;
       if(sc.status!=='FT')anyLive=true;
       var A=rs[m.a],B=rs[m.b];
-      A.p++;B.p++;A.gf+=sc.ga;A.ga+=sc.gb;B.gf+=sc.gb;B.ga+=sc.ga;
+      A.p++;B.p++;A.rem--;B.rem--;A.gf+=sc.ga;A.ga+=sc.gb;B.gf+=sc.gb;B.ga+=sc.ga;
       if(sc.ga>sc.gb){A.w++;B.l++;A.pts+=3;}
       else if(sc.ga<sc.gb){B.w++;A.l++;B.pts+=3;}
       else{A.d++;B.d++;A.pts++;B.pts++;}
     }
     return {groups:out,live:anyLive};
   }
+  // Points-only qualification bounds (GD ties treated as unsafe, so no false promises)
+  function groupChips(arr){
+    var i,j;
+    for(i=0;i<arr.length;i++)arr[i].max=arr[i].pts+3*Math.max(0,arr[i].rem);
+    for(i=0;i<arr.length;i++){
+      var T=arr[i],canCatch=0,beyondMe=0;
+      for(j=0;j<arr.length;j++){
+        if(j===i)continue;
+        if(arr[j].max>=T.pts)canCatch++;
+        if(arr[j].pts>T.max)beyondMe++;
+      }
+      T.chip='';
+      if(canCatch<=1)T.chip='through';
+      else if(beyondMe>=3)T.chip='out';
+      else if(beyondMe>=2)T.chip='third';
+    }
+  }
   function renderTablesView(){
     var cg=computeGroups(),letters=['A','B','C','D','E','F','G','H','I','J','K','L'],html='';
     for(var li=0;li<letters.length;li++){var L=letters[li],arr=[],rows=cg.groups[L],k;
       for(k in rows)arr.push(rows[k]);
       arr.sort(function(x,y){return y.pts-x.pts||((y.gf-y.ga)-(x.gf-x.ga))||(y.gf-x.gf)||(x.team<y.team?-1:1);});
+      groupChips(arr);
       html+='<div class="tv-card tv-table"><h4>Group '+L+'</h4><table class="gt"><tr><th></th><th class="tn">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>+/-</th><th>GD</th><th>Pts</th></tr>';
       for(var i2=0;i2<arr.length;i2++){var r2=arr[i2],gd=r2.gf-r2.ga;
         var cls2=[];if(i2<2)cls2.push('q');else if(i2===2)cls2.push('q3');
         if(r2.team===FOLLOW)cls2.push('meRow');
-        html+='<tr'+(cls2.length?' class="'+cls2.join(' ')+'"':'')+'><td>'+(i2+1)+'</td><td class="tn">'+(F[r2.team]||'')+' '+escapeHtml(r2.team)+'</td><td>'+r2.p+'</td><td>'+r2.w+'</td><td>'+r2.d+'</td><td>'+r2.l+'</td><td>'+r2.gf+'-'+r2.ga+'</td><td>'+(gd>0?'+':'')+gd+'</td><td class="pts">'+r2.pts+'</td></tr>';}
+        var chip='';
+        if(r2.chip==='through')chip=' <span class="lu lu-on">in</span>';
+        else if(r2.chip==='third')chip=' <span class="lu lu-bn">3rd?</span>';
+        else if(r2.chip==='out')chip=' <span class="lu lu-ban">out</span>';
+        html+='<tr'+(cls2.length?' class="'+cls2.join(' ')+'"':'')+'><td>'+(i2+1)+'</td><td class="tn">'+(F[r2.team]||'')+' '+escapeHtml(r2.team)+chip+'</td><td>'+r2.p+'</td><td>'+r2.w+'</td><td>'+r2.d+'</td><td>'+r2.l+'</td><td>'+r2.gf+'-'+r2.ga+'</td><td>'+(gd>0?'+':'')+gd+'</td><td class="pts">'+r2.pts+'</td></tr>';}
       html+='</table></div>';}
     document.getElementById('tvGroups').innerHTML=html;
     document.getElementById('tvLiveNote').textContent=
       (cg.live?'Live scores included - the table moves as goals go in. ':'')+
-      'Green edge: top two qualify. Gold edge: third place, in the hunt for the eight best-third spots.';
+      'Green edge: top two qualify. Gold edge: third place, chasing the eight best-third spots. '+
+      'Chips: "in" = top two locked on points, "3rd?" = third at best, "out" = eliminated. Goal difference can still shift ties.';
   }
   function renderPlayerStats(warn,finCount){
     var agg={},stars=[],k,id,covered=0;
     for(k in pstats){var ms2=pstats[k];covered++;
       if(ms2.star)stars.push({d:ms2.d,lbl:ms2.lbl,star:ms2.star});
       for(id in ms2.p){var v=ms2.p[id],a2=agg[id];
-        if(!a2)a2=agg[id]={n:v[0],t:v[1],g:0,a:0,y:0,r:0,min:0};
+        if(!a2)a2=agg[id]={n:v[0],t:v[1],g:0,a:0,y:0,r:0,min:0,gk:0,cs:0};
         a2.g+=v[2];a2.a+=v[3];a2.y+=v[4];a2.r+=v[5];a2.min+=v[6];
+        if(v[7])a2.gk=1;
+        a2.cs+=(v[8]||0);
       }}
     var all=[];for(id in agg)all.push(agg[id]);
     function row(i,p2,val){return '<div class="lb-row'+(p2.t===FOLLOW?' meRow':'')+'"><span class="lb-rank">'+(i+1)+'</span><span class="lb-name">'+(F[p2.t]||'')+' '+escapeHtml(p2.n)+'</span><span class="lb-val">'+val+'</span></div>';}
@@ -1721,6 +1767,8 @@
     board('tvForm',fm2,function(p){return ((p.g+p.a)/p.min*90).toFixed(2)+' /90';},'Needs 60+ minutes and a goal involvement.');
     var mins=all.slice().sort(function(x,y){return y.min-x.min;});
     board('tvMinutes',mins,function(p){return p.min+"'";},'No minutes data yet.');
+    var gl=all.filter(function(p){return p.gk&&p.cs>0;}).sort(function(x,y){return y.cs-x.cs||y.min-x.min;});
+    board('tvGlove',gl,function(p){return p.cs+' CS';},'No clean sheets kept yet.');
     var cds=all.filter(function(p){return p.y>0||p.r>0;}).sort(function(x,y){return (y.r*2+y.y)-(x.r*2+x.y);});
     board('tvCards',cds,function(p){
       var s2=(p.y?p.y+'Y':'')+(p.r?(p.y?' ':'')+p.r+'R':'');
@@ -1735,6 +1783,55 @@
     document.getElementById('tvStatus').textContent=
       (warn?warn+' · ':'')+'Player stats cover '+covered+(finCount?' of '+finCount:'')+' finished matches.';
   }
+  // ── knockout bracket from the FIFA calendar (placeholders until groups finish) ──
+  function phPretty(s){
+    var m;s=String(s||'');
+    m=/^([123])([A-L])$/.exec(s);if(m)return ['1st','2nd','3rd'][+m[1]-1]+' Group '+m[2];
+    m=/^3([A-L]+)$/.exec(s);if(m)return '3rd of '+m[1].split('').join('/');
+    m=/^W(\d+)$/.exec(s);if(m)return 'Winner M'+m[1];
+    m=/^RU(\d+)$/.exec(s);if(m)return 'Loser M'+m[1];
+    return s||'TBD';
+  }
+  function brktCell(am){
+    var hn=(am.Home&&am.Home.TeamName)?mapTeam(am.Home.TeamName[0].Description):null;
+    var an=(am.Away&&am.Away.TeamName)?mapTeam(am.Away.TeamName[0].Description):null;
+    var hs=(am.Home&&am.Home.Score!=null)?am.Home.Score:null;
+    var as2=(am.Away&&am.Away.Score!=null)?am.Away.Score:null;
+    var done=am.MatchStatus===0,live=am.MatchStatus===3;
+    var hW=done&&hs!=null&&as2!=null&&hs>as2,aW=done&&hs!=null&&as2!=null&&as2>hs;
+    var hp=am.HomeTeamPenaltyScore,ap=am.AwayTeamPenaltyScore;
+    if(done&&hs===as2&&hp!=null&&ap!=null&&(hp>0||ap>0)){hW=hp>ap;aW=ap>hp;}
+    var o=partsInZone(new Date(am.Date),TZ());
+    var meta='M'+am.MatchNumber+' · '+fmtShort(dayKey(o))+' · '+fmtClock(o);
+    function line(nm,ph,sc,w){
+      return '<div class="t'+(w?' w':'')+'"><span class="nm">'+
+        (nm?(F[nm]||'')+' '+escapeHtml(nm):'<span class="ph">'+escapeHtml(phPretty(ph))+'</span>')+
+        '</span>'+(sc!=null?'<span class="sc">'+sc+'</span>':'')+'</div>';
+    }
+    var cls='brkt-cell'+(live?' livegame':'')+((hn===FOLLOW||an===FOLLOW)?' meCell':'');
+    return '<div class="'+cls+'">'+line(hn,am.PlaceHolderA,hs,hW)+line(an,am.PlaceHolderB,as2,aW)+'<div class="meta">'+meta+'</div></div>';
+  }
+  function renderBracket(){
+    var el=document.getElementById('tvBracket');
+    if(!calCache){el.innerHTML='<div class="tv-empty">Bracket loads with the FIFA feed…</div>';return;}
+    var rounds=[['Round of 32','Round of 32'],['Round of 16','Round of 16'],['Quarter-final','Quarter-finals'],['Semi-final','Semi-finals'],['Play-off for third place','3rd Place'],['Final','Final']];
+    var rs=calCache.Results||[],byStage={},i;
+    for(i=0;i<rs.length;i++){var am=rs[i];
+      var sn=(am.StageName&&am.StageName[0]&&am.StageName[0].Description)||'';
+      if(!byStage[sn])byStage[sn]=[];
+      byStage[sn].push(am);
+    }
+    var html='';
+    for(var ri=0;ri<rounds.length;ri++){
+      var arr=byStage[rounds[ri][0]]||[];
+      if(!arr.length)continue;
+      arr.sort(function(x,y){return x.Date<y.Date?-1:(x.Date>y.Date?1:0);});
+      html+='<div class="brkt-round"><h5>'+rounds[ri][1]+'</h5>';
+      for(i=0;i<arr.length;i++)html+=brktCell(arr[i]);
+      html+='</div>';
+    }
+    el.innerHTML=html||'<div class="tv-empty">Knockout schedule not published yet.</div>';
+  }
   function setTab(n){
     var two=(n===2);
     if(two)document.body.classList.add('tab2');else document.body.classList.remove('tab2');
@@ -1744,8 +1841,9 @@
     save('wc26_tab',two?'2':'1');
     if(two){
       renderTablesView();
+      renderBracket();
       renderPlayerStats(null,0);
-      ensurePstats(function(warn,finCount){renderPlayerStats(warn,finCount);});
+      ensurePstats(function(warn,finCount){renderPlayerStats(warn,finCount);renderBracket();});
       window.scrollTo({top:0});
     }
   }
@@ -1849,7 +1947,7 @@
   setInterval(tickHero,1000);
   setInterval(function(){
     updateProgress();refresh();
-    if(document.body.classList.contains('tab2'))renderTablesView();
+    if(document.body.classList.contains('tab2')){renderTablesView();renderBracket();}
   },60000);
 
   setTimeout(function(){
