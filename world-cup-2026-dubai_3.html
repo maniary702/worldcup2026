@@ -288,14 +288,10 @@
   .md-score .tag.live{background:var(--live);color:#fff}
   .md-when{font-size:15px;color:var(--txt);text-align:center;font-weight:600;margin-bottom:3px}
   .md-tz{font-size:11.5px;color:var(--low);text-align:center;margin-bottom:14px}
-  .md-edited{font-size:11.5px;color:var(--gold-ink);text-align:center;margin-bottom:12px}
   .md-action{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border-radius:13px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;border:1px solid var(--line2);background:var(--card2);color:var(--txt);transition:.12s;margin-bottom:9px}
   .md-action:active{transform:scale(.98)}
   .md-bet{background:linear-gradient(135deg,var(--gold-tint),transparent 70%),var(--card2);border-color:var(--ko-border);color:var(--gold-ink)}
-  .md-row{display:flex;gap:9px}
   .md-row .md-action{flex:1}
-  .md-edit{font-size:13px;color:var(--mut);background:transparent}
-  .edited-tag{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-ink);border:1px solid var(--ko-border);border-radius:5px;padding:0 4px;vertical-align:1px}
   .card-go{color:var(--low);font-size:22px;line-height:1;font-weight:400;padding:0 2px}
   .fav .card-go{color:var(--fav-ink)}
   .pk-grid{max-height:52vh;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:0 -2px;padding:0 2px}
@@ -333,22 +329,10 @@
   .susp-ban,.susp-mini.ban{font-size:13px;color:var(--lfc);font-weight:600;line-height:1.5}
   .susp-risk{font-size:12.5px;color:var(--gold-ink);line-height:1.5;margin-top:3px}
   .susp-mini{font-size:13px;color:var(--mut);font-weight:600}
-  .sm-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-  .sm-flag{font-size:22px;flex:0 0 auto}
-  .sm-team{flex:1;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;text-transform:uppercase;color:var(--txt)}
-  .sm-input{width:64px;text-align:center;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 8px;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:24px;color:var(--txt);-moz-appearance:textfield}
-  .sm-input::-webkit-inner-spin-button,.sm-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-  .sm-input:focus{outline:none;border-color:var(--pitch)}
-  .sm-sep{margin:12px 0;border-top:1px solid var(--line)}
-  .sm-status{margin-bottom:16px}
-  .sm-status label{font-size:10px;color:var(--low);letter-spacing:.12em;text-transform:uppercase;font-weight:700;display:block;margin-bottom:6px}
-  .sm-status select{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:11px 12px;color:var(--txt);font-family:inherit;font-size:16px;cursor:pointer}
-  .sm-status select:focus{outline:none;border-color:var(--pitch)}
   .sm-btns{display:flex;gap:8px}
   .sm-btns button{flex:1;padding:12px;border-radius:12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;border:1px solid var(--line);transition:.12s}
   .sm-btns button:active{transform:scale(.97)}
   .sm-cancel{background:var(--card2);color:var(--mut)}
-  .sm-save{background:var(--pitch);color:#fff;border-color:var(--pitch)!important}
   .sm-clear{background:transparent;color:var(--low);border-color:var(--line)!important;font-size:11px!important;margin-top:8px;width:100%;padding:9px!important}
 
   /* ── API SETTINGS PANEL ── */
@@ -427,7 +411,6 @@
     <div class="api-hint">
       Automatic, nothing to set up.<br>
       Scores come straight from FIFA's public feed and refresh every 60s while matches are on.<br>
-      Tap any match, then Edit score, to set one by hand; manual entries always win and get an "edited" badge.<br>
       <span id="buildTag"></span> - if features look missing, refresh the page once.
     </div>
     <div class="api-status-txt" id="apiStatusTxt"></div>
@@ -551,49 +534,10 @@
     <div class="md-score" id="mdScore" style="display:none"></div>
     <div class="md-when" id="mdWhen"></div>
     <div class="md-tz" id="mdTz"></div>
-    <div class="md-edited" id="mdEdited" style="display:none">Score edited by hand &middot; tap Edit score to clear</div>
     <div class="md-tz" id="mdScorers" style="display:none;margin-bottom:12px"></div>
     <button class="md-action md-bet" id="mdBet">&#128202; Betting stats &rsaquo;</button>
-    <div class="md-row">
-      <button class="md-action" id="mdCal">&#128197; Add to calendar</button>
-      <button class="md-action md-edit" id="mdEdit">&#9998; Edit score</button>
-    </div>
+    <button class="md-action" id="mdCal">&#128197; Add to calendar</button>
     <button class="sm-cancel" id="mdClose" style="width:100%;margin-top:6px">Close</button>
-  </div>
-</div>
-
-<!-- Score Edit Modal -->
-<div class="smodal-overlay" id="sModalOverlay">
-  <div class="smodal" role="dialog" aria-modal="true">
-    <h3 id="smTitle">Edit Score</h3>
-    <div class="sm-stage" id="smStage"></div>
-    <div class="sm-row">
-      <span class="sm-flag" id="smFlagA"></span>
-      <span class="sm-team" id="smTeamA"></span>
-      <input type="number" class="sm-input" id="smGoalsA" min="0" max="99" value="0">
-    </div>
-    <div class="sm-row">
-      <span class="sm-flag" id="smFlagB"></span>
-      <span class="sm-team" id="smTeamB"></span>
-      <input type="number" class="sm-input" id="smGoalsB" min="0" max="99" value="0">
-    </div>
-    <div class="sm-sep"></div>
-    <div class="sm-status">
-      <label>Match Status</label>
-      <select id="smStatus">
-        <option value="FT">Full Time (FT)</option>
-        <option value="LIVE">Live / In Progress</option>
-        <option value="HT">Half Time</option>
-        <option value="ET">Extra Time</option>
-        <option value="PEN">Penalties</option>
-      </select>
-    </div>
-    <div class="st-note" style="margin:0 0 10px">Saving sets the score by hand on THIS device only - it overrides the live feed and the card gets an "edited" badge. Use Clear Score to go back to live data.</div>
-    <div class="sm-btns">
-      <button class="sm-cancel" id="smCancel">Cancel</button>
-      <button class="sm-save" id="smSave">Save</button>
-    </div>
-    <button class="sm-clear sm-btns" id="smClear" style="border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--low);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;padding:9px;width:100%;margin-top:8px;text-align:center">Clear Score</button>
   </div>
 </div>
 
@@ -788,7 +732,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 12 Jun 2026 v10.2';
+  var BUILD_TAG='Build 12 Jun 2026 v10.3';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line){
     try{
@@ -800,7 +744,7 @@
     }catch(e){}
   };
   // ── modal hygiene: one overlay at a time, Escape closes, body scroll locked, focus moved ──
-  var OVERLAYS=['pkOverlay','mdOverlay','stOverlay','sModalOverlay'];
+  var OVERLAYS=['pkOverlay','mdOverlay','stOverlay'];
   var lastFocus=null;
   function syncModalState(){
     var open=false;
@@ -838,18 +782,20 @@
   //  SCORES MANAGEMENT
   // ══════════════════════════════════════
   var scores={};
-  function loadScoresLS(){try{var s=load('wc26_scores');if(s)scores=JSON.parse(s);}catch(e){scores={};}}
+  function loadScoresLS(){
+    try{var s=load('wc26_scores');if(s)scores=JSON.parse(s);}catch(e){scores={};}
+    // score editing was retired: purge any old hand-edited entries so live data rules
+    var dirty=false;
+    for(var k in scores){if(scores[k]&&scores[k].source==='manual'){delete scores[k];dirty=true;}}
+    if(dirty)saveScoresLS();
+  }
   function saveScoresLS(){save('wc26_scores',JSON.stringify(scores));}
   function scoreOf(m){return scores[m.n]||null;}
   function setScore(n,ga,gb,status,source,minute){
     var prev=scores[n];
-    // manual scores take priority - don't overwrite manual with api
-    if(prev&&prev.source==='manual'&&source==='api') return;
-    scores[n]={ga:parseInt(ga,10),gb:parseInt(gb,10),status:status||'FT',source:source||'manual',minute:minute||null};
+    scores[n]={ga:parseInt(ga,10),gb:parseInt(gb,10),status:status||'FT',source:source||'api',minute:minute||null};
     saveScoresLS();
   }
-  function clearScore(n){delete scores[n];saveScoresLS();}
-  var editingMatch=null;
 
   // ══════════════════════════════════════
   //  LIVE SCORES CONFIG (FIFA public feed, no key needed)
@@ -1042,8 +988,8 @@
           teamsHtml='<span'+(aMe?' class="me"':'')+'>'+escapeHtml(m.a)+'</span><span class="vs">v</span><span'+(bMe?' class="me"':'')+'>'+escapeHtml(m.b)+'</span>';
         }
 
-        // Venue line - prepend FT/status tag for scored matches; mark hand-edited scores
-        var venueHtml,edited=hasScore&&sc.source==='manual';
+        // Venue line - prepend FT/status tag for scored matches
+        var venueHtml;
         if(hasScore&&st.k==='ft'){
           venueHtml='<span class="ft-tag">FT</span> · '+escapeHtml(m.v);
         }else if(hasScore&&st.k==='lv'){
@@ -1051,7 +997,6 @@
         }else{
           venueHtml=escapeHtml(m.v);
         }
-        if(edited)venueHtml+=' <span class="edited-tag">edited</span>';
 
         out.push('<div class="'+cls.join(' ')+'" data-n="'+m.n+'" role="button" tabindex="0" aria-label="'+escapeHtml((F[m.a]?m.a:phPretty(m.a))+' versus '+(F[m.b]?m.b:phPretty(m.b))+', '+fmtClock(o)+' — open match details')+'">'+
           (isMarquee(m)?'<span class="star">⭐</span>':'')+
@@ -1261,48 +1206,6 @@
     var mt=document.querySelector('meta[name="theme-color"]');
     if(t==='light'){document.documentElement.setAttribute('data-theme','light');if(mt)mt.setAttribute('content','#eceff5');}
     else{document.documentElement.removeAttribute('data-theme');if(mt)mt.setAttribute('content','#070b16');}
-  }
-
-  // ══════════════════════════════════════
-  //  SCORE EDIT MODAL
-  // ══════════════════════════════════════
-  function openScoreEdit(n){
-    var m=null;for(var i=0;i<matches.length;i++){if(matches[i].n===n){m=matches[i];break;}}
-    if(!m)return;
-    editingMatch=m;
-    var sc=scoreOf(m);
-    document.getElementById('smTitle').textContent=escapeHtml(m.a)+' v '+escapeHtml(m.b);
-    document.getElementById('smStage').textContent='Match '+m.n+' · '+m.s;
-    document.getElementById('smFlagA').textContent=F[m.a]||'';
-    document.getElementById('smFlagB').textContent=F[m.b]||'';
-    document.getElementById('smTeamA').textContent=m.a;
-    document.getElementById('smTeamB').textContent=m.b;
-    document.getElementById('smGoalsA').value=sc?sc.ga:0;
-    document.getElementById('smGoalsB').value=sc?sc.gb:0;
-    document.getElementById('smStatus').value=sc?sc.status:'FT';
-    openOverlay('sModalOverlay');
-  }
-  function closeScoreEdit(){
-    editingMatch=null;
-    closeOverlay('sModalOverlay');
-  }
-  function saveScoreFromModal(){
-    if(!editingMatch)return;
-    var ga=parseInt(document.getElementById('smGoalsA').value,10);
-    var gb=parseInt(document.getElementById('smGoalsB').value,10);
-    var status=document.getElementById('smStatus').value;
-    if(isNaN(ga)||ga<0)ga=0;
-    if(isNaN(gb)||gb<0)gb=0;
-    scores[editingMatch.n]={ga:ga,gb:gb,status:status,source:'manual',minute:null};
-    saveScoresLS();
-    closeScoreEdit();
-    refresh();
-  }
-  function clearScoreFromModal(){
-    if(!editingMatch)return;
-    clearScore(editingMatch.n);
-    closeScoreEdit();
-    refresh();
   }
 
   // ══════════════════════════════════════
@@ -1792,7 +1695,6 @@
     }else scEl.style.display='none';
     document.getElementById('mdWhen').textContent=fmtDayFull(dayKey(o))+' · '+fmtClock(o);
     document.getElementById('mdTz').textContent='Your time ('+escapeHtml(cityOf(TZ()))+') · '+escapeHtml(mm.v);
-    document.getElementById('mdEdited').style.display=(sc&&sc.source==='manual')?'':'none';
     document.getElementById('mdBet').style.display=(realA||realB)?'':'none';
     // scorers, when we have this match's player data cached
     var scEl2=document.getElementById('mdScorers'),scHtml='';
@@ -2295,14 +2197,10 @@
         html+='<tr'+(cls2.length?' class="'+cls2.join(' ')+'"':'')+'><td>'+(i2+1)+'</td><td class="tn">'+(F[r2.team]||'')+' '+escapeHtml(r2.team)+chip+'</td><td>'+r2.p+'</td><td>'+r2.w+'</td><td>'+r2.d+'</td><td>'+r2.l+'</td><td>'+(gd>0?'+':'')+gd+'</td><td class="pts">'+r2.pts+'</td></tr>';}
       html+='</table></div>';}
     document.getElementById('tvGroups').innerHTML=html;
-    var anyManual=false;
-    for(var mi2=0;mi2<matches.length;mi2++){var sc3=scores[matches[mi2].n];
-      if(sc3&&sc3.source==='manual'&&matches[mi2].s.indexOf('GROUP')===0){anyManual=true;break;}}
     document.getElementById('tvLiveNote').textContent=
       (cg.live?'Live scores included - the table moves as goals go in. ':'')+
       'The line under 2nd place is the qualification cut; gold edge = third place, chasing the eight best-third spots. '+
-      'Chips: "in" = top two guaranteed on points alone, "3rd?" = third at best, "out" = eliminated. Level teams split by goal difference, then goals scored, then head-to-head.'+
-      (anyManual?' Note: includes at least one hand-edited score from this device.':'');
+      'Chips: "in" = top two guaranteed on points alone, "3rd?" = third at best, "out" = eliminated. Level teams split by goal difference, then goals scored, then head-to-head.';
     renderThirds(thirds);
   }
   function renderThirds(thirds){
@@ -2460,7 +2358,7 @@
   });
   document.getElementById('sr').addEventListener('input',function(e){search=e.target.value;render();});
 
-  // Delegate clicks on match cards (cal + edit buttons)
+  // Delegate clicks on match cards (calendar shortcut + detail view)
   document.getElementById('sch').addEventListener('click',function(e){
     var t=e.target;
     // Check for cal button (quick shortcut)
@@ -2494,10 +2392,6 @@
     if(el)el.scrollIntoView({behavior:'smooth',block:'center'});});
 
   // Score modal events
-  document.getElementById('smSave').addEventListener('click',saveScoreFromModal);
-  document.getElementById('smCancel').addEventListener('click',closeScoreEdit);
-  document.getElementById('smClear').addEventListener('click',clearScoreFromModal);
-  document.getElementById('sModalOverlay').addEventListener('click',function(e){if(e.target===this)closeScoreEdit();});
 
   // Live scores status panel toggle
   document.getElementById('apiBtn').addEventListener('click',function(){
@@ -2514,8 +2408,7 @@
   // Escape closes whichever overlay is open
   document.addEventListener('keydown',function(e){
     if(e.key!=='Escape')return;
-    if(document.getElementById('sModalOverlay').classList.contains('open'))closeScoreEdit();
-    else if(document.getElementById('stOverlay').classList.contains('open'))closeStats();
+    if(document.getElementById('stOverlay').classList.contains('open'))closeStats();
     else if(document.getElementById('mdOverlay').classList.contains('open'))closeMatchDetail();
   });
 
@@ -2524,7 +2417,6 @@
   document.getElementById('mdOverlay').addEventListener('click',function(e){if(e.target===this)closeMatchDetail();});
   document.getElementById('mdBet').addEventListener('click',function(){if(mdMatch){var n=mdMatch.n;closeMatchDetail();openMatchStats(n);}});
   document.getElementById('mdCal').addEventListener('click',function(){if(mdMatch)dlIcs(mdMatch);});
-  document.getElementById('mdEdit').addEventListener('click',function(){if(mdMatch){var n=mdMatch.n;closeMatchDetail();openScoreEdit(n);}});
 
   // Betting stats modal
   document.getElementById('statsOpen').addEventListener('click',openStats);
@@ -2551,7 +2443,7 @@
   document.getElementById('buildTag').textContent=BUILD_TAG;
   document.getElementById('buildFooter').textContent=BUILD_TAG+' · live scores · tables · stats';
   // add an always-reachable top-right X to every modal (close never depends on scroll)
-  (function(){var ids=['pkOverlay','mdOverlay','stOverlay','sModalOverlay'];
+  (function(){var ids=['pkOverlay','mdOverlay','stOverlay'];
     for(var i=0;i<ids.length;i++){(function(id){
       var ov=document.getElementById(id);if(!ov)return;
       var box=ov.querySelector('.smodal');if(!box)return;
@@ -2559,8 +2451,7 @@
       x.addEventListener('click',function(e){e.stopPropagation();
         if(id==='pkOverlay'){save('wc26_follow','__none__');closeOverlay('pkOverlay');}
         else if(id==='stOverlay')closeStats();
-        else if(id==='mdOverlay')closeMatchDetail();
-        else if(id==='sModalOverlay')closeScoreEdit();
+        else closeMatchDetail();
       });
       box.appendChild(x);
     })(ids[i]);}
