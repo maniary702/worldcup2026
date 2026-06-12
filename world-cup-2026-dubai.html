@@ -69,12 +69,13 @@
   .followsel .fl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--low);font-weight:700;white-space:nowrap}
   .followsel select{flex:1;min-width:0;background:transparent;border:0;color:var(--txt);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.03em;padding:2px 0;cursor:pointer}
   .followsel select:focus{outline:none}
-  .themebtn{flex:0 0 auto;width:44px;height:44px;border-radius:12px;background:var(--card);border:1px solid var(--line);color:var(--mut);cursor:pointer;display:flex;align-items:center;justify-content:center}
-  .themebtn:active{transform:scale(.93)}
-  .themebtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2}
+  .themebtn,.apibtn{flex:0 0 auto;width:44px;height:44px;border-radius:12px;background:var(--card);border:1px solid var(--line);color:var(--mut);cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .themebtn:active,.apibtn:active{transform:scale(.93)}
+  .themebtn svg,.apibtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2}
   .themebtn .ico-sun{display:none}
   [data-theme="light"] .themebtn .ico-sun{display:block}
   [data-theme="light"] .themebtn .ico-moon{display:none}
+  .apibtn.connected{border-color:var(--pitch);color:var(--pitch)}
 
   .hero{margin-top:14px;border-radius:18px;position:relative;overflow:hidden;border:1px solid var(--fav);
     background:linear-gradient(135deg, var(--fav-tint), transparent 62%), var(--card);padding:16px 16px 15px}
@@ -87,6 +88,9 @@
   @keyframes blink{50%{opacity:.2}}
   .hero .match-line{font-family:'Barlow Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:29px;line-height:1;letter-spacing:.5px;color:var(--txt)}
   .hero .match-line .flag{font-size:23px;vertical-align:-2px}
+  .hero .hero-sc{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:36px;color:var(--gold);margin:0 8px;letter-spacing:-1px;vertical-align:-2px}
+  .hero.live .hero-sc{color:var(--live);animation:scorePulse 2s ease-in-out infinite}
+  @keyframes scorePulse{0%,100%{opacity:1}50%{opacity:.7}}
   .hero .when{font-size:12px;color:var(--mut);margin-top:6px}
   .cdown{display:flex;gap:8px;margin-top:13px}
   .cseg{background:var(--seg);border:1px solid var(--line);border-radius:12px;padding:8px 0 6px;text-align:center;flex:1}
@@ -141,6 +145,7 @@
   .match.ko{border-color:var(--ko-border);background:linear-gradient(102deg,var(--gold-tint),var(--card) 60%)}
   .match.poss{border-style:dashed;border-color:var(--gold)}
   .match.played{opacity:.5}
+  .match.scored.played{opacity:.78}
   .match.live{border-color:var(--live);box-shadow:0 0 0 1px var(--live),0 0 28px -8px var(--live)}
   .match.live::after{content:'';position:absolute;inset:0;border-radius:14px;border:1px solid var(--live);animation:livepulse 1.8s ease-out infinite;pointer-events:none}
   @keyframes livepulse{0%{opacity:.8}70%{opacity:0;transform:scale(1.012)}100%{opacity:0}}
@@ -167,11 +172,60 @@
   .vs{color:var(--low);margin:0 5px;font-size:11px;font-weight:500;font-family:'Barlow',sans-serif}
   .venue{font-size:10.5px;color:var(--low);margin-top:4px}
 
+  /* ── SCORE DISPLAY ── */
+  .sc{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:22px;letter-spacing:-1px;color:var(--txt);margin:0 6px;display:inline-block;vertical-align:baseline}
+  .match.fav .sc{color:var(--gold)}
+  .match.live .sc{color:var(--live);animation:scorePulse 2s ease-in-out infinite}
+  .winner{font-weight:800!important}
+  .loser{opacity:.5}
+  .scored .venue .ft-tag{color:var(--low);font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+  .scored.live .venue .ft-tag{color:var(--live)}
+
+  /* ── ACTION COLUMN ── */
+  .actcol{display:flex;flex-direction:column;align-items:center;gap:4px}
   .calbtn{background:transparent;border:1px solid var(--line2);color:var(--mut);padding:7px 9px;border-radius:8px;
     font-size:9px;cursor:pointer;letter-spacing:.06em;font-weight:800;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:44px}
   .calbtn:active{transform:scale(.94)}
   .calbtn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
   .fav .calbtn{border-color:var(--gold);color:var(--gold-ink)}
+  .editbtn{background:transparent;border:1px solid var(--line);color:var(--low);width:34px;height:28px;border-radius:7px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:.15s;font-family:inherit}
+  .editbtn:hover,.editbtn:active{border-color:var(--pitch);color:var(--pitch)}
+  .fav .editbtn{border-color:rgba(245,197,66,.3);color:var(--gold-ink)}
+
+  /* ── SCORE EDIT MODAL ── */
+  .smodal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+  .smodal-overlay.open{display:flex}
+  .smodal{background:var(--card);border:1px solid var(--line2);border-radius:20px;padding:24px 22px;max-width:360px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.5)}
+  .smodal h3{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;text-transform:uppercase;color:var(--txt);margin-bottom:3px}
+  .smodal .sm-stage{font-size:10px;color:var(--low);letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:18px}
+  .sm-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .sm-flag{font-size:22px;flex:0 0 auto}
+  .sm-team{flex:1;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;text-transform:uppercase;color:var(--txt)}
+  .sm-input{width:64px;text-align:center;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 8px;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:24px;color:var(--txt);-moz-appearance:textfield}
+  .sm-input::-webkit-inner-spin-button,.sm-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+  .sm-input:focus{outline:none;border-color:var(--pitch)}
+  .sm-sep{margin:12px 0;border-top:1px solid var(--line)}
+  .sm-status{margin-bottom:16px}
+  .sm-status label{font-size:10px;color:var(--low);letter-spacing:.12em;text-transform:uppercase;font-weight:700;display:block;margin-bottom:6px}
+  .sm-status select{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:11px 12px;color:var(--txt);font-family:inherit;font-size:14px;cursor:pointer}
+  .sm-status select:focus{outline:none;border-color:var(--pitch)}
+  .sm-btns{display:flex;gap:8px}
+  .sm-btns button{flex:1;padding:12px;border-radius:12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;border:1px solid var(--line);transition:.12s}
+  .sm-btns button:active{transform:scale(.97)}
+  .sm-cancel{background:var(--card2);color:var(--mut)}
+  .sm-save{background:var(--pitch);color:#fff;border-color:var(--pitch)!important}
+  .sm-clear{background:transparent;color:var(--low);border-color:var(--line)!important;font-size:11px!important;margin-top:8px;width:100%;padding:9px!important}
+
+  /* ── API SETTINGS PANEL ── */
+  .api-panel{display:none;margin-top:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .api-panel.open{display:block}
+  .api-panel label{font-size:10px;color:var(--low);letter-spacing:.12em;text-transform:uppercase;font-weight:700;display:block;margin-bottom:6px}
+  .api-panel input{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:12px}
+  .api-panel input:focus{outline:none;border-color:var(--pitch)}
+  .api-hint{font-size:10px;color:var(--low);margin-top:8px;line-height:1.6}
+  .api-status-txt{font-size:11px;margin-top:6px;font-weight:700}
+  .api-status-txt.ok{color:var(--pitch)}
+  .api-status-txt.err{color:var(--live)}
 
   .empty{text-align:center;padding:54px 18px;color:var(--low);font-family:'Barlow Condensed',sans-serif;font-size:19px;letter-spacing:.04em;text-transform:uppercase}
 
@@ -196,6 +250,7 @@
     .kick{font-size:21px}
     .teams{font-size:18px}
     .fav .teams{font-size:21px}
+    .sc{font-size:26px}
     .dayhead .dname{font-size:25px}
     .match:hover{border-color:var(--line2);transform:translateY(-1px)}
   }
@@ -209,7 +264,7 @@
       <span class="l1">FIFA World Cup</span>
       <span class="l2">20<span class="six">26</span></span>
     </div>
-    <div class="hostpill"><b>USA · CAN · MEX</b><br>Jun 11 – Jul 19<br>Kick-off in your time</div>
+    <div class="hostpill"><b>USA &middot; CAN &middot; MEX</b><br>Jun 11 &ndash; Jul 19<br>Kick-off in your time</div>
   </div>
 
   <div class="controls">
@@ -217,11 +272,26 @@
       <span class="fl">Following</span>
       <select id="followSelect" aria-label="Choose your team to follow"></select>
     </label>
+    <button class="apibtn" id="apiBtn" aria-label="Live scores settings" title="Live scores settings">
+      <svg viewBox="0 0 24 24"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9c3.9 3.9 3.9 10.3 0 14.2"/></svg>
+    </button>
     <button class="themebtn" id="themeBtn" aria-label="Toggle light or dark theme">
       <svg class="ico-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       <svg class="ico-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.6" y1="4.6" x2="6.7" y2="6.7"/><line x1="17.3" y1="17.3" x2="19.4" y2="19.4"/><line x1="4.6" y1="19.4" x2="6.7" y2="17.3"/><line x1="17.3" y1="6.7" x2="19.4" y2="4.6"/></svg>
     </button>
   </div>
+
+  <div class="api-panel" id="apiPanel">
+    <label>Football-Data.org API Key</label>
+    <input type="text" id="apiKeyInput" placeholder="Paste your free API token here" autocomplete="off" spellcheck="false">
+    <div class="api-hint">
+      Free tier: 10 req/min, no payment needed.<br>
+      Register at <b>football-data.org</b> &rarr; copy your token.<br>
+      Scores auto-fetch every 60s during live matches.
+    </div>
+    <div class="api-status-txt" id="apiStatusTxt"></div>
+  </div>
+
   <div class="controls">
     <label class="followsel">
       <svg class="gico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3c2.6 2.7 2.6 15.3 0 18M12 3c-2.6 2.7-2.6 15.3 0 18"/></svg>
@@ -232,8 +302,8 @@
 
   <div class="hero" id="hero">
     <div class="htop"><span class="badge" id="heroBadge">Next match</span></div>
-    <div class="match-line" id="heroLine">—</div>
-    <div class="when" id="heroWhen">—</div>
+    <div class="match-line" id="heroLine">&mdash;</div>
+    <div class="when" id="heroWhen">&mdash;</div>
     <div class="cdown" id="cdown">
       <div class="cseg"><div class="num" id="cD">00</div><div class="lab">Days</div></div>
       <div class="cseg"><div class="num" id="cH">00</div><div class="lab">Hrs</div></div>
@@ -261,7 +331,7 @@
     <button class="chip fav" data-f="fav">England</button>
     <button class="chip" data-f="upcoming">Upcoming</button>
     <button class="chip" data-f="today">Today</button>
-    <button class="chip" data-f="marquee">★ Picks</button>
+    <button class="chip" data-f="marquee">&#9733; Picks</button>
     <button class="chip" data-f="late">Late night</button>
     <button class="chip" data-f="group">Groups</button>
     <button class="chip" data-f="knockout">Knockouts</button>
@@ -278,8 +348,43 @@
 <footer>
   Built for the watch crew. Your team is highlighted in red and gold, and kick-off times follow your device by default.<br>
   Tap the globe up top to switch zones. Liverpool lads in camp, keep an eye out. <span class="ynwa">YNWA</span>.<br><br>
-  Add any game to your calendar and it lands at the right local time automatically, wherever you are.
+  Add any game to your calendar and it lands at the right local time automatically, wherever you are.<br>
+  <span style="opacity:.55">v4 &middot; live scores &middot; manual edit</span>
 </footer>
+
+<!-- Score Edit Modal -->
+<div class="smodal-overlay" id="sModalOverlay">
+  <div class="smodal">
+    <h3 id="smTitle">Edit Score</h3>
+    <div class="sm-stage" id="smStage"></div>
+    <div class="sm-row">
+      <span class="sm-flag" id="smFlagA"></span>
+      <span class="sm-team" id="smTeamA"></span>
+      <input type="number" class="sm-input" id="smGoalsA" min="0" max="99" value="0">
+    </div>
+    <div class="sm-row">
+      <span class="sm-flag" id="smFlagB"></span>
+      <span class="sm-team" id="smTeamB"></span>
+      <input type="number" class="sm-input" id="smGoalsB" min="0" max="99" value="0">
+    </div>
+    <div class="sm-sep"></div>
+    <div class="sm-status">
+      <label>Match Status</label>
+      <select id="smStatus">
+        <option value="FT">Full Time (FT)</option>
+        <option value="LIVE">Live / In Progress</option>
+        <option value="HT">Half Time</option>
+        <option value="ET">Extra Time</option>
+        <option value="PEN">Penalties</option>
+      </select>
+    </div>
+    <div class="sm-btns">
+      <button class="sm-cancel" id="smCancel">Cancel</button>
+      <button class="sm-save" id="smSave">Save</button>
+    </div>
+    <button class="sm-clear sm-btns" id="smClear" style="border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--low);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;padding:9px;width:100%;margin-top:8px;text-align:center">Clear Score</button>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -288,12 +393,12 @@
   var F={
     'Mexico':'🇲🇽','South Africa':'🇿🇦','South Korea':'🇰🇷','Czech Republic':'🇨🇿','Canada':'🇨🇦',
     'Bosnia & Herzegovina':'🇧🇦','USA':'🇺🇸','Paraguay':'🇵🇾','Qatar':'🇶🇦','Switzerland':'🇨🇭',
-    'Brazil':'🇧🇷','Morocco':'🇲🇦','Haiti':'🇭🇹','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Australia':'🇦🇺','Turkey':'🇹🇷',
+    'Brazil':'🇧🇷','Morocco':'🇲🇦','Haiti':'🇭🇹','Scotland':'󠁧󠁢󠁳󠁣󠁴󠁿','Australia':'🇦🇺','Turkey':'🇹🇷',
     'Germany':'🇩🇪','Curacao':'🇨🇼','Netherlands':'🇳🇱','Japan':'🇯🇵','Ivory Coast':'🇨🇮','Ecuador':'🇪🇨',
     'Sweden':'🇸🇪','Tunisia':'🇹🇳','Spain':'🇪🇸','Cape Verde':'🇨🇻','Belgium':'🇧🇪','Egypt':'🇪🇬',
     'Saudi Arabia':'🇸🇦','Uruguay':'🇺🇾','Iran':'🇮🇷','New Zealand':'🇳🇿','France':'🇫🇷','Senegal':'🇸🇳',
     'Iraq':'🇮🇶','Norway':'🇳🇴','Argentina':'🇦🇷','Algeria':'🇩🇿','Austria':'🇦🇹','Jordan':'🇯🇴',
-    'Portugal':'🇵🇹','DR Congo':'🇨🇩','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Croatia':'🇭🇷','Ghana':'🇬🇭','Panama':'🇵🇦',
+    'Portugal':'🇵🇹','DR Congo':'🇨🇩','England':'󠁧󠁢󠁥󠁮󠁧󠁿','Croatia':'🇭🇷','Ghana':'🇬🇭','Panama':'🇵🇦',
     'Uzbekistan':'🇺🇿','Colombia':'🇨🇴'
   };
   var CODE={
@@ -321,7 +426,6 @@
     K:['Portugal','DR Congo','Uzbekistan','Colombia'],
     L:['England','Croatia','Ghana','Panama']
   };
-  // curated zones for the picker
   var ZONES=[
     {id:'Europe/London',label:'London'},
     {id:'America/New_York',label:'New York (ET)'},
@@ -337,7 +441,6 @@
     {id:'Australia/Sydney',label:'Sydney'}
   ];
 
-  // times stored as Dubai wall-clock (Asia/Dubai is fixed UTC+4, no DST)
   var matches=[
     {n:1,d:'2026-06-11T23:00',s:'GROUP A',a:'Mexico',b:'South Africa',v:'Mexico City, Mexico'},
     {n:2,d:'2026-06-12T06:00',s:'GROUP A',a:'South Korea',b:'Czech Republic',v:'Zapopan, Mexico'},
@@ -448,7 +551,7 @@
   var marqueeSet={6:1,17:1,22:1,33:1,52:1,61:1,64:1};
   var TEAMS=[]; for(var tk in F){if(F.hasOwnProperty(tk))TEAMS.push(tk);}
   var LIVE_WIN=135*60000;
-  var REF=new Date('2026-06-20T12:00:00Z'); // mid-tournament reference for offset labels
+  var REF=new Date('2026-06-20T12:00:00Z');
   var FOLLOW='England', current='all', search='';
   var deviceTz=(function(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Dubai';}catch(e){return 'Asia/Dubai';}})();
   var validTz={device:1}; for(var zi=0;zi<ZONES.length;zi++)validTz[ZONES[zi].id]=1;
@@ -460,7 +563,41 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  // ---- TIME CORE ----
+  // ══════════════════════════════════════
+  //  SCORES MANAGEMENT
+  // ══════════════════════════════════════
+  var scores={};
+  function loadScoresLS(){try{var s=load('wc26_scores');if(s)scores=JSON.parse(s);}catch(e){scores={};}}
+  function saveScoresLS(){save('wc26_scores',JSON.stringify(scores));}
+  function scoreOf(m){return scores[m.n]||null;}
+  function setScore(n,ga,gb,status,source,minute){
+    var prev=scores[n];
+    // manual scores take priority - don't overwrite manual with api
+    if(prev&&prev.source==='manual'&&source==='api') return;
+    scores[n]={ga:parseInt(ga,10),gb:parseInt(gb,10),status:status||'FT',source:source||'manual',minute:minute||null};
+    saveScoresLS();
+  }
+  function clearScore(n){delete scores[n];saveScoresLS();}
+  var editingMatch=null;
+
+  // ══════════════════════════════════════
+  //  API CONFIGURATION
+  // ══════════════════════════════════════
+  var API_KEY='';
+  function loadApiKey(){API_KEY=load('wc26_apikey')||'';}
+  function saveApiKey(k){API_KEY=k;save('wc26_apikey',k);}
+
+  // Mapping from football-data.org team names to our names
+  var API_MAP={
+    'Korea Republic':'South Korea','Czechia':'Czech Republic','Curaçao':'Curacao',
+    "Côte d'Ivoire":'Ivory Coast','Türkiye':'Turkey','Cabo Verde':'Cape Verde',
+    'Saudi Arabia':'Saudi Arabia','IR Iran':'Iran','Korea, Republic of':'South Korea',
+    'Congo DR':'DR Congo','Congo, DR':'DR Congo','Bosnia-Herzegovina':'Bosnia & Herzegovina',
+    'Bosnia and Herzegovina':'Bosnia & Herzegovina'
+  };
+  function mapTeam(name){return API_MAP[name]||name;}
+
+  // ── TIME CORE ──
   function partsInZone(dateUTC, tz){
     try{
       var f=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hourCycle:'h23',weekday:'short',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
@@ -497,8 +634,17 @@
   function isEvening(o){var h=hourOf(o);return h>=17||h<1;}
   function isLate(o){var h=hourOf(o);return h>=0&&h<8;}
 
+  // ── STATUS (score-aware) ──
   function statusOf(m){
     var now=Date.now(),ko=kickoffUTC(m).getTime(),diff=ko-now;
+    var sc=scoreOf(m);
+    if(sc){
+      if(sc.status==='FT') return {k:'ft',t:'FT'};
+      if(sc.status==='HT') return {k:'lv',t:'HT'};
+      if(sc.status==='ET') return {k:'lv',t:'ET'};
+      if(sc.status==='PEN') return {k:'lv',t:'PEN'};
+      if(sc.status==='LIVE'){return {k:'lv',t:sc.minute?sc.minute+"'":"Live"};}
+    }
     if(now>ko+LIVE_WIN) return {k:'ft',t:'Played'};
     if(now>=ko) return {k:'lv',t:'Live'};
     if(diff<3600000) return {k:'soon',t:'in '+Math.max(1,Math.round(diff/60000))+'m'};
@@ -507,7 +653,7 @@
     return {k:'',t:''};
   }
 
-  // ICS (UTC anchored, lands at correct local time on any device)
+  // ICS
   function buildIcs(m){
     var st=kickoffUTC(m),en=new Date(st.getTime()+2*3600000);
     function f(x){return x.getUTCFullYear()+pad(x.getUTCMonth()+1)+pad(x.getUTCDate())+'T'+pad(x.getUTCHours())+pad(x.getUTCMinutes())+'00Z';}
@@ -519,7 +665,7 @@
     setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},120);
   }
 
-  // SEARCH (tiered): team name wins, else stage/venue
+  // SEARCH
   function passes(m){
     if(search){
       var q=search.toLowerCase().trim();
@@ -571,6 +717,9 @@
     var els=document.querySelectorAll('.match.rev');for(var i=0;i<els.length;i++)io.observe(els[i]);
   }
 
+  // ══════════════════════════════════════
+  //  RENDER (with score display)
+  // ══════════════════════════════════════
   function render(){
     var box=document.getElementById('sch'),out=[],byDay={},order=[],tk=todayKey();
     for(var i=0;i<matches.length;i++){if(!passes(matches[i]))continue;
@@ -582,20 +731,49 @@
       out.push('<section class="day" id="d-'+dk+'"><div class="dayhead"><div class="dname">'+fmtDayFull(dk)+(dk===tk?' · Today':'')+'</div><div class="dcount">'+list.length+' match'+(list.length>1?'es':'')+'</div></div>');
       for(var mi=0;mi<list.length;mi++){
         var m=list[mi].m,o=list[mi].o,st=statusOf(m),cls=['match','rev'];
+        var sc=scoreOf(m);
+        var hasScore=sc&&sc.ga!==undefined&&sc.gb!==undefined;
         if(isFav(m))cls.push('fav');
         if(!isGroup(m))cls.push('ko');
         if(favPoss(m))cls.push('poss');
+        if(hasScore)cls.push('scored');
         if(st.k==='ft')cls.push('played');
         if(st.k==='lv')cls.push('live');
         var aMe=isFav(m)&&m.a===FOLLOW,bMe=isFav(m)&&m.b===FOLLOW;
         var statusHtml=st.t?'<span class="status '+st.k+'">'+(st.k==='lv'?'<span class="blip"></span>':'')+st.t+'</span>':'';
+
+        // Build teams line with or without score
+        var teamsHtml;
+        if(hasScore){
+          var aw=sc.ga>sc.gb,bw=sc.gb>sc.ga,draw=sc.ga===sc.gb;
+          var ac=[],bc=[];
+          if(aMe)ac.push('me');if(bMe)bc.push('me');
+          if(aw){ac.push('winner');bc.push('loser');}
+          if(bw){bc.push('winner');ac.push('loser');}
+          teamsHtml='<span'+(ac.length?' class="'+ac.join(' ')+'"':'')+'>'+escapeHtml(m.a)+'</span>'+
+            '<span class="sc">'+sc.ga+' - '+sc.gb+'</span>'+
+            '<span'+(bc.length?' class="'+bc.join(' ')+'"':'')+'>'+escapeHtml(m.b)+'</span>';
+        }else{
+          teamsHtml='<span'+(aMe?' class="me"':'')+'>'+escapeHtml(m.a)+'</span><span class="vs">v</span><span'+(bMe?' class="me"':'')+'>'+escapeHtml(m.b)+'</span>';
+        }
+
+        // Venue line - prepend FT/status tag for scored matches
+        var venueHtml;
+        if(hasScore&&st.k==='ft'){
+          venueHtml='<span class="ft-tag">FT</span> · '+escapeHtml(m.v);
+        }else if(hasScore&&st.k==='lv'){
+          venueHtml='<span class="ft-tag">'+st.t+'</span> · '+escapeHtml(m.v);
+        }else{
+          venueHtml=escapeHtml(m.v);
+        }
+
         out.push('<div class="'+cls.join(' ')+'">'+
           (isMarquee(m)?'<span class="star">⭐</span>':'')+
           '<div class="tcell"><div class="kick">'+fmtTime(o)+'</div>'+statusHtml+'<div class="stg">'+escapeHtml(m.s)+'</div></div>'+
-          '<div><div class="flags">'+flagsFor(m)+'</div><div class="teams">'+
-            '<span'+(aMe?' class="me"':'')+'>'+escapeHtml(m.a)+'</span><span class="vs">v</span><span'+(bMe?' class="me"':'')+'>'+escapeHtml(m.b)+'</span>'+
-          '</div><div class="venue">'+escapeHtml(m.v)+'</div></div>'+
-          '<div><button class="calbtn" data-n="'+m.n+'"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>CAL</button></div>'+
+          '<div><div class="flags">'+flagsFor(m)+'</div><div class="teams">'+teamsHtml+
+          '</div><div class="venue">'+venueHtml+'</div></div>'+
+          '<div class="actcol"><button class="calbtn" data-n="'+m.n+'"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>CAL</button>'+
+          '<button class="editbtn" data-n="'+m.n+'" title="Edit score">✎</button></div>'+
         '</div>');
       }
       out.push('</section>');
@@ -612,14 +790,22 @@
       var k=order[j],hasFav=false;
       for(var x=0;x<matches.length;x++){if((isFav(matches[x])||favPoss(matches[x]))&&dayKey(bits(matches[x]))===k){hasFav=true;break;}}
       var p=k.split('-');
-      html+='<div class="dpill'+(k===tk?' today':'')+(hasFav?' has-fav':'')+'" data-jump="'+k+'"><div class="dow">'+DOW[dowIdx(k)]+'</div><div class="dnum">'+parseInt(p[2],10)+'</div></div>';
+      html+='<div class="dpill'+(k===tk?' today':'')+(hasFav?' has-fav':'')+(hasScoresOnDay(k)?' has-scores':'')+'" data-jump="'+k+'"><div class="dow">'+DOW[dowIdx(k)]+'</div><div class="dnum">'+parseInt(p[2],10)+'</div></div>';
     }
     document.getElementById('ds').innerHTML=html;
+  }
+  function hasScoresOnDay(dk){
+    for(var i=0;i<matches.length;i++){if(dayKey(bits(matches[i]))===dk&&scoreOf(matches[i]))return true;}
+    return false;
   }
 
   function updateProgress(){
     var now=Date.now(),played=0;
-    for(var i=0;i<matches.length;i++){if(now>kickoffUTC(matches[i]).getTime()+LIVE_WIN)played++;}
+    for(var i=0;i<matches.length;i++){
+      var sc=scoreOf(matches[i]);
+      if(sc&&sc.status==='FT'){played++;}
+      else if(now>kickoffUTC(matches[i]).getTime()+LIVE_WIN){played++;}
+    }
     var pct=Math.round(played/matches.length*100);
     document.getElementById('progFill').style.width=pct+'%';
     document.getElementById('progTxt').textContent=played+' of 104 matches played';
@@ -629,6 +815,7 @@
   function nextFav(){var now=Date.now();for(var i=0;i<matches.length;i++){if((isFav(matches[i])||favPoss(matches[i]))&&kickoffUTC(matches[i]).getTime()+LIVE_WIN>now)return matches[i];}return null;}
   function nextAny(){var now=Date.now();for(var i=0;i<matches.length;i++){if(kickoffUTC(matches[i]).getTime()+LIVE_WIN>now)return matches[i];}return null;}
 
+  // ── HERO (score-aware) ──
   function tickHero(){
     var hero=document.getElementById('hero'),m=nextFav(),fallback=false;
     if(!m){m=nextAny();fallback=true;}
@@ -638,7 +825,29 @@
       document.getElementById('heroWhen').textContent='—';
       document.getElementById('cD').textContent='00';document.getElementById('cH').textContent='00';
       document.getElementById('cM').textContent='00';document.getElementById('cS').textContent='00';return;}
+
     var o=bits(m),key=dayKey(o),badge,line;
+    var sc=scoreOf(m);
+    var st=statusOf(m);
+    var isLive=st.k==='lv';
+    var hasScore=sc&&sc.ga!==undefined&&sc.gb!==undefined;
+
+    if(isLive&&hasScore){
+      // Show live score in hero
+      hero.classList.add('live');
+      badge=st.t;
+      document.getElementById('heroBadge').innerHTML='<span class="blip"></span> '+escapeHtml(badge);
+      line='<span class="flag">'+(F[m.a]||'')+'</span> '+escapeHtml(m.a)+
+        ' <span class="hero-sc">'+sc.ga+' - '+sc.gb+'</span> '+
+        '<span class="flag">'+(F[m.b]||'')+'</span> '+escapeHtml(m.b);
+      document.getElementById('heroLine').innerHTML=line;
+      document.getElementById('heroWhen').textContent=fmtShort(key)+' · '+fmtClock(o)+' · '+m.v;
+      document.getElementById('cdown').style.display='none';
+      return;
+    }
+
+    document.getElementById('cdown').style.display='';
+
     if(fallback){badge='Next match up';line='<span class="flag">'+(F[m.a]||'')+'</span> '+escapeHtml(m.a)+' <span style="opacity:.5">v</span> <span class="flag">'+(F[m.b]||'')+'</span> '+escapeHtml(m.b);}
     else if(favPoss(m)){badge='Possible '+escapeHtml(FOLLOW)+' R32';line='If '+escapeHtml(FOLLOW)+' qualify · '+fmtShort(key);}
     else{var opp=(m.a===FOLLOW)?m.b:m.a;badge='Next '+escapeHtml(FOLLOW)+' match';
@@ -681,7 +890,142 @@
     else{document.documentElement.removeAttribute('data-theme');if(mt)mt.setAttribute('content','#070b16');}
   }
 
-  // ---- EVENTS ----
+  // ══════════════════════════════════════
+  //  SCORE EDIT MODAL
+  // ══════════════════════════════════════
+  function openScoreEdit(n){
+    var m=null;for(var i=0;i<matches.length;i++){if(matches[i].n===n){m=matches[i];break;}}
+    if(!m)return;
+    editingMatch=m;
+    var sc=scoreOf(m);
+    document.getElementById('smTitle').textContent=escapeHtml(m.a)+' v '+escapeHtml(m.b);
+    document.getElementById('smStage').textContent='Match '+m.n+' · '+m.s;
+    document.getElementById('smFlagA').textContent=F[m.a]||'';
+    document.getElementById('smFlagB').textContent=F[m.b]||'';
+    document.getElementById('smTeamA').textContent=m.a;
+    document.getElementById('smTeamB').textContent=m.b;
+    document.getElementById('smGoalsA').value=sc?sc.ga:0;
+    document.getElementById('smGoalsB').value=sc?sc.gb:0;
+    document.getElementById('smStatus').value=sc?sc.status:'FT';
+    document.getElementById('sModalOverlay').classList.add('open');
+  }
+  function closeScoreEdit(){
+    editingMatch=null;
+    document.getElementById('sModalOverlay').classList.remove('open');
+  }
+  function saveScoreFromModal(){
+    if(!editingMatch)return;
+    var ga=parseInt(document.getElementById('smGoalsA').value,10);
+    var gb=parseInt(document.getElementById('smGoalsB').value,10);
+    var status=document.getElementById('smStatus').value;
+    if(isNaN(ga)||ga<0)ga=0;
+    if(isNaN(gb)||gb<0)gb=0;
+    scores[editingMatch.n]={ga:ga,gb:gb,status:status,source:'manual',minute:null};
+    saveScoresLS();
+    closeScoreEdit();
+    refresh();
+  }
+  function clearScoreFromModal(){
+    if(!editingMatch)return;
+    clearScore(editingMatch.n);
+    closeScoreEdit();
+    refresh();
+  }
+
+  // ══════════════════════════════════════
+  //  LIVE SCORE API (football-data.org)
+  // ══════════════════════════════════════
+  function shouldPoll(){
+    if(!API_KEY)return false;
+    var now=Date.now();
+    for(var i=0;i<matches.length;i++){
+      var ko=kickoffUTC(matches[i]).getTime();
+      // Poll if any match is within 15 min before kickoff to 150 min after
+      if(now>=ko-900000&&now<=ko+150*60000)return true;
+    }
+    return false;
+  }
+
+  function todayDateStr(){
+    var d=new Date();return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());
+  }
+
+  function fetchLiveScores(){
+    if(!API_KEY)return;
+    var today=todayDateStr();
+    var url='https://api.football-data.org/v4/competitions/WC/matches?dateFrom='+today+'&dateTo='+today;
+    fetch(url,{headers:{'X-Auth-Token':API_KEY}})
+    .then(function(r){
+      if(!r.ok)throw new Error('API '+r.status);
+      return r.json();
+    })
+    .then(function(data){
+      if(!data.matches||!data.matches.length)return;
+      var updated=false;
+      for(var i=0;i<data.matches.length;i++){
+        var am=data.matches[i];
+        if(!am.score||!am.homeTeam||!am.awayTeam)continue;
+        var home=mapTeam(am.homeTeam.name||am.homeTeam.shortName||'');
+        var away=mapTeam(am.awayTeam.name||am.awayTeam.shortName||'');
+        // Find matching match
+        for(var j=0;j<matches.length;j++){
+          var mm=matches[j];
+          if((mm.a===home&&mm.b===away)||(mm.a===away&&mm.b===home)){
+            var apiStatus='FT';
+            if(am.status==='FINISHED')apiStatus='FT';
+            else if(am.status==='PAUSED')apiStatus='HT';
+            else if(am.status==='IN_PLAY'||am.status==='LIVE')apiStatus='LIVE';
+            else if(am.status==='EXTRA_TIME')apiStatus='ET';
+            else if(am.status==='PENALTY_SHOOTOUT')apiStatus='PEN';
+            else continue; // skip SCHEDULED, POSTPONED, etc.
+
+            var gh=am.score.fullTime.home,ga2=am.score.fullTime.away;
+            if(gh===null&&am.score.halfTime){gh=am.score.halfTime.home;ga2=am.score.halfTime.away;}
+            if(gh===null)continue;
+
+            // Determine which is a/b in our data
+            var ga_val,gb_val;
+            if(mm.a===home){ga_val=gh;gb_val=ga2;}
+            else{ga_val=ga2;gb_val=gh;}
+
+            var minute=am.minute||null;
+            setScore(mm.n,ga_val,gb_val,apiStatus,'api',minute);
+            updated=true;
+            break;
+          }
+        }
+      }
+      if(updated)refresh();
+      updateApiStatus(true);
+    })
+    .catch(function(e){
+      console.log('Score fetch error:',e.message);
+      updateApiStatus(false,e.message);
+    });
+  }
+
+  function updateApiStatus(ok,msg){
+    var el=document.getElementById('apiStatusTxt');
+    if(!API_KEY){el.textContent='';el.className='api-status-txt';return;}
+    if(ok){el.textContent='✓ Connected - last check '+new Date().toLocaleTimeString();el.className='api-status-txt ok';}
+    else{el.textContent='✗ '+(msg||'Error');el.className='api-status-txt err';}
+    var btn=document.getElementById('apiBtn');
+    if(API_KEY)btn.classList.add('connected');else btn.classList.remove('connected');
+  }
+
+  var pollTimer=null;
+  function startPolling(){
+    if(pollTimer)clearInterval(pollTimer);
+    if(!API_KEY)return;
+    // Initial fetch
+    fetchLiveScores();
+    // Poll every 60s
+    pollTimer=setInterval(function(){
+      if(shouldPoll())fetchLiveScores();
+    },60000);
+  }
+
+  // ── EVENTS ──
   document.getElementById('fr').addEventListener('click',function(e){
     var t=e.target;while(t&&t!==this&&!t.classList.contains('chip'))t=t.parentNode;
     if(t&&t.classList&&t.classList.contains('chip')){
@@ -702,11 +1046,23 @@
     }
   });
   document.getElementById('sr').addEventListener('input',function(e){search=e.target.value;render();});
+
+  // Delegate clicks on match cards (cal + edit buttons)
   document.getElementById('sch').addEventListener('click',function(e){
-    var t=e.target;while(t&&t!==this&&!t.classList.contains('calbtn'))t=t.parentNode;
-    if(t&&t.classList&&t.classList.contains('calbtn')){var n=parseInt(t.getAttribute('data-n'),10);
-      for(var i=0;i<matches.length;i++)if(matches[i].n===n){dlIcs(matches[i]);break;}}
+    var t=e.target;
+    // Check for edit button
+    var eb=t;while(eb&&eb!==this&&!eb.classList.contains('editbtn'))eb=eb.parentNode;
+    if(eb&&eb.classList&&eb.classList.contains('editbtn')){
+      var n=parseInt(eb.getAttribute('data-n'),10);
+      openScoreEdit(n);
+      return;
+    }
+    // Check for cal button
+    while(t&&t!==this&&!t.classList.contains('calbtn'))t=t.parentNode;
+    if(t&&t.classList&&t.classList.contains('calbtn')){var n2=parseInt(t.getAttribute('data-n'),10);
+      for(var i=0;i<matches.length;i++)if(matches[i].n===n2){dlIcs(matches[i]);break;}}
   });
+
   document.getElementById('followSelect').addEventListener('change',function(){if(F[this.value]){FOLLOW=this.value;save('wc26_follow',FOLLOW);refresh();}});
   document.getElementById('tzSelect').addEventListener('change',function(){var v=this.value;if(v==='device'||validTz[v]){TZSEL=v;save('wc26_tz',TZSEL);refresh();}});
   document.getElementById('themeBtn').addEventListener('click',function(){
@@ -715,14 +1071,42 @@
   document.getElementById('fabFav').addEventListener('click',function(){var el=document.querySelector('.match.fav')||document.querySelector('.match.poss');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});});
   document.getElementById('fabTop').addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'});});
 
-  // ---- INIT ----
+  // Score modal events
+  document.getElementById('smSave').addEventListener('click',saveScoreFromModal);
+  document.getElementById('smCancel').addEventListener('click',closeScoreEdit);
+  document.getElementById('smClear').addEventListener('click',clearScoreFromModal);
+  document.getElementById('sModalOverlay').addEventListener('click',function(e){if(e.target===this)closeScoreEdit();});
+
+  // API settings panel toggle
+  document.getElementById('apiBtn').addEventListener('click',function(){
+    var panel=document.getElementById('apiPanel');
+    panel.classList.toggle('open');
+    if(panel.classList.contains('open')){
+      document.getElementById('apiKeyInput').value=API_KEY;
+    }
+  });
+  document.getElementById('apiKeyInput').addEventListener('change',function(){
+    var key=this.value.trim();
+    saveApiKey(key);
+    var btn=document.getElementById('apiBtn');
+    if(key){btn.classList.add('connected');startPolling();}
+    else{btn.classList.remove('connected');updateApiStatus(false);}
+  });
+
+  // ── INIT ──
   applyTheme(load('wc26_theme')==='light'?'light':'dark');
   var sf=load('wc26_follow');FOLLOW=(sf&&F[sf])?sf:'England';
   var stz=load('wc26_tz');TZSEL=(stz&&(stz==='device'||validTz[stz]))?stz:'device';
+  loadScoresLS();
+  loadApiKey();
   buildFollowSelect();
   buildTzSelect();
   updateProgress();
   refresh();
+  if(API_KEY){
+    document.getElementById('apiBtn').classList.add('connected');
+    startPolling();
+  }
   setInterval(tickHero,1000);
   setInterval(function(){updateProgress();refresh();},60000);
 
@@ -732,6 +1116,7 @@
       if(ko+LIVE_WIN>now){if(ko-now<6*86400000){var el=document.getElementById('d-'+dayKey(bits(matches[i])));if(el){try{el.scrollIntoView({block:'start'});}catch(e){}}}break;}}
   },250);
 })();
+
 </script>
 </body>
 </html>
