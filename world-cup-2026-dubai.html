@@ -378,7 +378,7 @@
       Automatic, nothing to set up.<br>
       Scores come straight from FIFA's public feed and refresh every 60s while matches are on.<br>
       You can still tap any card's edit button to set a score by hand; manual entries always win.<br>
-      Build 12 Jun 2026 v5 (bracket, golden glove, qualification chips) - if features look missing, refresh the page once.
+      Build 12 Jun 2026 v6 (extra-time, live subs, best-thirds, tiebreakers, MOTM) - if features look missing, refresh the page once.
     </div>
     <div class="api-status-txt" id="apiStatusTxt"></div>
   </div>
@@ -445,6 +445,9 @@
   <h2 class="tv-h">Group Tables</h2>
   <div class="tv-note" id="tvLiveNote"></div>
   <div id="tvGroups" class="tv-groups"></div>
+  <h2 class="tv-h">Best Third-Placed Teams</h2>
+  <div class="tv-note">Eight of the twelve group-third teams reach the Round of 32. Ranked by points, then goal difference, then goals scored.</div>
+  <div class="tv-card" id="tvThirdsCard"><div id="tvThirds"></div></div>
   <h2 class="tv-h">Knockout Bracket</h2>
   <div class="tv-note">Fills in automatically as groups finish. Swipe sideways through the rounds.</div>
   <div class="brkt" id="tvBracket"></div>
@@ -457,7 +460,7 @@
     <div class="tv-card"><h4>&#9201; Minutes Played</h4><div id="tvMinutes"></div></div>
     <div class="tv-card"><h4>&#129508; Golden Glove - clean sheets</h4><div id="tvGlove"></div></div>
     <div class="tv-card"><h4>&#129000; Cards &amp; Suspension Watch</h4><div id="tvCards"></div></div>
-    <div class="tv-card"><h4>&#11088; Standout of Each Match</h4><div id="tvStars"></div><div class="tv-note" style="margin-top:8px">Auto-picked from goals and assists - not FIFA's official award</div></div>
+    <div class="tv-card"><h4>&#11088; Standout of Each Match</h4><div id="tvStars"></div><div class="tv-note" style="margin-top:8px">Computed from goals, assists and clean sheets. A &#11088; marks an official Man-of-the-Match where one has been entered.</div></div>
   </div>
 </div>
 
@@ -1487,38 +1490,58 @@
     }
     return null;
   }
-  function extractSide(t){
-    var st=[],bn=[],ps=(t&&t.Players)||[];
-    for(var i=0;i<ps.length;i++){var p=ps[i];
-      var nm=(p.PlayerName&&p.PlayerName[0]&&p.PlayerName[0].Description)||(p.ShortName&&p.ShortName[0]&&p.ShortName[0].Description)||'';
-      if(!nm)continue;
-      if(p.Status===1)st.push(nm);
-      else if(p.Status===2)bn.push(nm);
+  // Current on-pitch / bench / off name lists per team: starting XI + bench roles
+  // from the live detail, adjusted by timeline subs and red cards played so far.
+  function buildLineups(row,det,tl){
+    var idName={},idTeam={},started={},bench={},used={},i,j;
+    var hn=mapTeam(row.Home.TeamName[0].Description),an=mapTeam(row.Away.TeamName[0].Description);
+    var sideTeam={};sideTeam[String(row.Home.IdTeam)]=hn;sideTeam[String(row.Away.IdTeam)]=an;
+    var packs=[det&&(det.HomeTeam||det.Home),det&&(det.AwayTeam||det.Away)];
+    var startCount={};startCount[hn]=0;startCount[an]=0;
+    for(i=0;i<2;i++){var tm=packs[i];if(!tm||!tm.Players)continue;
+      var tname=sideTeam[String(tm.IdTeam)]||'?';
+      for(j=0;j<tm.Players.length;j++){var p=tm.Players[j];
+        var id=String(p.IdPlayer),nm=(p.PlayerName&&p.PlayerName[0]&&p.PlayerName[0].Description)||'';
+        if(!nm)continue;
+        idName[id]=nm;idTeam[id]=tname;
+        if(p.Status===1){started[id]=1;startCount[tname]=(startCount[tname]||0)+1;}
+        else if(p.Status===2)bench[id]=1;
+      }}
+    if(startCount[hn]<11&&startCount[an]<11)return null; // XI not published yet
+    var onPitch={},s;for(s in started)onPitch[s]=1;
+    var ev=(tl&&tl.Event)||[];
+    for(i=0;i<ev.length;i++){var e=ev[i];
+      if(e.Type===5){var onId=String(e.IdPlayer||''),offId=String(e.IdSubPlayer||'');
+        if(idName[onId]){onPitch[onId]=1;used[onId]=1;}
+        if(offId)delete onPitch[offId];
+      }else if(e.Type===3){var rid=String(e.IdPlayer||'');if(rid)delete onPitch[rid];}
     }
-    return {st:st,bn:bn};
+    var lu={};lu[hn]={on:[],bench:[],off:[]};lu[an]={on:[],bench:[],off:[]};
+    var id;
+    for(id in idName){var t=idTeam[id];if(!lu[t])continue;
+      if(onPitch[id])lu[t].on.push(idName[id]);
+      else if(started[id]||used[id])lu[t].off.push(idName[id]); // started or came on, now removed
+      else if(bench[id])lu[t].bench.push(idName[id]);           // still available to come on
+    }
+    return lu;
   }
   function fetchLineup(mm,cb){
     var ko=kickoffUTC(mm).getTime(),now=Date.now();
-    if(now<ko-100*60000||now>ko+150*60000){cb(null);return;}
+    if(now<ko-100*60000||now>ko+170*60000){cb(null);return;}
     var row=fifaRowFor(mm);
     if(!row){cb(null);return;}
     var key=String(row.IdMatch);
     var hit=lineupCache[key];
-    if(hit&&now-hit.at<240000){cb(hit.lu);return;}
-    fetch('https://api.fifa.com/api/v3/live/football/17/285023/'+row.IdStage+'/'+row.IdMatch+'?language=en')
-    .then(function(r){if(!r.ok)throw new Error('FIFA '+r.status);return r.json();})
-    .then(function(j){
-      var hs=extractSide(j.HomeTeam||j.Home),as2=extractSide(j.AwayTeam||j.Away);
-      var lu=null;
-      if(hs.st.length===11||as2.st.length===11){
-        lu={};
-        lu[mapTeam(row.Home.TeamName[0].Description)]=hs;
-        lu[mapTeam(row.Away.TeamName[0].Description)]=as2;
-      }
+    if(hit&&now-hit.at<90000){cb(hit.lu);return;} // 90s cache so in-game subs surface
+    var base='17/285023/'+row.IdStage+'/'+row.IdMatch+'?language=en';
+    Promise.all([
+      fetch('https://api.fifa.com/api/v3/live/football/'+base).then(function(r){return r.ok?r.json():null;}),
+      fetch('https://api.fifa.com/api/v3/timelines/'+base).then(function(r){return r.ok?r.json():null;})
+    ]).then(function(pair){
+      var lu=pair[0]?buildLineups(row,pair[0],pair[1]):null;
       lineupCache[key]={at:Date.now(),lu:lu};
       cb(lu);
-    })
-    .catch(function(e){cb(null);});
+    }).catch(function(e){cb(null);});
   }
   function h2hHead(team){
     return '<div class="colhead">'+(F[team]||'')+' '+escapeHtml(F[team]?team:'TBD')+'</div>';
@@ -1530,17 +1553,17 @@
     function penCol(C){
       if(!C.real)return '<div class="st-pen" style="color:var(--low)">Team TBD</div>';
       var lu=stLineup&&stLineup[C.team];
-      var h='<div class="st-pen">',shown=0;
+      var h='<div class="st-pen">';
       for(var i=0;i<C.pens.length&&i<4;i++){
         var tag='';
         if(lu){
-          if(nameInList(C.pens[i],lu.st))tag=' <span class="lu lu-on">on</span>';
-          else if(nameInList(C.pens[i],lu.bn))tag=' <span class="lu lu-bn">bench</span>';
+          if(nameInList(C.pens[i],lu.on))tag=' <span class="lu lu-on">on</span>';
+          else if(nameInList(C.pens[i],lu.off))tag=' <span class="lu lu-ban">off</span>';
+          else if(nameInList(C.pens[i],lu.bench))tag=' <span class="lu lu-bn">bench</span>';
           else tag=' <span class="lu lu-bn">out</span>';
         }
         var depth=(i>=2);
         h+=(depth?'<span class="st-depth">':'')+'<span class="rank">'+(i+1)+'</span> '+escapeHtml(C.pens[i])+tag+(depth?'</span>':'')+'<br>';
-        shown++;
       }
       return h+'</div>';
     }
@@ -1556,7 +1579,7 @@
              '<div class="st-big"><span class="rc"></span>'+C.rAvg+'<small>/g</small></div>'+
              '<div class="seq">'+escapeHtml(C.seqYR)+(C.n<4?' ('+C.n+'g)':'')+'</div>';
     }
-    if(stLineup)html+='<div class="lu-note">Starting XI confirmed - takers tagged on / bench</div>';
+    if(stLineup)html+='<div class="lu-note">Live lineup - on = on the pitch now, off = subbed/sent off, bench = available</div>';
     html+='<div class="st-sec"><h4>Penalty takers</h4><div class="h2h">'+
       '<div class="col">'+h2hHead(stMatch.a)+penCol(A)+'</div>'+
       '<div class="col">'+h2hHead(stMatch.b)+penCol(B)+'</div></div></div>';
@@ -1601,9 +1624,12 @@
   // ══════════════════════════════════════
   //  TAB 2: GROUP TABLES + TOURNAMENT PLAYER STATS
   // ══════════════════════════════════════
-  var pstats={};   // per finished match: {d, lbl, star, p:{idPlayer:[name,team,g,a,y,r,min,gk,cleanSheet]}}
-  function loadPstats(){try{var s=load('wc26_pstats2');if(s)pstats=JSON.parse(s);}catch(e){pstats={};}}
-  function savePstats(){try{save('wc26_pstats2',JSON.stringify(pstats));}catch(e){}}
+  var pstats={};   // per finished match: {d, n, lbl, star, p:{idPlayer:[name,team,g,a,y,r,min,gk,cleanSheet]}}
+  function loadPstats(){try{var s=load('wc26_pstats3');if(s)pstats=JSON.parse(s);}catch(e){pstats={};}}
+  function savePstats(){try{save('wc26_pstats3',JSON.stringify(pstats));}catch(e){}}
+  // Official Man-of-the-Match overrides (FIFA's feed has no MOTM field). Key by match
+  // number, value e.g. 'Raul Jimenez (Mexico)'. Empty = use the computed standout.
+  var MOTM_OFFICIAL={};
   function parseMin(s){var m=/^(\d+)/.exec(String(s||''));return m?parseInt(m[1],10):null;}
 
   // One finished match -> per-player goals/assists/cards/minutes (90' baseline).
@@ -1622,8 +1648,9 @@
     var conceded={};
     conceded[hn]=(fm.Away.Score!=null)?fm.Away.Score:null;
     conceded[an]=(fm.Home.Score!=null)?fm.Home.Score:null;
-    var ev=(tl&&tl.Event)||[];
+    var ev=(tl&&tl.Event)||[],maxMin=0;
     for(i=0;i<ev.length;i++){var e=ev[i],rec=idx[String(e.IdPlayer||'')],mn=parseMin(e.MatchMinute);
+      if(mn!=null&&mn>maxMin)maxMin=mn;
       if(e.Type===5){ // substitution: IdPlayer comes on, IdSubPlayer goes off
         if(rec)rec.on=mn;
         var offRec=idx[String(e.IdSubPlayer||'')];if(offRec)offRec.off=mn;
@@ -1634,20 +1661,26 @@
         else if(e.Type===3){rec.r++;if(rec.off==null)rec.off=mn;}
       }
     }
+    // 120' baseline only if it actually went to extra time. ResultType is definitive
+    // (1=90', 2=pens, 3=AET); the clock>105 fallback only applies to live/unknown games,
+    // since normal-time stoppage can push the final-whistle clock to ~98'.
+    var fullLen=(fm.ResultType===2||fm.ResultType===3||(fm.ResultType!==1&&maxMin>105))?120:90;
     var players={},star=null,starPts=0;
     for(var k in idx){p=idx[k];
-      var endAt=(p.off!=null)?p.off:90;
+      var endAt=(p.off!=null)?p.off:fullLen;
       var startAt=(p.st===1)?0:(p.on!=null?p.on:null);
-      var min=(startAt==null)?0:Math.max(0,Math.min(90,endAt-startAt));
+      var min=(startAt==null)?0:Math.max(0,Math.min(fullLen,endAt-startAt));
       if(!(min>0||p.g||p.a||p.y||p.r))continue;
       var isGk=(p.pos===0)?1:0;
-      var cs=(isGk&&min>=90&&conceded[p.t]===0)?1:0;
+      // clean sheet: starting keeper who finished the match (not subbed/sent off) conceding none
+      var cs=(isGk&&p.st===1&&p.off==null&&conceded[p.t]===0)?1:0;
       players[k]=[p.n,p.t,p.g,p.a,p.y,p.r,min,isGk,cs];
-      var pts=p.g*3+p.a;
-      if(pts>starPts){starPts=pts;star=p.n+' ('+p.t+') '+(p.g?p.g+'G':'')+(p.a?(p.g?' ':'')+p.a+'A':'');}
+      var pts=p.g*3+p.a*2+cs*2;
+      if(pts>starPts){starPts=pts;star=p.n+' ('+p.t+')'+(p.g?' '+p.g+'G':'')+(p.a?' '+p.a+'A':'')+(cs?' clean sheet':'');}
     }
     var hs=(fm.Home.Score!=null)?fm.Home.Score:'',as2=(fm.Away.Score!=null)?fm.Away.Score:'';
-    return {d:new Date(fm.Date).getTime(),lbl:hn+' '+hs+'-'+as2+' '+an,star:star,p:players};
+    var etTag=(fm.ResultType===2?' (pens)':(fm.ResultType===3?' (AET)':''));
+    return {d:new Date(fm.Date).getTime(),n:fm.MatchNumber,lbl:hn+' '+hs+'-'+as2+' '+an+etTag,star:star,p:players};
   }
 
   function ensurePstats(cb){
@@ -1720,12 +1753,50 @@
       else if(beyondMe>=2)T.chip='third';
     }
   }
+  // Fair-play points per team (yellow 1, red 3), best-effort from player stats if loaded.
+  function teamFairPlay(){
+    var fp={},id,k;
+    for(k in pstats){var P=pstats[k].p;for(id in P){var v=P[id];fp[v[1]]=(fp[v[1]]||0)+v[4]+v[5]*3;}}
+    return fp;
+  }
+  // Head-to-head mini-table among a set of tied teams within group L.
+  function h2hMini(names,L){
+    var mp={},i;for(i=0;i<names.length;i++)mp[names[i]]={pts:0,gd:0,gf:0};
+    for(i=0;i<matches.length;i++){var m=matches[i];
+      if(m.s!=='GROUP '+L)continue;
+      if(!mp[m.a]||!mp[m.b])continue;
+      var sc=scores[m.n];if(!sc)continue;
+      var A=mp[m.a],B=mp[m.b];
+      A.gf+=sc.ga;A.gd+=sc.ga-sc.gb;B.gf+=sc.gb;B.gd+=sc.gb-sc.ga;
+      if(sc.ga>sc.gb)A.pts+=3;else if(sc.ga<sc.gb)B.pts+=3;else{A.pts++;B.pts++;}
+    }
+    return mp;
+  }
+  // FIFA order: points, GD, GF, then (among tied) head-to-head pts/GD/GF, then fair play, then lots.
+  function sortGroup(arr,L){
+    var fp=teamFairPlay();
+    arr.sort(function(x,y){return y.pts-x.pts||((y.gf-y.ga)-(x.gf-x.ga))||(y.gf-x.gf)||(x.team<y.team?-1:1);});
+    var i=0;
+    while(i<arr.length){
+      var j=i+1;
+      while(j<arr.length&&arr[j].pts===arr[i].pts&&(arr[j].gf-arr[j].ga)===(arr[i].gf-arr[i].ga)&&arr[j].gf===arr[i].gf)j++;
+      if(j-i>1){
+        var names=[],c;for(c=i;c<j;c++)names.push(arr[c].team);
+        var mp=h2hMini(names,L),seg=arr.slice(i,j);
+        seg.sort(function(x,y){var mx=mp[x.team],my=mp[y.team];
+          return my.pts-mx.pts||my.gd-mx.gd||my.gf-mx.gf||((fp[x.team]||0)-(fp[y.team]||0))||(x.team<y.team?-1:1);});
+        for(c=0;c<seg.length;c++)arr[i+c]=seg[c];
+      }
+      i=j;
+    }
+  }
   function renderTablesView(){
-    var cg=computeGroups(),letters=['A','B','C','D','E','F','G','H','I','J','K','L'],html='';
+    var cg=computeGroups(),letters=['A','B','C','D','E','F','G','H','I','J','K','L'],html='',thirds=[];
     for(var li=0;li<letters.length;li++){var L=letters[li],arr=[],rows=cg.groups[L],k;
       for(k in rows)arr.push(rows[k]);
-      arr.sort(function(x,y){return y.pts-x.pts||((y.gf-y.ga)-(x.gf-x.ga))||(y.gf-x.gf)||(x.team<y.team?-1:1);});
+      sortGroup(arr,L);
       groupChips(arr);
+      if(arr[2])thirds.push({team:arr[2].team,L:L,pts:arr[2].pts,gd:arr[2].gf-arr[2].ga,gf:arr[2].gf,p:arr[2].p});
       html+='<div class="tv-card tv-table"><h4>Group '+L+'</h4><table class="gt"><tr><th></th><th class="tn">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>+/-</th><th>GD</th><th>Pts</th></tr>';
       for(var i2=0;i2<arr.length;i2++){var r2=arr[i2],gd=r2.gf-r2.ga;
         var cls2=[];if(i2<2)cls2.push('q');else if(i2===2)cls2.push('q3');
@@ -1740,12 +1811,24 @@
     document.getElementById('tvLiveNote').textContent=
       (cg.live?'Live scores included - the table moves as goals go in. ':'')+
       'Green edge: top two qualify. Gold edge: third place, chasing the eight best-third spots. '+
-      'Chips: "in" = top two locked on points, "3rd?" = third at best, "out" = eliminated. Goal difference can still shift ties.';
+      'Chips: "in" = top two locked on points, "3rd?" = third at best, "out" = eliminated. Ties broken by head-to-head.';
+    renderThirds(thirds);
+  }
+  function renderThirds(thirds){
+    var el=document.getElementById('tvThirds');
+    thirds.sort(function(x,y){return y.pts-x.pts||y.gd-x.gd||y.gf-x.gf||(x.team<y.team?-1:1);});
+    var h='<table class="gt"><tr><th></th><th class="tn">Team</th><th>Grp</th><th>P</th><th>GD</th><th>Pts</th></tr>';
+    for(var i=0;i<thirds.length;i++){var t=thirds[i];
+      var cls=[];if(i<8)cls.push('q');if(t.team===FOLLOW)cls.push('meRow');
+      h+='<tr'+(cls.length?' class="'+cls.join(' ')+'"':'')+'><td>'+(i+1)+'</td><td class="tn">'+(F[t.team]||'')+' '+escapeHtml(t.team)+(i===7?' <span class="lu lu-bn">cut</span>':'')+'</td><td>'+t.L+'</td><td>'+t.p+'</td><td>'+(t.gd>0?'+':'')+t.gd+'</td><td class="pts">'+t.pts+'</td></tr>';}
+    h+='</table>';
+    el.innerHTML=thirds.length?h:'<div class="tv-empty">Appears once third-placed teams take shape.</div>';
   }
   function renderPlayerStats(warn,finCount){
     var agg={},stars=[],k,id,covered=0;
     for(k in pstats){var ms2=pstats[k];covered++;
-      if(ms2.star)stars.push({d:ms2.d,lbl:ms2.lbl,star:ms2.star});
+      var off=MOTM_OFFICIAL[ms2.n];
+      if(ms2.star||off)stars.push({d:ms2.d,lbl:ms2.lbl,star:off||ms2.star,official:!!off});
       for(id in ms2.p){var v=ms2.p[id],a2=agg[id];
         if(!a2)a2=agg[id]={n:v[0],t:v[1],g:0,a:0,y:0,r:0,min:0,gk:0,cs:0};
         a2.g+=v[2];a2.a+=v[3];a2.y+=v[4];a2.r+=v[5];a2.min+=v[6];
@@ -1778,7 +1861,7 @@
     },'All clean so far.');
     stars.sort(function(x,y){return x.d-y.d;});
     var sh='';
-    for(var i4=0;i4<stars.length;i4++)sh+='<div class="lb-row"><span class="lb-name">'+escapeHtml(stars[i4].lbl)+'</span><span class="lb-val">'+escapeHtml(stars[i4].star||'-')+'</span></div>';
+    for(var i4=0;i4<stars.length;i4++)sh+='<div class="lb-row"><span class="lb-name">'+escapeHtml(stars[i4].lbl)+'</span><span class="lb-val">'+(stars[i4].official?'&#11088; ':'')+escapeHtml(stars[i4].star||'-')+'</span></div>';
     document.getElementById('tvStars').innerHTML=sh||'<div class="tv-empty">Appears after each final whistle.</div>';
     document.getElementById('tvStatus').textContent=
       (warn?warn+' · ':'')+'Player stats cover '+covered+(finCount?' of '+finCount:'')+' finished matches.';
@@ -1802,7 +1885,8 @@
     var hp=am.HomeTeamPenaltyScore,ap=am.AwayTeamPenaltyScore;
     if(done&&hs===as2&&hp!=null&&ap!=null&&(hp>0||ap>0)){hW=hp>ap;aW=ap>hp;}
     var o=partsInZone(new Date(am.Date),TZ());
-    var meta='M'+am.MatchNumber+' · '+fmtShort(dayKey(o))+' · '+fmtClock(o);
+    var rt=am.ResultType,etx=(rt===2?' · pens'+((hp!=null&&ap!=null)?' '+hp+'-'+ap:''):(rt===3?' · AET':''));
+    var meta='M'+am.MatchNumber+' · '+fmtShort(dayKey(o))+' · '+fmtClock(o)+etx;
     function line(nm,ph,sc,w){
       return '<div class="t'+(w?' w':'')+'"><span class="nm">'+
         (nm?(F[nm]||'')+' '+escapeHtml(nm):'<span class="ph">'+escapeHtml(phPretty(ph))+'</span>')+
