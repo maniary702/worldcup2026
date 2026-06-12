@@ -197,9 +197,13 @@
   .fav .calbtn{border-color:var(--gold);color:var(--gold-ink)}
 
   /* ── SCORE EDIT MODAL ── */
-  .smodal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+  .smodal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:20px 16px 40px;overflow-y:auto;-webkit-overflow-scrolling:touch;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+  .smodal-x{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:var(--card2);color:var(--mut);font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2}
+  .smodal-x:active{transform:scale(.92)}
+  .md-title,.st-mtitle{padding:0 30px}
+  .smodal>h3:first-child{padding-right:34px}
   .smodal-overlay.open{display:flex}
-  .smodal{background:var(--card);border:1px solid var(--line2);border-radius:20px;padding:24px 22px;max-width:360px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.5)}
+  .smodal{position:relative;background:var(--card);border:1px solid var(--line2);border-radius:20px;padding:24px 22px;max-width:360px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.5);margin:auto 0}
   .smodal h3{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;text-transform:uppercase;color:var(--txt);margin-bottom:3px}
   .smodal .sm-stage{font-size:10px;color:var(--low);letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:18px}
   /* ── betting stats modal ── */
@@ -784,7 +788,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 12 Jun 2026 v10.1';
+  var BUILD_TAG='Build 12 Jun 2026 v10.2';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line){
     try{
@@ -2546,6 +2550,21 @@
   var stz=load('wc26_tz');TZSEL=(stz&&(stz==='device'||validTz[stz]))?stz:'device';
   document.getElementById('buildTag').textContent=BUILD_TAG;
   document.getElementById('buildFooter').textContent=BUILD_TAG+' · live scores · tables · stats';
+  // add an always-reachable top-right X to every modal (close never depends on scroll)
+  (function(){var ids=['pkOverlay','mdOverlay','stOverlay','sModalOverlay'];
+    for(var i=0;i<ids.length;i++){(function(id){
+      var ov=document.getElementById(id);if(!ov)return;
+      var box=ov.querySelector('.smodal');if(!box)return;
+      var x=document.createElement('button');x.className='smodal-x';x.setAttribute('aria-label','Close');x.innerHTML='&times;';
+      x.addEventListener('click',function(e){e.stopPropagation();
+        if(id==='pkOverlay'){save('wc26_follow','__none__');closeOverlay('pkOverlay');}
+        else if(id==='stOverlay')closeStats();
+        else if(id==='mdOverlay')closeMatchDetail();
+        else if(id==='sModalOverlay')closeScoreEdit();
+      });
+      box.appendChild(x);
+    })(ids[i]);}
+  })();
   loadScoresLS();
   applySeed();
   loadMstats();
