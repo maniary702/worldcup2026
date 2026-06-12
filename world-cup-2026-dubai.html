@@ -1068,32 +1068,34 @@
   // ══════════════════════════════════════
   //  BETTING STATS (FIFA event feed: corners + cards, plus hand-kept penalty takers)
   // ══════════════════════════════════════
-  // Hand-maintained list, seeded June 2026. Edit here and redeploy; 'TBC' = not yet verified.
+  // Researched 2026-06-12 against the official 26-man squads (Wikipedia squad
+  // lists cross-referenced with RotoWire / KhelNow / AllAboutFPL taker lists and
+  // recent qualifier/friendly penalties). Edit here and redeploy to update.
   var PEN_TAKERS={
-    'Mexico':['Raul Jimenez','Santiago Gimenez'],'South Africa':['TBC','TBC'],
-    'South Korea':['Son Heung-min','Hwang Hee-chan'],'Czech Republic':['Schick','Soucek'],
-    'Canada':['Jonathan David','TBC'],'Bosnia & Herzegovina':['Dzeko','TBC'],
-    'USA':['Pulisic','TBC'],'Paraguay':['Almiron','TBC'],
-    'Qatar':['Akram Afif','Almoez Ali'],'Switzerland':['Embolo','Xhaka'],
-    'Brazil':['Raphinha','Vinicius Jr'],'Morocco':['Hakimi','Ziyech'],
-    'Haiti':['TBC','TBC'],'Scotland':['McTominay','McGinn'],
-    'Australia':['TBC','TBC'],'Turkey':['Calhanoglu','Arda Guler'],
-    'France':['Mbappe','Griezmann'],'Senegal':['Mane','Ismaila Sarr'],
-    'Japan':['Minamino','Kamada'],'Netherlands':['Depay','Gakpo'],
-    'Germany':['Havertz','Fullkrug'],'Curacao':['TBC','TBC'],
-    'Ivory Coast':['Kessie','Haller'],'Ecuador':['Enner Valencia','TBC'],
-    'Belgium':['Lukaku','De Bruyne'],'Egypt':['Salah','TBC'],
-    'Iran':['Taremi','Azmoun'],'New Zealand':['Chris Wood','TBC'],
-    'Spain':['Morata','Dani Olmo'],'Cape Verde':['TBC','TBC'],
-    'Saudi Arabia':['Al-Dawsari','TBC'],'Uruguay':['Nunez','TBC'],
-    'Argentina':['Messi','Lautaro Martinez'],'Algeria':['Mahrez','Bounedjah'],
-    'Austria':['Arnautovic','Sabitzer'],'Jordan':['Al-Tamari','TBC'],
-    'Portugal':['Ronaldo','Bruno Fernandes'],'Colombia':['James Rodriguez','TBC'],
-    'Norway':['Haaland','Odegaard'],'Iraq':['Aymen Hussein','TBC'],
-    'England':['Kane','Palmer'],'Croatia':['Modric','Kramaric'],
-    'Ghana':['Jordan Ayew','TBC'],'Panama':['TBC','TBC'],
-    'Sweden':['Isak','Gyokeres'],'DR Congo':['Bakambu','TBC'],
-    'Uzbekistan':['Shomurodov','TBC'],'Tunisia':['TBC','TBC']
+    'Mexico':['Raul Jimenez','Orbelin Pineda'],'South Africa':['Oswin Appollis','Lyle Foster'],
+    'South Korea':['Son Heung-min','Hwang Hee-chan'],'Czech Republic':['Patrik Schick','Tomas Soucek'],
+    'Canada':['Jonathan David','Promise David'],'Bosnia & Herzegovina':['Edin Dzeko','Kerim Alajbegovic'],
+    'USA':['Christian Pulisic','Folarin Balogun'],'Paraguay':['Julio Enciso','Miguel Almiron'],
+    'Qatar':['Akram Afif','Almoez Ali'],'Switzerland':['Granit Xhaka','Breel Embolo'],
+    'Brazil':['Raphinha','Neymar'],'Morocco':['Brahim Diaz','Achraf Hakimi'],
+    'Haiti':['Duckens Nazon','Wilson Isidor'],'Scotland':['Scott McTominay','John McGinn'],
+    'Australia':['Ajdin Hrustic','Nestory Irankunda'],'Turkey':['Hakan Calhanoglu','Arda Guler'],
+    'France':['Mbappe','Dembele'],'Senegal':['Mane','Jackson'],
+    'Japan':['Ueda','Doan'],'Netherlands':['Depay','Gakpo'],
+    'Germany':['Havertz','Kimmich'],'Curacao':['Leandro Bacuna','Juninho Bacuna'],
+    'Ivory Coast':['Kessie','Sangare'],'Ecuador':['Enner Valencia','Jordy Caicedo'],
+    'Belgium':['De Bruyne','Lukaku'],'Egypt':['Salah','Marmoush'],
+    'Iran':['Taremi','Hosseinzadeh'],'New Zealand':['Chris Wood','Waine'],
+    'Spain':['Oyarzabal','Lamine Yamal'],'Cape Verde':['Mendes','Rodrigues'],
+    'Saudi Arabia':['Al-Dawsari','Al-Buraikan'],'Uruguay':['Valverde','Nunez'],
+    'Argentina':['Messi','Alvarez'],'Algeria':['Mahrez','Amoura'],
+    'Austria':['Arnautovic','Sabitzer'],'Jordan':['Olwan','Tamari'],
+    'Portugal':['Ronaldo','Bruno Fernandes'],'Colombia':['James Rodriguez','Luis Diaz'],
+    'Norway':['Haaland','Odegaard'],'Iraq':['Aymen Hussein','Al-Ammari'],
+    'England':['Kane','Gordon'],'Croatia':['Modric','Budimir'],
+    'Ghana':['Jordan Ayew','Semenyo'],'Panama':['Davis','Diaz'],
+    'Sweden':['Gyokeres','Isak'],'DR Congo':['Wissa','Bakambu'],
+    'Uzbekistan':['Shomurodov','Shukurov'],'Tunisia':['Abdi','Gharbi']
   };
 
   // Last <=4 pre-tournament internationals per team (newest first), counted from
