@@ -53,6 +53,7 @@
       radial-gradient(800px 700px at 50% 110%, var(--mesh3), transparent 60%);
     background-attachment:fixed;
   }
+  @media (max-width:560px){body{background-attachment:scroll}} /* cheaper repaints on phones */
 
   header{position:relative;overflow:hidden;padding:24px 18px 18px;border-bottom:1px solid var(--line)}
   header::after{content:'';position:absolute;inset:0;pointer-events:none;
@@ -194,9 +195,6 @@
   .calbtn:active{transform:scale(.94)}
   .calbtn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
   .fav .calbtn{border-color:var(--gold);color:var(--gold-ink)}
-  .editbtn{background:transparent;border:1px solid var(--line);color:var(--low);width:34px;height:28px;border-radius:7px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:.15s;font-family:inherit}
-  .editbtn:hover,.editbtn:active{border-color:var(--pitch);color:var(--pitch)}
-  .fav .editbtn{border-color:rgba(245,197,66,.3);color:var(--gold-ink)}
 
   /* ── SCORE EDIT MODAL ── */
   .smodal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
@@ -227,10 +225,6 @@
   .statschip:active{transform:scale(.97)}
   .statschip .big{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-ink)}
   .statschip .sub{font-family:'Barlow',sans-serif;font-weight:600;font-size:11px;color:var(--mut)}
-  .stbn{background:transparent;border:1px solid var(--line);color:var(--low);width:34px;height:28px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
-  .stbn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2}
-  .stbn:hover,.stbn:active{border-color:var(--gold);color:var(--gold-ink)}
-  .fav .stbn{border-color:rgba(245,197,66,.3);color:var(--gold-ink)}
   .match{cursor:pointer}
   .st-mtitle{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;text-transform:uppercase;color:var(--txt);margin:0 0 14px;text-align:center}
   .st-mtitle .vsx{color:var(--low);font-size:13px;margin:0 5px}
@@ -935,6 +929,7 @@
     var blob=new Blob([buildIcs(m)],{type:'text/calendar;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
     a.href=url;a.download='wc26-m'+m.n+'.ics';document.body.appendChild(a);a.click();
     setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},120);
+    showToast('Calendar event downloaded - open it and it lands at your local time.');
   }
 
   // SEARCH
@@ -1000,7 +995,8 @@
     for(var i=0;i<matches.length;i++){if(!passes(matches[i]))continue;
       var o=bits(matches[i]),k=dayKey(o);if(!byDay[k]){byDay[k]=[];order.push(k);}
       byDay[k].push({m:matches[i],o:o});}
-    if(order.length===0){box.innerHTML='<div class="empty">No matches match that filter.</div>';return;}
+    if(order.length===0){box.innerHTML='<div class="empty">No games found. Try the All chip, or clear the search box.</div>';return;}
+    out.push('<div class="tznote">Kick-off times are in your time ('+escapeHtml(cityOf(TZ()))+') - change under "Times" up top.</div>');
     for(var di=0;di<order.length;di++){
       var dk=order[di],list=byDay[dk];
       out.push('<section class="day" id="d-'+dk+'"><div class="dayhead"><div class="dname">'+fmtDayFull(dk)+(dk===tk?' · Today':'')+'</div><div class="dcount">'+list.length+' match'+(list.length>1?'es':'')+'</div></div>');
@@ -1066,9 +1062,15 @@
       var k=order[j],hasFav=false;
       for(var x=0;x<matches.length;x++){if((isFav(matches[x])||favPoss(matches[x]))&&dayKey(bits(matches[x]))===k){hasFav=true;break;}}
       var p=k.split('-');
-      html+='<div class="dpill'+(k===tk?' today':'')+(hasFav?' has-fav':'')+(hasScoresOnDay(k)?' has-scores':'')+'" data-jump="'+k+'"><div class="dow">'+DOW[dowIdx(k)]+'</div><div class="dnum">'+parseInt(p[2],10)+'</div></div>';
+      html+='<div class="dpill'+(k===tk?' today':'')+(hasFav?' has-fav':'')+(hasScoresOnDay(k)?' has-scores':'')+'" data-jump="'+k+'" role="button" tabindex="0" aria-label="Jump to '+fmtDayFull(k)+'"><div class="dow">'+DOW[dowIdx(k)]+'</div><div class="dnum">'+parseInt(p[2],10)+'</div></div>';
     }
-    document.getElementById('ds').innerHTML=html;
+    var ds=document.getElementById('ds');
+    ds.innerHTML=html;
+    if(!ds.getAttribute('data-centered')){ // scroll today into view once, on first build
+      ds.setAttribute('data-centered','1');
+      var tp=ds.querySelector('.dpill.today');
+      if(tp)ds.scrollLeft=Math.max(0,tp.offsetLeft-ds.clientWidth/2+tp.offsetWidth/2);
+    }
   }
   function hasScoresOnDay(dk){
     for(var i=0;i<matches.length;i++){if(dayKey(bits(matches[i]))===dk&&scoreOf(matches[i]))return true;}
@@ -1093,7 +1095,15 @@
 
   // ── HERO (score-aware) ──
   function tickHero(){
-    var hero=document.getElementById('hero'),m=nextFav(),fallback=false;
+    // priority: live game of the followed team > any live game > next followed > next overall
+    var hero=document.getElementById('hero'),m=null,fallback=false,lvFav=null,lvAny=null;
+    for(var li2=0;li2<matches.length;li2++){
+      if(statusOf(matches[li2]).k!=='lv')continue;
+      if(isFav(matches[li2])){lvFav=matches[li2];break;}
+      if(!lvAny)lvAny=matches[li2];
+    }
+    m=lvFav||lvAny||nextFav();
+    if(lvAny&&!lvFav&&!FOLLOW)fallback=true;
     if(!m){m=nextAny();fallback=true;}
     if(!m){hero.classList.remove('live');
       document.getElementById('heroBadge').textContent='Tournament complete';
@@ -1124,7 +1134,7 @@
 
     document.getElementById('cdown').style.display='';
 
-    if(fallback){badge='Next match up';line='<span class="flag">'+(F[m.a]||'')+'</span> '+escapeHtml(m.a)+' <span style="opacity:.5">v</span> <span class="flag">'+(F[m.b]||'')+'</span> '+escapeHtml(m.b);}
+    if(fallback||!FOLLOW||(!isFav(m)&&!favPoss(m))){badge=(statusOf(m).k==='lv')?'Live now':'Next match up';line='<span class="flag">'+(F[m.a]||'')+'</span> '+escapeHtml(m.a)+' <span style="opacity:.5">v</span> <span class="flag">'+(F[m.b]||'')+'</span> '+escapeHtml(m.b);}
     else if(favPoss(m)){badge='Possible '+escapeHtml(FOLLOW)+' R32';line='If '+escapeHtml(FOLLOW)+' qualify · '+fmtShort(key);}
     else{var opp=(m.a===FOLLOW)?m.b:m.a;badge='Next '+escapeHtml(FOLLOW)+' match';
       line='<span class="flag">'+(F[FOLLOW]||'')+'</span> '+escapeHtml(FOLLOW)+' <span style="opacity:.5">v</span> <span class="flag">'+(F[opp]||'')+'</span> '+escapeHtml(opp);}
@@ -1154,14 +1164,20 @@
     return TEAMS.slice().sort()[0];
   }
 
+  function groupLetterOf(team){
+    var letters=['A','B','C','D','E','F','G','H','I','J','K','L'];
+    for(var i=0;i<letters.length;i++)if(GROUPS[letters[i]].indexOf(team)>=0)return letters[i];
+    return '';
+  }
+  function teamOptions(selected,withNone){
+    var arr=TEAMS.slice().sort(),html='';
+    if(withNone)html+='<option value=""'+(selected?'':' selected')+'>Following: nobody</option>';
+    for(var i=0;i<arr.length;i++){var nm=arr[i];
+      html+='<option value="'+escapeHtml(nm)+'"'+(nm===selected?' selected':'')+'>'+(F[nm]||'')+' '+escapeHtml(nm)+' (Grp '+groupLetterOf(nm)+')</option>';}
+    return html;
+  }
   function buildFollowSelect(){
-    var sel=document.getElementById('followSelect'),html='',letters=['A','B','C','D','E','F','G','H','I','J','K','L'];
-    html+='<option value=""'+(FOLLOW?'':' selected')+'>Following: nobody</option>';
-    for(var li=0;li<letters.length;li++){var L=letters[li];html+='<optgroup label="Group '+L+'">';
-      for(var t=0;t<GROUPS[L].length;t++){var nm=GROUPS[L][t];
-        html+='<option value="'+escapeHtml(nm)+'"'+(nm===FOLLOW?' selected':'')+'>'+(F[nm]||'')+' '+escapeHtml(nm)+'</option>';}
-      html+='</optgroup>';}
-    sel.innerHTML=html;
+    document.getElementById('followSelect').innerHTML=teamOptions(FOLLOW,true);
   }
 
   // ── first-visit team picker ──
@@ -1209,9 +1225,14 @@
 
   var firstPaint=true;
   function refresh(){paintChipCounts();buildDateStrip();render();tickHero();updateFabCode();updateLiveFab();updateFreshPill();}
-  // lighter tick: refresh content in place without rebuilding the date strip or re-animating
+  // lighter tick: refresh content in place without rebuilding the date strip or re-animating.
+  // When nothing is on (or near), skip the heavy DOM work most ticks to save battery.
+  var idleTicks=0;
   function liveTick(){
-    updateProgress();tickHero();paintChipCounts();render();updateFabCode();updateLiveFab();updateFreshPill();
+    var active=shouldPoll()||!!liveMatch();
+    updateProgress();tickHero();updateFreshPill();updateLiveFab();
+    if(!active){idleTicks++;if(idleTicks%5)return;}else idleTicks=0;
+    paintChipCounts();render();updateFabCode();
     if(document.body.classList.contains('tab2')){
       var br=document.getElementById('tvBracket'),sl=br?br.scrollLeft:0;
       renderTablesView();renderBracket();
@@ -1491,7 +1512,7 @@
     'Tunisia':[{o:'Belgium',c:0,tc:14,y:2,r:1},{o:'Austria',c:4,tc:6,y:1,r:0},{o:'Canada',c:1,tc:10,y:2,r:0},{o:'Haiti',c:3,tc:10,y:2,r:0}],
     'Turkey':[{o:'Venezuela',c:12,tc:14,y:1,r:0},{o:'North Macedonia',c:13,tc:14,y:0,r:0},{o:'Kosovo',c:2,tc:5,y:5,r:0},{o:'Romania',c:9,tc:12,y:2,r:0}],
     'USA':[{o:'Germany',c:10,tc:12,y:1,r:0},{o:'Senegal',c:4,tc:11,y:1,r:0},{o:'Portugal',c:2,tc:10,y:1,r:0},{o:'Belgium',c:6,tc:12,y:2,r:0}],
-    'Uruguay':[{o:'Algeria',c:6,tc:11,y:3,r:0},{o:'England',c:0,tc:7,y:2,r:0},{o:'USA',c:5,tc:12,y:2,r:1},{o:'Mexico',c:0,tc:0,y:6,r:0}],
+    'Uruguay':[{o:'Algeria',c:6,tc:11,y:3,r:0},{o:'England',c:0,tc:7,y:2,r:0},{o:'USA',c:5,tc:12,y:2,r:1},{o:'Uzbekistan',c:6,tc:8,y:0,r:0}],
     'Uzbekistan':[{o:'Netherlands',c:3,tc:6,y:1,r:0},{o:'Canada',c:3,tc:10,y:2,r:0},{o:'Venezuela',c:9,tc:9,y:0,r:0},{o:'Gabon',c:14,tc:20,y:0,r:0}]
   };
 
@@ -1705,6 +1726,7 @@
     for(var i=0;i<n;i++){c+=g[i].c;y+=g[i].y;r+=g[i].r;if(g[i].tc!=null){tcSum+=g[i].tc;tcN++;}}
     var html='';
     if(warn)html+='<div class="st-warn">'+escapeHtml(warn)+'</div>';
+    if(lastPollTs)html+='<div class="st-upd">Data updated '+new Date(lastPollTs).toLocaleTimeString()+'</div>';
     var now=Date.now(),next=null;
     for(var j=0;j<matches.length;j++){var mm=matches[j];
       if(mm.a!==team&&mm.b!==team)continue;
@@ -1714,7 +1736,7 @@
       next=mm;break;}
     if(next){
       var opp=next.a===team?next.b:next.a,o=bits(next);
-      html+='<div class="st-next">Next: '+(F[opp]||'')+' <b>v '+escapeHtml(opp)+'</b> · '+fmtShort(dayKey(o))+' · '+fmtClock(o)+'</div>';
+      html+='<div class="st-next">Next: <span class="golink" data-go="'+next.n+'">'+(F[opp]||'')+' <b>v '+escapeHtml(opp)+'</b> · '+fmtShort(dayKey(o))+' · '+fmtClock(o)+'</span> <span style="color:var(--low)">(tap for head-to-head)</span></div>';
     }
     html+='<div class="st-sec"><h4>Penalty takers</h4>'+penListHtml(team,true)+'</div>';
     html+=suspensionHtml(team);
@@ -1733,12 +1755,7 @@
     body.innerHTML=html;
   }
   function buildStatsSelect(){
-    var sel=document.getElementById('stTeam'),html='',letters=['A','B','C','D','E','F','G','H','I','J','K','L'];
-    for(var li=0;li<letters.length;li++){var L=letters[li];html+='<optgroup label="Group '+L+'">';
-      for(var t=0;t<GROUPS[L].length;t++){var nm=GROUPS[L][t];
-        html+='<option value="'+escapeHtml(nm)+'"'+(nm===stViewTeam?' selected':'')+'>'+(F[nm]||'')+' '+escapeHtml(nm)+'</option>';}
-      html+='</optgroup>';}
-    sel.innerHTML=html;
+    document.getElementById('stTeam').innerHTML=teamOptions(stViewTeam,false);
   }
   // ── match detail (family-first): plain match info, betting/edit one tap deeper ──
   var mdMatch=null;
@@ -1981,7 +1998,15 @@
     function suspLine(team){var s=teamSuspensions(team);
       if(!s.banned.length)return '<div class="susp-mini">&#10003; none</div>';
       return '<div class="susp-mini ban">&#128683; '+escapeHtml(s.banned.join(', '))+'</div>';}
+    if(lastPollTs)html+='<div class="st-upd">Data updated '+new Date(lastPollTs).toLocaleTimeString()+'</div>';
     if(stLineup)html+='<div class="lu-note">Live lineup: on = on the pitch · off = subbed or sent off · bench = available · out = not in the matchday squad</div>';
+    else{
+      var koMs=kickoffUTC(stMatch).getTime();
+      if(koMs>Date.now()&&koMs-Date.now()<48*3600000){
+        var luAt=partsInZone(new Date(koMs-65*60000),TZ());
+        html+='<div class="lu-note" style="color:var(--mut)">Confirmed lineups land about an hour before kick-off (~'+fmtClock(luAt)+') - taker tags switch on automatically.</div>';
+      }
+    }
     var anyPre=(A.nPre||0)+(B.nPre||0)>0;
     html+='<div class="st-sec"><h4>Penalty takers</h4><div class="h2h">'+
       '<div class="col">'+h2hHead(stMatch.a)+penCol(A,banA)+'</div>'+
@@ -2234,26 +2259,33 @@
   }
   function renderTablesView(){
     var cg=computeGroups(),letters=['A','B','C','D','E','F','G','H','I','J','K','L'],html='',thirds=[];
+    // followed team's group first
+    if(FOLLOW){for(var fi=0;fi<letters.length;fi++){if(GROUPS[letters[fi]].indexOf(FOLLOW)>=0){letters.unshift(letters.splice(fi,1)[0]);break;}}}
     for(var li=0;li<letters.length;li++){var L=letters[li],arr=[],rows=cg.groups[L],k;
       for(k in rows)arr.push(rows[k]);
       sortGroup(arr,L);
       groupChips(arr);
       if(arr[2])thirds.push({team:arr[2].team,L:L,pts:arr[2].pts,gd:arr[2].gf-arr[2].ga,gf:arr[2].gf,p:arr[2].p});
-      html+='<div class="tv-card tv-table"><h4>Group '+L+'</h4><table class="gt"><tr><th></th><th class="tn">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>+/-</th><th>GD</th><th>Pts</th></tr>';
+      html+='<div class="tv-card tv-table"><h4>Group '+L+'</h4><table class="gt"><tr><th></th><th class="tn">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>';
       for(var i2=0;i2<arr.length;i2++){var r2=arr[i2],gd=r2.gf-r2.ga;
         var cls2=[];if(i2<2)cls2.push('q');else if(i2===2)cls2.push('q3');
+        if(i2===1)cls2.push('q2'); // cut line under 2nd place
         if(r2.team===FOLLOW)cls2.push('meRow');
         var chip='';
         if(r2.chip==='through')chip=' <span class="lu lu-on">in</span>';
         else if(r2.chip==='third')chip=' <span class="lu lu-bn">3rd?</span>';
         else if(r2.chip==='out')chip=' <span class="lu lu-ban">out</span>';
-        html+='<tr'+(cls2.length?' class="'+cls2.join(' ')+'"':'')+'><td>'+(i2+1)+'</td><td class="tn">'+(F[r2.team]||'')+' '+escapeHtml(r2.team)+chip+'</td><td>'+r2.p+'</td><td>'+r2.w+'</td><td>'+r2.d+'</td><td>'+r2.l+'</td><td>'+r2.gf+'-'+r2.ga+'</td><td>'+(gd>0?'+':'')+gd+'</td><td class="pts">'+r2.pts+'</td></tr>';}
+        html+='<tr'+(cls2.length?' class="'+cls2.join(' ')+'"':'')+'><td>'+(i2+1)+'</td><td class="tn">'+(F[r2.team]||'')+' '+escapeHtml(r2.team)+chip+'</td><td>'+r2.p+'</td><td>'+r2.w+'</td><td>'+r2.d+'</td><td>'+r2.l+'</td><td>'+(gd>0?'+':'')+gd+'</td><td class="pts">'+r2.pts+'</td></tr>';}
       html+='</table></div>';}
     document.getElementById('tvGroups').innerHTML=html;
+    var anyManual=false;
+    for(var mi2=0;mi2<matches.length;mi2++){var sc3=scores[matches[mi2].n];
+      if(sc3&&sc3.source==='manual'&&matches[mi2].s.indexOf('GROUP')===0){anyManual=true;break;}}
     document.getElementById('tvLiveNote').textContent=
       (cg.live?'Live scores included - the table moves as goals go in. ':'')+
-      'Green edge: top two qualify. Gold edge: third place, chasing the eight best-third spots. '+
-      'Chips: "in" = top two guaranteed on points alone, "3rd?" = third at best, "out" = eliminated. Level teams are separated by goal difference, then goals scored, then head-to-head.';
+      'The line under 2nd place is the qualification cut; gold edge = third place, chasing the eight best-third spots. '+
+      'Chips: "in" = top two guaranteed on points alone, "3rd?" = third at best, "out" = eliminated. Level teams split by goal difference, then goals scored, then head-to-head.'+
+      (anyManual?' Note: includes at least one hand-edited score from this device.':'');
     renderThirds(thirds);
   }
   function renderThirds(thirds){
@@ -2358,20 +2390,22 @@
     }
     el.innerHTML=html||'<div class="tv-empty">Knockout schedule not published yet.</div>';
   }
+  var tabScroll={1:0,2:0};
   function setTab(n){
-    var two=(n===2);
+    var two=(n===2),was=document.body.classList.contains('tab2')?2:1;
+    if(was!==n)tabScroll[was]=window.pageYOffset||0;
     if(two)document.body.classList.add('tab2');else document.body.classList.remove('tab2');
     var ts=document.getElementById('tabSched'),tt=document.getElementById('tabStats');
-    if(two){ts.classList.remove('on');tt.classList.add('on');}
-    else{ts.classList.add('on');tt.classList.remove('on');}
+    ts.classList.toggle('on',!two);tt.classList.toggle('on',two);
+    ts.setAttribute('aria-pressed',two?'false':'true');tt.setAttribute('aria-pressed',two?'true':'false');
     save('wc26_tab',two?'2':'1');
     if(two){
       renderTablesView();
       renderBracket();
       renderPlayerStats(null,0);
       ensurePstats(function(warn,finCount){renderPlayerStats(warn,finCount);renderBracket();});
-      window.scrollTo({top:0});
     }
+    if(was!==n)setTimeout(function(){window.scrollTo({top:tabScroll[n]||0});},0);
   }
 
   // ── EVENTS ──
@@ -2381,6 +2415,19 @@
       var chips=document.querySelectorAll('#fr .chip');for(var i=0;i<chips.length;i++)chips[i].classList.remove('on');
       t.classList.add('on');current=t.getAttribute('data-f');render();
       var nav=document.querySelector('.stickynav');if(nav)window.scrollTo({top:nav.offsetTop-1,behavior:'smooth'});
+    }
+  });
+  document.getElementById('ds').addEventListener('keydown',function(e){
+    if(e.key!=='Enter'&&e.key!==' ')return;
+    var t=e.target;
+    if(t&&t.getAttribute&&t.getAttribute('data-jump')){e.preventDefault();t.click();}
+  });
+  // jump chips on the Tables & Players tab
+  document.querySelector('.tv-jump').addEventListener('click',function(e){
+    var t=e.target;while(t&&t!==this&&!(t.getAttribute&&t.getAttribute('data-j')))t=t.parentNode;
+    if(t&&t.getAttribute&&t.getAttribute('data-j')){
+      var el=document.getElementById(t.getAttribute('data-j'));
+      if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
     }
   });
   document.getElementById('ds').addEventListener('click',function(e){
@@ -2463,12 +2510,16 @@
   document.getElementById('mdEdit').addEventListener('click',function(){if(mdMatch){var n=mdMatch.n;closeMatchDetail();openScoreEdit(n);}});
 
   // Betting stats modal
-  document.getElementById('statsBtn').addEventListener('click',openStats);
   document.getElementById('statsOpen').addEventListener('click',openStats);
   document.getElementById('stClose').addEventListener('click',closeStats);
   document.getElementById('stOverlay').addEventListener('click',function(e){if(e.target===this)closeStats();});
   document.getElementById('stTeam').addEventListener('change',function(){
     if(F[this.value]){stViewTeam=this.value;renderStats(null);}
+  });
+  // tap the "Next: v X" line in team view -> that fixture's head-to-head
+  document.getElementById('stBody').addEventListener('click',function(e){
+    var g=e.target;while(g&&g!==this&&!(g.classList&&g.classList.contains('golink')))g=g.parentNode;
+    if(g&&g.getAttribute&&g.getAttribute('data-go'))openMatchStats(parseInt(g.getAttribute('data-go'),10));
   });
 
   // View tabs
@@ -2480,6 +2531,8 @@
   var sf=load('wc26_follow'),firstVisit=(sf===null||sf===undefined);
   FOLLOW=(sf&&sf!=='__none__'&&F[sf])?sf:'';
   var stz=load('wc26_tz');TZSEL=(stz&&(stz==='device'||validTz[stz]))?stz:'device';
+  document.getElementById('buildTag').textContent=BUILD_TAG;
+  document.getElementById('buildFooter').textContent=BUILD_TAG+' · live scores · tables · stats';
   loadScoresLS();
   applySeed();
   loadMstats();
