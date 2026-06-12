@@ -221,6 +221,19 @@
   .statschip:active{transform:scale(.97)}
   .statschip .big{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-ink)}
   .statschip .sub{font-family:'Barlow',sans-serif;font-weight:600;font-size:11px;color:var(--mut)}
+  .stbn{background:transparent;border:1px solid var(--line);color:var(--low);width:34px;height:28px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+  .stbn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2}
+  .stbn:hover,.stbn:active{border-color:var(--gold);color:var(--gold-ink)}
+  .fav .stbn{border-color:rgba(245,197,66,.3);color:var(--gold-ink)}
+  .match{cursor:pointer}
+  .st-mtitle{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;text-transform:uppercase;color:var(--txt);margin:0 0 14px;text-align:center}
+  .st-mtitle .vsx{color:var(--low);font-size:13px;margin:0 5px}
+  .h2h{display:flex;gap:12px}
+  .h2h .col{flex:1;min-width:0}
+  .h2h .colhead{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .h2h .st-big{font-size:19px;margin-bottom:2px}
+  .h2h .st-pen{font-size:13px;line-height:1.65}
+  .h2h .seq{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--low);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .st-empty,.st-load{font-size:13px;color:var(--mut);padding:6px 0 2px;line-height:1.5}
   .st-warn{font-size:12px;color:var(--lfc);margin-bottom:10px;line-height:1.4}
   .st-note{font-size:10.5px;color:var(--low);line-height:1.55;margin:4px 0 12px}
@@ -422,6 +435,7 @@
   <div class="smodal">
     <h3>Betting Stats</h3>
     <div class="sm-stage">Tournament form, straight from FIFA match feeds</div>
+    <div class="st-mtitle" id="stMatchTitle" style="display:none"></div>
     <select class="st-teamsel" id="stTeam" aria-label="Choose a team"></select>
     <div class="statsbody" id="stBody"></div>
     <div class="st-note">Corners and cards are counted from FIFA's official event feed: rolling last 4 games, World Cup matches first, topped up with pre-tournament internationals (tagged pre-WC). Penalty takers were researched against the official squads in June 2026 - always check team news before you stake. Bet responsibly.</div>
@@ -820,13 +834,14 @@
           venueHtml=escapeHtml(m.v);
         }
 
-        out.push('<div class="'+cls.join(' ')+'">'+
+        out.push('<div class="'+cls.join(' ')+'" data-n="'+m.n+'">'+
           (isMarquee(m)?'<span class="star">⭐</span>':'')+
           '<div class="tcell"><div class="kick">'+fmtTime(o)+'</div>'+statusHtml+'<div class="stg">'+escapeHtml(m.s)+'</div></div>'+
           '<div><div class="flags">'+flagsFor(m)+'</div><div class="teams">'+teamsHtml+
           '</div><div class="venue">'+venueHtml+'</div></div>'+
           '<div class="actcol"><button class="calbtn" data-n="'+m.n+'"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>CAL</button>'+
-          '<button class="editbtn" data-n="'+m.n+'" title="Edit score">✎</button></div>'+
+          '<button class="editbtn" data-n="'+m.n+'" title="Edit score">✎</button>'+
+          '<button class="stbn" data-n="'+m.n+'" title="Betting stats for this game" aria-label="Betting stats for this game"><svg viewBox="0 0 24 24"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/><line x1="3" y1="20" x2="21" y2="20"/></svg></button></div>'+
         '</div>');
       }
       out.push('</section>');
@@ -1278,12 +1293,77 @@
   }
   function openStats(){
     if(!stViewTeam||!F[stViewTeam])stViewTeam=FOLLOW;
+    stMatch=null;
+    document.getElementById('stTeam').style.display='';
+    document.getElementById('stMatchTitle').style.display='none';
     buildStatsSelect();
     document.getElementById('stOverlay').classList.add('open');
     document.getElementById('stBody').innerHTML='<div class="st-load">Pulling match data from FIFA…</div>';
     ensureStats(function(warn){renderStats(warn);});
   }
   function closeStats(){document.getElementById('stOverlay').classList.remove('open');}
+
+  // ── head-to-head stats for one fixture (tap a match card) ──
+  var stMatch=null;
+  function openMatchStats(n){
+    var mm=null;
+    for(var i=0;i<matches.length;i++){if(matches[i].n===n){mm=matches[i];break;}}
+    if(!mm||(!F[mm.a]&&!F[mm.b]))return; // both sides still placeholders
+    stMatch=mm;
+    document.getElementById('stTeam').style.display='none';
+    var t=document.getElementById('stMatchTitle');
+    t.style.display='';
+    t.innerHTML=(F[mm.a]||'')+' '+escapeHtml(mm.a)+'<span class="vsx">v</span>'+(F[mm.b]||'')+' '+escapeHtml(mm.b);
+    document.getElementById('stOverlay').classList.add('open');
+    document.getElementById('stBody').innerHTML='<div class="st-load">Pulling match data from FIFA…</div>';
+    ensureStats(function(warn){renderMatchStats(warn);});
+  }
+  function h2hCol(team){
+    var real=!!F[team];
+    var pens=PEN_TAKERS[team]||['-','-'];
+    var g=real?teamWindow(team):[];
+    var n=g.length,c=0,y=0,r=0,seqC=[],seqYR=[];
+    for(var i=0;i<n;i++){
+      c+=g[i].c;y+=g[i].y;r+=g[i].r;
+      seqC.push(g[i].c);
+      seqYR.push(g[i].y+'Y'+(g[i].r?'+'+g[i].r+'R':''));
+    }
+    return {real:real,team:team,pens:pens,n:n,
+      cAvg:n?avg1(c,n):'-',yAvg:n?avg1(y,n):'-',rAvg:n?avg1(r,n):'-',
+      seqC:n?seqC.join(' · '):'no data',seqYR:n?seqYR.join(' · '):'no data'};
+  }
+  function h2hHead(team){
+    return '<div class="colhead">'+(F[team]||'')+' '+escapeHtml(F[team]?team:'TBD')+'</div>';
+  }
+  function renderMatchStats(warn){
+    var A=h2hCol(stMatch.a),B=h2hCol(stMatch.b);
+    var html='';
+    if(warn)html+='<div class="st-warn">'+escapeHtml(warn)+'</div>';
+    function penCol(C){
+      if(!C.real)return '<div class="st-pen" style="color:var(--low)">Team TBD</div>';
+      return '<div class="st-pen"><span class="rank">1</span> '+escapeHtml(C.pens[0])+'<br><span class="rank">2</span> '+escapeHtml(C.pens[1])+'</div>';
+    }
+    function corCol(C){
+      if(!C.real||!C.n)return '<div class="st-big">-</div><div class="seq">no data</div>';
+      return '<div class="st-big">'+C.cAvg+'<small>/game</small></div><div class="seq">'+escapeHtml(C.seqC)+(C.n<4?' ('+C.n+'g)':'')+'</div>';
+    }
+    function crdCol(C){
+      if(!C.real||!C.n)return '<div class="st-big">-</div><div class="seq">no data</div>';
+      return '<div class="st-big"><span class="yc"></span>'+C.yAvg+'<small>/g</small></div>'+
+             '<div class="st-big"><span class="rc"></span>'+C.rAvg+'<small>/g</small></div>'+
+             '<div class="seq">'+escapeHtml(C.seqYR)+(C.n<4?' ('+C.n+'g)':'')+'</div>';
+    }
+    html+='<div class="st-sec"><h4>Penalty takers</h4><div class="h2h">'+
+      '<div class="col">'+h2hHead(stMatch.a)+penCol(A)+'</div>'+
+      '<div class="col">'+h2hHead(stMatch.b)+penCol(B)+'</div></div></div>';
+    html+='<div class="st-sec"><h4>Corners - last 4 games</h4><div class="h2h">'+
+      '<div class="col">'+h2hHead(stMatch.a)+corCol(A)+'</div>'+
+      '<div class="col">'+h2hHead(stMatch.b)+corCol(B)+'</div></div></div>';
+    html+='<div class="st-sec"><h4>Cards - last 4 games</h4><div class="h2h">'+
+      '<div class="col">'+h2hHead(stMatch.a)+crdCol(A)+'</div>'+
+      '<div class="col">'+h2hHead(stMatch.b)+crdCol(B)+'</div></div></div>';
+    document.getElementById('stBody').innerHTML=html;
+  }
 
   function updateApiStatus(ok,msg){
     var el=document.getElementById('apiStatusTxt');
@@ -1346,10 +1426,22 @@
       openScoreEdit(n);
       return;
     }
+    // Check for per-game stats button
+    var sb=e.target;while(sb&&sb!==this&&!(sb.classList&&sb.classList.contains('stbn')))sb=sb.parentNode;
+    if(sb&&sb.classList&&sb.classList.contains('stbn')){
+      openMatchStats(parseInt(sb.getAttribute('data-n'),10));
+      return;
+    }
     // Check for cal button
     while(t&&t!==this&&!t.classList.contains('calbtn'))t=t.parentNode;
     if(t&&t.classList&&t.classList.contains('calbtn')){var n2=parseInt(t.getAttribute('data-n'),10);
-      for(var i=0;i<matches.length;i++)if(matches[i].n===n2){dlIcs(matches[i]);break;}}
+      for(var i=0;i<matches.length;i++)if(matches[i].n===n2){dlIcs(matches[i]);break;}
+      return;}
+    // Anywhere else on a match card opens that game's head-to-head stats
+    var card=e.target;while(card&&card!==this&&!(card.classList&&card.classList.contains('match')))card=card.parentNode;
+    if(card&&card!==this&&card.getAttribute('data-n')){
+      openMatchStats(parseInt(card.getAttribute('data-n'),10));
+    }
   });
 
   document.getElementById('followSelect').addEventListener('change',function(){if(F[this.value]){FOLLOW=this.value;save('wc26_follow',FOLLOW);refresh();}});
