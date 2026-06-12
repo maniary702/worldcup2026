@@ -310,7 +310,10 @@
   .brkt-cell .meta{font-size:10.5px;color:var(--mut);margin-top:3px;letter-spacing:.03em}
   .st-empty,.st-load{font-size:13px;color:var(--mut);padding:6px 0 2px;line-height:1.5}
   .st-warn{font-size:12px;color:var(--lfc);margin-bottom:10px;line-height:1.4}
-  .st-note{font-size:10.5px;color:var(--low);line-height:1.55;margin:4px 0 12px}
+  .st-note{font-size:11.5px;color:var(--mut);line-height:1.5;margin:4px 0 12px}
+  .susp-ban,.susp-mini.ban{font-size:13px;color:var(--lfc);font-weight:600;line-height:1.5}
+  .susp-risk{font-size:12.5px;color:var(--gold-ink);line-height:1.5;margin-top:3px}
+  .susp-mini{font-size:13px;color:var(--mut);font-weight:600}
   .sm-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
   .sm-flag{font-size:22px;flex:0 0 auto}
   .sm-team{flex:1;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;text-transform:uppercase;color:var(--txt)}
@@ -350,7 +353,13 @@
   .fab:active{transform:scale(.9)}
   .fab.fav{background:var(--fav);color:#fff;border-color:var(--gold);box-shadow:0 10px 26px -8px var(--fav)}
   .fab.top{background:var(--card2);color:var(--mut);border-color:var(--line2)}
+  .fab.live{width:auto;padding:0 16px;gap:6px;background:var(--live);color:#fff;border-color:var(--live);box-shadow:0 10px 26px -8px var(--live);font-size:13px}
+  .fab.live .blip{width:7px;height:7px;background:#fff}
   .fab svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.4}
+  .freshpill{font-size:11px;font-weight:600;color:var(--low);white-space:nowrap;margin-left:auto;padding:4px 9px;border:1px solid var(--line);border-radius:8px}
+  .freshpill.ok{color:var(--pitch);border-color:rgba(22,217,106,.4)}
+  .freshpill.stale{color:var(--gold-ink);border-color:var(--ko-border)}
+  .freshpill.down{color:var(--lfc);border-color:rgba(224,16,48,.4)}
 
   @media(min-width:700px){
     header{padding:34px 28px 24px}
@@ -403,7 +412,7 @@
       Automatic, nothing to set up.<br>
       Scores come straight from FIFA's public feed and refresh every 60s while matches are on.<br>
       You can still tap any card's edit button to set a score by hand; manual entries always win.<br>
-      Build 12 Jun 2026 v8 (self-correcting takers: learns from pens taken, flags absentees) - if features look missing, refresh the page once.
+      Build 12 Jun 2026 v9 (family-first redesign: team picker, match detail, readability, suspensions, freshness) - if features look missing, refresh the page once.
     </div>
     <div class="api-status-txt" id="apiStatusTxt"></div>
   </div>
@@ -423,6 +432,7 @@
       <span class="big">&#128202; Stats</span>
       <span class="sub">pens &middot; corners &middot; cards</span>
     </button>
+    <span class="freshpill" id="freshPill" style="display:none"></span>
   </div>
 
   <div class="hero" id="hero">
@@ -485,11 +495,12 @@
     <div class="tv-card"><h4>&#9201; Minutes Played</h4><div id="tvMinutes"></div></div>
     <div class="tv-card"><h4>&#129508; Golden Glove - clean sheets</h4><div id="tvGlove"></div></div>
     <div class="tv-card"><h4>&#129000; Cards &amp; Suspension Watch</h4><div id="tvCards"></div></div>
-    <div class="tv-card"><h4>&#11088; Standout of Each Match</h4><div id="tvStars"></div><div class="tv-note" style="margin-top:8px">Computed from goals, assists and clean sheets. A &#11088; marks an official Man-of-the-Match where one has been entered.</div></div>
+    <div class="tv-card"><h4>&#128081; Our Pick of Each Match</h4><div id="tvStars"></div><div class="tv-note" style="margin-top:8px">Our own pick, computed from goals, assists and clean sheets - not an official Man-of-the-Match award.</div></div>
   </div>
 </div>
 
 <div class="fabs">
+  <button class="fab live" id="fabLive" title="Jump to the live match" style="display:none"><span class="blip"></span> LIVE</button>
   <button class="fab top" id="fabTop" title="Back to top"><svg viewBox="0 0 24 24"><polyline points="6 14 12 8 18 14"/></svg></button>
   <button class="fab fav" id="fabFav" title="Jump to your team">ENG</button>
 </div>
@@ -566,11 +577,11 @@
 <div class="smodal-overlay" id="stOverlay">
   <div class="smodal">
     <h3>Betting Stats</h3>
-    <div class="sm-stage">Tournament form, straight from FIFA match feeds</div>
+    <div class="sm-stage">Corners &amp; cards from FIFA feeds &middot; penalty takers hand-researched</div>
     <div class="st-mtitle" id="stMatchTitle" style="display:none"></div>
     <select class="st-teamsel" id="stTeam" aria-label="Choose a team"></select>
     <div class="statsbody" id="stBody"></div>
-    <div class="st-note">Corners and cards are counted from FIFA's official event feed: rolling last 4 games, World Cup matches first, topped up with pre-tournament internationals (tagged pre-WC). Penalty takers were researched against the official squads in June 2026 - always check team news before you stake. Bet responsibly.</div>
+    <div class="st-note"><b>Bet responsibly.</b> Corners and cards are the rolling last 4 games (World Cup first, topped up with pre-tournament friendlies marked *). Penalty takers and suspensions are best-effort and may be wrong - always check the team news before you stake.</div>
     <div class="sm-btns">
       <button class="sm-cancel" id="stClose" style="flex:1">Close</button>
     </div>
@@ -933,7 +944,7 @@
       var dk=order[di],list=byDay[dk];
       out.push('<section class="day" id="d-'+dk+'"><div class="dayhead"><div class="dname">'+fmtDayFull(dk)+(dk===tk?' · Today':'')+'</div><div class="dcount">'+list.length+' match'+(list.length>1?'es':'')+'</div></div>');
       for(var mi=0;mi<list.length;mi++){
-        var m=list[mi].m,o=list[mi].o,st=statusOf(m),cls=['match','rev'];
+        var m=list[mi].m,o=list[mi].o,st=statusOf(m),cls=firstPaint?['match','rev']:['match'];
         var sc=scoreOf(m);
         var hasScore=sc&&sc.ga!==undefined&&sc.gb!==undefined;
         if(isFav(m))cls.push('fav');
@@ -983,7 +994,7 @@
       out.push('</section>');
     }
     box.innerHTML=out.join('');
-    setupReveal();
+    if(firstPaint){setupReveal();firstPaint=false;}
   }
 
   function buildDateStrip(){
@@ -1108,7 +1119,33 @@
     sel.innerHTML=html;
   }
 
-  function refresh(){paintChipCounts();buildDateStrip();render();tickHero();updateFabCode();}
+  // first live (or in-window) match, for the LIVE jump button
+  function liveMatch(){for(var i=0;i<matches.length;i++){if(statusOf(matches[i]).k==='lv')return matches[i];}return null;}
+  function updateLiveFab(){var el=document.getElementById('fabLive'),m=liveMatch();
+    if(m){el.style.display='';el.setAttribute('data-n',m.n);}else el.style.display='none';}
+  // small always-visible freshness pill during match windows
+  function updateFreshPill(){
+    var el=document.getElementById('freshPill');if(!el)return;
+    var active=shouldPoll()||liveMatch();
+    if(!active||!lastPollTs){el.style.display='none';return;}
+    el.style.display='';
+    var age=Math.round((Date.now()-lastPollTs)/1000);
+    if(!lastPollOk){el.className='freshpill down';el.textContent='Feed down - scores may be stale';return;}
+    if(age>90){el.className='freshpill stale';el.textContent='Scores: '+(age<120?'~1 min ago':Math.round(age/60)+' min ago');return;}
+    el.className='freshpill ok';el.textContent='Scores: updated '+(age<10?'just now':age+'s ago');
+  }
+
+  var firstPaint=true;
+  function refresh(){paintChipCounts();buildDateStrip();render();tickHero();updateFabCode();updateLiveFab();updateFreshPill();}
+  // lighter tick: refresh content in place without rebuilding the date strip or re-animating
+  function liveTick(){
+    updateProgress();tickHero();paintChipCounts();render();updateFabCode();updateLiveFab();updateFreshPill();
+    if(document.body.classList.contains('tab2')){
+      var br=document.getElementById('tvBracket'),sl=br?br.scrollLeft:0;
+      renderTablesView();renderBracket();
+      if(br){var nb=document.getElementById('tvBracket');if(nb)nb.scrollLeft=sl;}
+    }
+  }
 
   function applyTheme(t){
     var mt=document.querySelector('meta[name="theme-color"]');
@@ -1676,14 +1713,15 @@
   function h2hCol(team){
     var real=!!F[team];
     var g=real?teamWindow(team):[];
-    var n=g.length,c=0,y=0,r=0,tcSum=0,tcN=0,seqC=[],seqYR=[];
+    var n=g.length,c=0,y=0,r=0,tcSum=0,tcN=0,nPre=0,seqC=[],seqYR=[];
     for(var i=0;i<n;i++){
       c+=g[i].c;y+=g[i].y;r+=g[i].r;
-      if(g[i].tc!=null){tcSum+=g[i].tc;tcN++;seqC.push(g[i].c+'/'+g[i].tc);}
-      else seqC.push(String(g[i].c));
-      seqYR.push(g[i].y+'Y'+(g[i].r?'+'+g[i].r+'R':''));
+      var star=g[i].pre?'*':'';if(g[i].pre)nPre++;
+      if(g[i].tc!=null){tcSum+=g[i].tc;tcN++;seqC.push(g[i].c+'/'+g[i].tc+star);}
+      else seqC.push(g[i].c+star);
+      seqYR.push(g[i].y+'Y'+(g[i].r?'+'+g[i].r+'R':'')+star);
     }
-    return {real:real,team:team,n:n,
+    return {real:real,team:team,n:n,nPre:nPre,
       cAvg:n?avg1(c,n):'-',tAvg:tcN?avg1(tcSum,tcN):'-',
       yAvg:n?avg1(y,n):'-',rAvg:n?avg1(r,n):'-',
       seqC:n?seqC.join(' · '):'no data',seqYR:n?seqYR.join(' · '):'no data'};
@@ -1784,7 +1822,8 @@
     var A=h2hCol(stMatch.a),B=h2hCol(stMatch.b);
     var html='';
     if(warn)html+='<div class="st-warn">'+escapeHtml(warn)+'</div>';
-    function penCol(C){
+    var banA=teamSuspensions(stMatch.a).banned,banB=teamSuspensions(stMatch.b).banned;
+    function penCol(C,banned){
       if(!C.real)return '<div class="st-pen" style="color:var(--low)">Team TBD</div>';
       var lst=effTakers(C.team),lu=stLineup&&stLineup[C.team];
       var h='<div class="st-pen">';
@@ -1797,7 +1836,8 @@
           else tag=' <span class="lu lu-bn">out</span>';
         }
         if(E.obs)tag+=' <span class="lu lu-pen">pen</span>';
-        if(E.nsq&&!lu)tag+=' <span class="lu lu-bn">no recent squad</span>';
+        if(nameInList(E.name,banned))tag+=' <span class="lu lu-ban">banned?</span>';
+        if(E.nsq&&!lu)tag+=' <span class="lu lu-bn">not in last 2</span>';
         var depth=(i>=2);
         h+=(depth?'<span class="st-depth">':'')+(E.nsq?'<span class="nsq">':'')+'<span class="rank">'+(i+1)+'</span> '+escapeHtml(E.name)+(E.nsq?'</span>':'')+tag+(depth?'</span>':'')+'<br>';
       }
@@ -1811,24 +1851,39 @@
     }
     function crdCol(C){
       if(!C.real||!C.n)return '<div class="st-big">-</div><div class="seq">no data</div>';
-      return '<div class="st-big"><span class="yc"></span>'+C.yAvg+'<small>/g</small></div>'+
-             '<div class="st-big"><span class="rc"></span>'+C.rAvg+'<small>/g</small></div>'+
+      return '<div class="st-big"><span class="yc"></span>'+C.yAvg+'<small>Y/g</small></div>'+
+             '<div class="st-big"><span class="rc"></span>'+C.rAvg+'<small>R/g</small></div>'+
              '<div class="seq">'+escapeHtml(C.seqYR)+(C.n<4?' ('+C.n+'g)':'')+'</div>';
     }
+    function suspLine(team){var s=teamSuspensions(team);
+      if(!s.banned.length)return '<div class="susp-mini">&#10003; none</div>';
+      return '<div class="susp-mini ban">&#128683; '+escapeHtml(s.banned.join(', '))+'</div>';}
     if(stLineup)html+='<div class="lu-note">Live lineup - on = on the pitch now, off = subbed/sent off, bench = available</div>';
+    var anyPre=(A.nPre||0)+(B.nPre||0)>0;
     html+='<div class="st-sec"><h4>Penalty takers</h4><div class="h2h">'+
-      '<div class="col">'+h2hHead(stMatch.a)+penCol(A)+'</div>'+
-      '<div class="col">'+h2hHead(stMatch.b)+penCol(B)+'</div></div></div>';
+      '<div class="col">'+h2hHead(stMatch.a)+penCol(A,banA)+'</div>'+
+      '<div class="col">'+h2hHead(stMatch.b)+penCol(B,banB)+'</div></div>'+
+      '<div class="st-note" style="margin:6px 0 0">Hand-researched June 2026 - check team news before you stake.</div></div>';
+    html+='<div class="st-sec"><h4>Likely suspended</h4><div class="h2h">'+
+      '<div class="col">'+h2hHead(stMatch.a)+suspLine(stMatch.a)+'</div>'+
+      '<div class="col">'+h2hHead(stMatch.b)+suspLine(stMatch.b)+'</div></div>'+
+      '<div class="st-note" style="margin:6px 0 0">From cards shown so far - verify against team news.</div></div>';
     html+='<div class="st-sec"><h4>Corners - last 4 games <span style="font-weight:600;letter-spacing:0;text-transform:none">(team / match total)</span></h4><div class="h2h">'+
       '<div class="col">'+h2hHead(stMatch.a)+corCol(A)+'</div>'+
-      '<div class="col">'+h2hHead(stMatch.b)+corCol(B)+'</div></div></div>';
-    html+='<div class="st-sec"><h4>Cards - last 4 games</h4><div class="h2h">'+
+      '<div class="col">'+h2hHead(stMatch.b)+corCol(B)+'</div></div>'+
+      (anyPre?'<div class="st-note" style="margin:6px 0 0">* pre-tournament friendly - included to fill the last-4 window.</div>':'')+'</div>';
+    html+='<div class="st-sec"><h4>Cards - last 4 games <span style="font-weight:600;letter-spacing:0;text-transform:none">(Y = yellows, R = reds per game)</span></h4><div class="h2h">'+
       '<div class="col">'+h2hHead(stMatch.a)+crdCol(A)+'</div>'+
-      '<div class="col">'+h2hHead(stMatch.b)+crdCol(B)+'</div></div></div>';
+      '<div class="col">'+h2hHead(stMatch.b)+crdCol(B)+'</div></div>'+
+      (anyPre?'<div class="st-note" style="margin:6px 0 0">* pre-tournament friendly.</div>':'')+'</div>';
     document.getElementById('stBody').innerHTML=html;
   }
 
+  var lastPollTs=0,lastPollOk=true;
   function updateApiStatus(ok,msg){
+    if(ok)lastPollTs=Date.now();
+    lastPollOk=ok;
+    updateFreshPill();
     var el=document.getElementById('apiStatusTxt');
     var btn=document.getElementById('apiBtn');
     if(ok){
@@ -2075,7 +2130,7 @@
     document.getElementById('tvLiveNote').textContent=
       (cg.live?'Live scores included - the table moves as goals go in. ':'')+
       'Green edge: top two qualify. Gold edge: third place, chasing the eight best-third spots. '+
-      'Chips: "in" = top two locked on points, "3rd?" = third at best, "out" = eliminated. Ties broken by head-to-head.';
+      'Chips: "in" = top two guaranteed on points alone, "3rd?" = third at best, "out" = eliminated. Level teams are separated by goal difference, then goals scored, then head-to-head.';
     renderThirds(thirds);
   }
   function renderThirds(thirds){
@@ -2246,6 +2301,10 @@
   });
   document.getElementById('fabFav').addEventListener('click',function(){var el=document.querySelector('.match.fav')||document.querySelector('.match.poss');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});});
   document.getElementById('fabTop').addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'});});
+  document.getElementById('fabLive').addEventListener('click',function(){
+    if(document.body.classList.contains('tab2'))document.getElementById('tabSched').click();
+    var n=this.getAttribute('data-n'),el=n&&document.querySelector('.match[data-n="'+n+'"]');
+    if(el)el.scrollIntoView({behavior:'smooth',block:'center'});});
 
   // Score modal events
   document.getElementById('smSave').addEventListener('click',saveScoreFromModal);
@@ -2301,11 +2360,8 @@
   startPolling();
   if(firstVisit)openPicker();
   if(load('wc26_tab')==='2')setTab(2);
-  setInterval(tickHero,1000);
-  setInterval(function(){
-    updateProgress();refresh();
-    if(document.body.classList.contains('tab2')){renderTablesView();renderBracket();}
-  },60000);
+  setInterval(function(){tickHero();updateFreshPill();},1000);
+  setInterval(liveTick,60000);
 
   setTimeout(function(){
     var now=Date.now();
