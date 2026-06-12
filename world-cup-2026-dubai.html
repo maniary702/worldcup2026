@@ -784,7 +784,17 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 12 Jun 2026 v10';
+  var BUILD_TAG='Build 12 Jun 2026 v10.1';
+  // visible error trap: if anything throws on this device, say so instead of dying silently
+  window.onerror=function(msg,src2,line){
+    try{
+      var b=document.getElementById('errBanner');
+      if(!b){b=document.createElement('div');b.id='errBanner';
+        b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:999;background:#c8102e;color:#fff;font:600 12px/1.4 Arial;padding:8px 12px;text-align:center';
+        document.body.appendChild(b);}
+      b.textContent='Page error: '+msg+' (line '+line+') - screenshot this and send it to Yahya';
+    }catch(e){}
+  };
   // ── modal hygiene: one overlay at a time, Escape closes, body scroll locked, focus moved ──
   var OVERLAYS=['pkOverlay','mdOverlay','stOverlay','sModalOverlay'];
   var lastFocus=null;
@@ -1197,7 +1207,10 @@
       var chips=document.querySelectorAll('#fr .chip');
       for(var i=0;i<chips.length;i++)chips[i].classList.toggle('on',chips[i].getAttribute('data-f')==='all');
     }
-    buildFollowSelect();refresh();
+    // rebuild the select DEFERRED: replacing its options from inside its own
+    // change event makes iOS Safari snap the picker shut and revert the choice
+    setTimeout(buildFollowSelect,150);
+    refresh();
   }
   function buildTzSelect(){
     var sel=document.getElementById('tzSelect'),html='';
@@ -2423,7 +2436,7 @@
     if(t&&t.getAttribute&&t.getAttribute('data-jump')){e.preventDefault();t.click();}
   });
   // jump chips on the Tables & Players tab
-  document.querySelector('.tv-jump').addEventListener('click',function(e){
+  if(document.querySelector('.tv-jump'))document.querySelector('.tv-jump').addEventListener('click',function(e){
     var t=e.target;while(t&&t!==this&&!(t.getAttribute&&t.getAttribute('data-j')))t=t.parentNode;
     if(t&&t.getAttribute&&t.getAttribute('data-j')){
       var el=document.getElementById(t.getAttribute('data-j'));
