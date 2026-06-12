@@ -378,7 +378,7 @@
       Automatic, nothing to set up.<br>
       Scores come straight from FIFA's public feed and refresh every 60s while matches are on.<br>
       You can still tap any card's edit button to set a score by hand; manual entries always win.<br>
-      Build 12 Jun 2026 v6 (extra-time, live subs, best-thirds, tiebreakers, MOTM) - if features look missing, refresh the page once.
+      Build 12 Jun 2026 v7 (knockout auto-fill - every game live through the final) - if features look missing, refresh the page once.
     </div>
     <div class="api-status-txt" id="apiStatusTxt"></div>
   </div>
@@ -1130,15 +1130,38 @@
   }
 
   // Full-season sweep: catches final scores and anything missed while the page was closed.
+  // Auto-heal knockout fixtures: each knockout row's stage label carries FIFA's real
+  // match number (e.g. 'R32 · M73'). Once FIFA names the teams for that slot, copy them
+  // (and the exact kickoff) into our fixture so scores, the betting panel and lineup
+  // tags work for knockout games too - no manual update when the groups finish.
+  function healKnockouts(){
+    if(!calCache)return false;
+    var rs=calCache.Results||[],byNum={},i,changed=false;
+    for(i=0;i<rs.length;i++)byNum[rs[i].MatchNumber]=rs[i];
+    for(i=0;i<matches.length;i++){var mm=matches[i];
+      var mnum=/M(\d+)/.exec(mm.s);if(!mnum)continue;            // only knockout rows carry M## in the label
+      var am=byNum[+mnum[1]];if(!am||!am.Home||!am.Away||!am.Home.TeamName||!am.Away.TeamName)continue;
+      var ha=mapTeam(am.Home.TeamName[0].Description),aa=mapTeam(am.Away.TeamName[0].Description);
+      if(!F[ha]||!F[aa])continue;                                // only heal to teams we can render
+      if(mm.a!==ha||mm.b!==aa){
+        mm.a=ha;mm.b=aa;
+        var dd=new Date(new Date(am.Date).getTime()+4*3600000); // FIFA UTC -> Dubai wall-clock string
+        mm.d=dd.getUTCFullYear()+'-'+pad(dd.getUTCMonth()+1)+'-'+pad(dd.getUTCDate())+'T'+pad(dd.getUTCHours())+':'+pad(dd.getUTCMinutes());
+        changed=true;
+      }
+    }
+    return changed;
+  }
   function sweepCalendar(){
     fetch(FIFA_CAL)
     .then(function(r){if(!r.ok)throw new Error('FIFA '+r.status);return r.json();})
     .then(function(data){
       calCache=data;calCacheAt=Date.now();
+      var healed=healKnockouts();
       var rs=data.Results||[];
-      var updated=false;
+      var updated=healed;
       for(var i=0;i<rs.length;i++){if(applyApiMatch(rs[i]))updated=true;}
-      if(updated)refresh();
+      if(updated){buildDateStrip();refresh();}
       updateApiStatus(true);
     })
     .catch(function(e){
