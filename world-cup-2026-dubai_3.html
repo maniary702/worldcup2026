@@ -271,6 +271,8 @@
   .lb-row.meRow{background:var(--fav-tint);border-radius:6px;padding-left:4px}
   .tv-empty{font-size:12.5px;color:var(--low);padding:4px 0}
   .lu-ban{background:rgba(224,16,48,.15);color:var(--lfc);border:1px solid rgba(224,16,48,.4)}
+  .lu-pen{background:linear-gradient(135deg,var(--gold-tint),transparent 70%);color:var(--gold-ink);border:1px solid var(--ko-border)}
+  .nsq{opacity:.5}
   .brkt{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 10px;-webkit-overflow-scrolling:touch}
   .brkt-round{flex:0 0 210px}
   .brkt-round h5{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);margin:0 0 8px}
@@ -721,8 +723,9 @@
   // ══════════════════════════════════════
   //  LIVE SCORES CONFIG (FIFA public feed, no key needed)
   // ══════════════════════════════════════
-  var FIFA_CAL='https://api.fifa.com/api/v3/calendar/matches?idCompetition=17&idSeason=285023&language=en&count=150';
-  var FIFA_LIVE='https://api.fifa.com/api/v3/live/football/now?language=en';
+  var FIFA_API='https://api.fifa.com/api/v3/';
+  var FIFA_CAL=FIFA_API+'calendar/matches?idCompetition=17&idSeason=285023&language=en&count=150';
+  var FIFA_LIVE=FIFA_API+'live/football/now?language=en';
 
   // Final scores baked in at build time, so played games show even if the feed is down
   var SEED={1:[2,0],2:[2,1]};
@@ -1345,7 +1348,7 @@
       var ps=[];
       for(var b=0;b<batch.length;b++){
         (function(fm){
-          ps.push(fetch('https://api.fifa.com/api/v3/timelines/17/285023/'+fm.IdStage+'/'+fm.IdMatch+'?language=en')
+          ps.push(fetch(FIFA_API+'timelines/17/285023/'+fm.IdStage+'/'+fm.IdMatch+'?language=en')
             .then(function(r){return r.ok?r.json():null;})
             .then(function(tl){if(tl&&tl.Event)mstats[fm.IdMatch]=statsForTimeline(fm,tl);else failed++;})
             .catch(function(e){failed++;}));
@@ -1382,16 +1385,60 @@
       h+='<div class="st-row"><span>v <b>'+escapeHtml(e.o)+'</b>'+(e.pre?' <span class="prewc">pre-WC</span>':'')+'</span><span class="num">'+val+'</span></div>';}
     return h;
   }
-  function penListHtml(pens,depth){
-    var h='<div class="st-pen">';
-    for(var i=0;i<pens.length&&i<4;i++){
-      h+=(i===2?'<span class="st-depth">':'')+'<span class="rank">'+(i+1)+'</span> '+escapeHtml(pens[i])+(i>=2?'</span>':'')+'<br>';
+  // Self-correcting taker order. Research list is the floor; live evidence adjusts it:
+  // - the player who took the team's LATEST in-game penalty gets a "took last pen" chip,
+  //   and is promoted to #1 only if a higher-listed taker was on the pitch at the time
+  //   (a genuine hierarchy override - a stand-in pen never reorders the list);
+  // - a listed taker missing from BOTH of the team's last two matchday squads is flagged.
+  function effTakers(team){
+    var base=(PEN_TAKERS[team]||[]).slice(0,4),i,j,k;
+    var out=[];
+    for(i=0;i<base.length;i++)out.push({name:base[i],obs:false,nsq:false});
+    var games=[];
+    for(k in pstats){var ms=pstats[k];if(ms.sq&&ms.sq[team]&&ms.sq[team].length)games.push(ms);}
+    games.sort(function(x,y){return x.d-y.d;});
+    if(games.length>=2){
+      var s1=games[games.length-1].sq[team],s2=games[games.length-2].sq[team];
+      for(i=0;i<out.length;i++){
+        if(!nameInList(out[i].name,s1)&&!nameInList(out[i].name,s2))out[i].nsq=true;
+      }
     }
-    return h+'</div>'+(depth&&pens.length>2?'<div class="st-note" style="margin:4px 0 0">3-4 = depth picks if the first two are off the pitch</div>':'');
+    var lastPen=null;
+    for(i=0;i<games.length;i++){var ps2=games[i].pens||[];
+      for(j=0;j<ps2.length;j++)if(ps2[j].t===team)lastPen=ps2[j];
+    }
+    if(lastPen){
+      var tIdx=-1;
+      for(i=0;i<out.length;i++){if(nameInList(out[i].name,[lastPen.n])){tIdx=i;break;}}
+      if(tIdx===0){out[0].obs=true;}
+      else{
+        var higherOn=false,lim=(tIdx===-1)?out.length:tIdx;
+        for(i=0;i<lim;i++){if(nameInList(out[i].name,lastPen.on)){higherOn=true;break;}}
+        if(higherOn){
+          var promoted=(tIdx>-1)?out.splice(tIdx,1)[0]:{name:lastPen.n,nsq:false};
+          promoted.obs=true;
+          out.unshift(promoted);
+          out=out.slice(0,4);
+        }else if(tIdx>-1){out[tIdx].obs=true;}
+      }
+    }
+    return out;
+  }
+  function penListHtml(team,depth){
+    var lst=effTakers(team),h='<div class="st-pen">';
+    for(var i=0;i<lst.length&&i<4;i++){var e=lst[i];
+      var chips='';
+      if(e.obs)chips+=' <span class="lu lu-pen">took last pen</span>';
+      if(e.nsq)chips+=' <span class="lu lu-bn">no recent squad</span>';
+      var dep=(i>=2);
+      h+=(dep?'<span class="st-depth">':'')+(e.nsq?'<span class="nsq">':'')+'<span class="rank">'+(i+1)+'</span> '+escapeHtml(e.name)+(e.nsq?'</span>':'')+chips+(dep?'</span>':'')+'<br>';
+    }
+    h+='</div>';
+    if(depth)h+='<div class="st-note" style="margin:4px 0 0">Self-updating: the order corrects from penalties actually taken, and takers missing from the last two squads get flagged.</div>';
+    return h;
   }
   function renderStats(warn){
     var team=stViewTeam,body=document.getElementById('stBody');
-    var pens=PEN_TAKERS[team]||['TBC','TBC'];
     var g=teamWindow(team),n=g.length,c=0,y=0,r=0,tcSum=0,tcN=0;
     for(var i=0;i<n;i++){c+=g[i].c;y+=g[i].y;r+=g[i].r;if(g[i].tc!=null){tcSum+=g[i].tc;tcN++;}}
     var html='';
@@ -1407,7 +1454,7 @@
       var opp=next.a===team?next.b:next.a,o=bits(next);
       html+='<div class="st-next">Next: '+(F[opp]||'')+' <b>v '+escapeHtml(opp)+'</b> · '+fmtShort(dayKey(o))+' · '+fmtClock(o)+'</div>';
     }
-    html+='<div class="st-sec"><h4>Penalty takers</h4>'+penListHtml(pens,true)+'</div>';
+    html+='<div class="st-sec"><h4>Penalty takers</h4>'+penListHtml(team,true)+'</div>';
     if(!n){
       html+='<div class="st-sec"><h4>Corners &amp; cards</h4><div class="st-empty">No covered games for this team yet. Averages appear right after their first match.</div></div>';
     }else{
@@ -1439,6 +1486,9 @@
     document.getElementById('stOverlay').classList.add('open');
     document.getElementById('stBody').innerHTML='<div class="st-load">Pulling match data from FIFA…</div>';
     ensureStats(function(warn){renderStats(warn);});
+    ensurePstats(function(){ // refresh taker evidence (pens taken, squad lists)
+      if(!stMatch&&document.getElementById('stOverlay').classList.contains('open'))renderStats(null);
+    });
   }
   function closeStats(){document.getElementById('stOverlay').classList.remove('open');}
 
@@ -1461,6 +1511,9 @@
       fetchLineup(mm,function(lu){
         if(lu&&stMatch===mm){stLineup=lu;renderMatchStats(warn);}
       });
+    });
+    ensurePstats(function(){ // refresh taker evidence (pens taken, squad lists)
+      if(stMatch===mm&&document.getElementById('stOverlay').classList.contains('open'))renderMatchStats(null);
     });
   }
   function h2hCol(team){
@@ -1558,8 +1611,8 @@
     if(hit&&now-hit.at<90000){cb(hit.lu);return;} // 90s cache so in-game subs surface
     var base='17/285023/'+row.IdStage+'/'+row.IdMatch+'?language=en';
     Promise.all([
-      fetch('https://api.fifa.com/api/v3/live/football/'+base).then(function(r){return r.ok?r.json():null;}),
-      fetch('https://api.fifa.com/api/v3/timelines/'+base).then(function(r){return r.ok?r.json():null;})
+      fetch(FIFA_API+'live/football/'+base).then(function(r){return r.ok?r.json():null;}),
+      fetch(FIFA_API+'timelines/'+base).then(function(r){return r.ok?r.json():null;})
     ]).then(function(pair){
       var lu=pair[0]?buildLineups(row,pair[0],pair[1]):null;
       lineupCache[key]={at:Date.now(),lu:lu};
@@ -1575,18 +1628,20 @@
     if(warn)html+='<div class="st-warn">'+escapeHtml(warn)+'</div>';
     function penCol(C){
       if(!C.real)return '<div class="st-pen" style="color:var(--low)">Team TBD</div>';
-      var lu=stLineup&&stLineup[C.team];
+      var lst=effTakers(C.team),lu=stLineup&&stLineup[C.team];
       var h='<div class="st-pen">';
-      for(var i=0;i<C.pens.length&&i<4;i++){
+      for(var i=0;i<lst.length&&i<4;i++){var E=lst[i];
         var tag='';
         if(lu){
-          if(nameInList(C.pens[i],lu.on))tag=' <span class="lu lu-on">on</span>';
-          else if(nameInList(C.pens[i],lu.off))tag=' <span class="lu lu-ban">off</span>';
-          else if(nameInList(C.pens[i],lu.bench))tag=' <span class="lu lu-bn">bench</span>';
+          if(nameInList(E.name,lu.on))tag=' <span class="lu lu-on">on</span>';
+          else if(nameInList(E.name,lu.off))tag=' <span class="lu lu-ban">off</span>';
+          else if(nameInList(E.name,lu.bench))tag=' <span class="lu lu-bn">bench</span>';
           else tag=' <span class="lu lu-bn">out</span>';
         }
+        if(E.obs)tag+=' <span class="lu lu-pen">pen</span>';
+        if(E.nsq&&!lu)tag+=' <span class="lu lu-bn">no recent squad</span>';
         var depth=(i>=2);
-        h+=(depth?'<span class="st-depth">':'')+'<span class="rank">'+(i+1)+'</span> '+escapeHtml(C.pens[i])+tag+(depth?'</span>':'')+'<br>';
+        h+=(depth?'<span class="st-depth">':'')+(E.nsq?'<span class="nsq">':'')+'<span class="rank">'+(i+1)+'</span> '+escapeHtml(E.name)+(E.nsq?'</span>':'')+tag+(depth?'</span>':'')+'<br>';
       }
       return h+'</div>';
     }
@@ -1647,9 +1702,10 @@
   // ══════════════════════════════════════
   //  TAB 2: GROUP TABLES + TOURNAMENT PLAYER STATS
   // ══════════════════════════════════════
-  var pstats={};   // per finished match: {d, n, lbl, star, p:{idPlayer:[name,team,g,a,y,r,min,gk,cleanSheet]}}
-  function loadPstats(){try{var s=load('wc26_pstats3');if(s)pstats=JSON.parse(s);}catch(e){pstats={};}}
-  function savePstats(){try{save('wc26_pstats3',JSON.stringify(pstats));}catch(e){}}
+  var pstats={};   // per finished match: {d, n, lbl, star, p:{id:[name,team,g,a,y,r,min,gk,cs]},
+                   //  pens:[{t,n,min,on:[teammates on pitch]}] (in-game only), sq:{team:[matchday squad names]}}
+  function loadPstats(){try{var s=load('wc26_pstats4');if(s)pstats=JSON.parse(s);}catch(e){pstats={};}}
+  function savePstats(){try{save('wc26_pstats4',JSON.stringify(pstats));}catch(e){}}
   // Official Man-of-the-Match overrides (FIFA's feed has no MOTM field). Key by match
   // number, value e.g. 'Raul Jimenez (Mexico)'. Empty = use the computed standout.
   var MOTM_OFFICIAL={};
@@ -1671,7 +1727,7 @@
     var conceded={};
     conceded[hn]=(fm.Away.Score!=null)?fm.Away.Score:null;
     conceded[an]=(fm.Home.Score!=null)?fm.Home.Score:null;
-    var ev=(tl&&tl.Event)||[],maxMin=0;
+    var ev=(tl&&tl.Event)||[],maxMin=0,pensRaw=[];
     for(i=0;i<ev.length;i++){var e=ev[i],rec=idx[String(e.IdPlayer||'')],mn=parseMin(e.MatchMinute);
       if(mn!=null&&mn>maxMin)maxMin=mn;
       if(e.Type===5){ // substitution: IdPlayer comes on, IdSubPlayer goes off
@@ -1682,8 +1738,28 @@
         else if(e.Type===1)rec.a++;
         else if(e.Type===2)rec.y++;
         else if(e.Type===3){rec.r++;if(rec.off==null)rec.off=mn;}
+        // in-game penalty kicks only (41 scored / 60 saved / 65 missed); Period 10+ = shootout
+        else if(e.Type===41||e.Type===60||e.Type===65){
+          var sho=(e.Period!=null)?(e.Period>=10):(mn!=null&&mn>120);
+          if(!sho)pensRaw.push({pid:String(e.IdPlayer),min:(mn!=null?mn:0)});
+        }
       }
     }
+    // resolve each penalty's on-pitch teammates AFTER all sub/red info is known
+    var pens=[];
+    for(i=0;i<pensRaw.length;i++){var pr=pensRaw[i],tk=idx[pr.pid];
+      if(!tk)continue;
+      var onArr=[];
+      for(var k3 in idx){var q=idx[k3];
+        if(q.t!==tk.t||k3===pr.pid)continue;
+        var onP=(q.st===1)?(q.off==null||q.off>pr.min):(q.on!=null&&q.on<=pr.min&&(q.off==null||q.off>pr.min));
+        if(onP)onArr.push(q.n);
+      }
+      pens.push({t:tk.t,n:tk.n,min:pr.min,on:onArr});
+    }
+    // full matchday squads (starters + bench), for absent-taker flagging
+    var sq={};sq[hn]=[];sq[an]=[];
+    for(var k4 in idx){var pq=idx[k4];if(sq[pq.t])sq[pq.t].push(pq.n);}
     // 120' baseline only if it actually went to extra time. ResultType is definitive
     // (1=90', 2=pens, 3=AET); the clock>105 fallback only applies to live/unknown games,
     // since normal-time stoppage can push the final-whistle clock to ~98'.
@@ -1703,7 +1779,7 @@
     }
     var hs=(fm.Home.Score!=null)?fm.Home.Score:'',as2=(fm.Away.Score!=null)?fm.Away.Score:'';
     var etTag=(fm.ResultType===2?' (pens)':(fm.ResultType===3?' (AET)':''));
-    return {d:new Date(fm.Date).getTime(),n:fm.MatchNumber,lbl:hn+' '+hs+'-'+as2+' '+an+etTag,star:star,p:players};
+    return {d:new Date(fm.Date).getTime(),n:fm.MatchNumber,lbl:hn+' '+hs+'-'+as2+' '+an+etTag,star:star,p:players,pens:pens,sq:sq};
   }
 
   function ensurePstats(cb){
@@ -1727,8 +1803,8 @@
         (function(fm){
           var base='17/285023/'+fm.IdStage+'/'+fm.IdMatch+'?language=en';
           ps.push(Promise.all([
-            fetch('https://api.fifa.com/api/v3/timelines/'+base).then(function(r){return r.ok?r.json():null;}),
-            fetch('https://api.fifa.com/api/v3/live/football/'+base).then(function(r){return r.ok?r.json():null;})
+            fetch(FIFA_API+'timelines/'+base).then(function(r){return r.ok?r.json():null;}),
+            fetch(FIFA_API+'live/football/'+base).then(function(r){return r.ok?r.json():null;})
           ]).then(function(pair){
             if(pair[0]&&pair[1])pstats[fm.IdMatch]=buildMatchPlayers(fm,pair[0],pair[1]);
             else fails++;
