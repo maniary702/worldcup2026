@@ -198,6 +198,27 @@
   .smodal{background:var(--card);border:1px solid var(--line2);border-radius:20px;padding:24px 22px;max-width:360px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.5)}
   .smodal h3{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;text-transform:uppercase;color:var(--txt);margin-bottom:3px}
   .smodal .sm-stage{font-size:10px;color:var(--low);letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:18px}
+  /* ── betting stats modal ── */
+  .st-teamsel{width:100%;margin:0 0 14px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:11px 12px;color:var(--txt);font-family:inherit;font-size:14px;cursor:pointer}
+  .st-teamsel:focus{outline:none;border-color:var(--pitch)}
+  .statsbody{max-height:56vh;overflow-y:auto;margin:0 -4px;padding:0 4px}
+  .st-sec{margin-bottom:12px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+  .st-sec h4{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:7px}
+  .st-next{font-size:12.5px;color:var(--mut);margin-bottom:12px}
+  .st-next b{color:var(--txt)}
+  .st-pen{font-size:14.5px;font-weight:600;color:var(--txt);line-height:1.8}
+  .st-pen .rank{display:inline-block;min-width:16px;color:var(--gold-ink);font-family:'JetBrains Mono',monospace;font-weight:800;font-size:12px}
+  .st-big{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:23px;color:var(--txt);margin-bottom:4px}
+  .st-big small{font-family:'Barlow',sans-serif;font-weight:600;font-size:11px;color:var(--low);margin-left:6px;letter-spacing:0}
+  .st-big .yc,.st-big .rc{margin-right:6px}
+  .yc,.rc{display:inline-block;width:10px;height:13px;border-radius:2.5px;vertical-align:-1px}
+  .yc{background:#f5c542}.rc{background:#e01030}
+  .st-row{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--mut);padding:4px 0;border-top:1px dashed var(--line)}
+  .st-row b{color:var(--txt);font-weight:700}
+  .st-row .num{font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap}
+  .st-empty,.st-load{font-size:13px;color:var(--mut);padding:6px 0 2px;line-height:1.5}
+  .st-warn{font-size:12px;color:var(--lfc);margin-bottom:10px;line-height:1.4}
+  .st-note{font-size:10.5px;color:var(--low);line-height:1.55;margin:4px 0 12px}
   .sm-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
   .sm-flag{font-size:22px;flex:0 0 auto}
   .sm-team{flex:1;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;text-transform:uppercase;color:var(--txt)}
@@ -274,6 +295,9 @@
     </label>
     <button class="apibtn" id="apiBtn" aria-label="Live scores status" title="Live scores status">
       <svg viewBox="0 0 24 24"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9c3.9 3.9 3.9 10.3 0 14.2"/></svg>
+    </button>
+    <button class="apibtn" id="statsBtn" aria-label="Betting stats" title="Betting stats">
+      <svg viewBox="0 0 24 24"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="19" y1="20" x2="19" y2="15"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
     </button>
     <button class="themebtn" id="themeBtn" aria-label="Toggle light or dark theme">
       <svg class="ico-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
@@ -382,6 +406,19 @@
       <button class="sm-save" id="smSave">Save</button>
     </div>
     <button class="sm-clear sm-btns" id="smClear" style="border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--low);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;padding:9px;width:100%;margin-top:8px;text-align:center">Clear Score</button>
+  </div>
+</div>
+
+<div class="smodal-overlay" id="stOverlay">
+  <div class="smodal">
+    <h3>Betting Stats</h3>
+    <div class="sm-stage">Tournament form, straight from FIFA match feeds</div>
+    <select class="st-teamsel" id="stTeam" aria-label="Choose a team"></select>
+    <div class="statsbody" id="stBody"></div>
+    <div class="st-note">Corners and cards are counted from FIFA's official event feed, World Cup games only, rolling last 4. Penalty takers are a hand-kept list seeded before the tournament - always check team news before you stake. Bet responsibly.</div>
+    <div class="sm-btns">
+      <button class="sm-cancel" id="stClose" style="flex:1">Close</button>
+    </div>
   </div>
 </div>
 
@@ -994,6 +1031,7 @@
     fetch(FIFA_CAL)
     .then(function(r){if(!r.ok)throw new Error('FIFA '+r.status);return r.json();})
     .then(function(data){
+      calCache=data;calCacheAt=Date.now();
       var rs=data.Results||[];
       var updated=false;
       for(var i=0;i<rs.length;i++){if(applyApiMatch(rs[i]))updated=true;}
@@ -1025,6 +1063,156 @@
       updateApiStatus(false,e.message);
     });
   }
+
+  // ══════════════════════════════════════
+  //  BETTING STATS (FIFA event feed: corners + cards, plus hand-kept penalty takers)
+  // ══════════════════════════════════════
+  // Hand-maintained list, seeded June 2026. Edit here and redeploy; 'TBC' = not yet verified.
+  var PEN_TAKERS={
+    'Mexico':['Raul Jimenez','Santiago Gimenez'],'South Africa':['TBC','TBC'],
+    'South Korea':['Son Heung-min','Hwang Hee-chan'],'Czech Republic':['Schick','Soucek'],
+    'Canada':['Jonathan David','TBC'],'Bosnia & Herzegovina':['Dzeko','TBC'],
+    'USA':['Pulisic','TBC'],'Paraguay':['Almiron','TBC'],
+    'Qatar':['Akram Afif','Almoez Ali'],'Switzerland':['Embolo','Xhaka'],
+    'Brazil':['Raphinha','Vinicius Jr'],'Morocco':['Hakimi','Ziyech'],
+    'Haiti':['TBC','TBC'],'Scotland':['McTominay','McGinn'],
+    'Australia':['TBC','TBC'],'Turkey':['Calhanoglu','Arda Guler'],
+    'France':['Mbappe','Griezmann'],'Senegal':['Mane','Ismaila Sarr'],
+    'Japan':['Minamino','Kamada'],'Netherlands':['Depay','Gakpo'],
+    'Germany':['Havertz','Fullkrug'],'Curacao':['TBC','TBC'],
+    'Ivory Coast':['Kessie','Haller'],'Ecuador':['Enner Valencia','TBC'],
+    'Belgium':['Lukaku','De Bruyne'],'Egypt':['Salah','TBC'],
+    'Iran':['Taremi','Azmoun'],'New Zealand':['Chris Wood','TBC'],
+    'Spain':['Morata','Dani Olmo'],'Cape Verde':['TBC','TBC'],
+    'Saudi Arabia':['Al-Dawsari','TBC'],'Uruguay':['Nunez','TBC'],
+    'Argentina':['Messi','Lautaro Martinez'],'Algeria':['Mahrez','Bounedjah'],
+    'Austria':['Arnautovic','Sabitzer'],'Jordan':['Al-Tamari','TBC'],
+    'Portugal':['Ronaldo','Bruno Fernandes'],'Colombia':['James Rodriguez','TBC'],
+    'Norway':['Haaland','Odegaard'],'Iraq':['Aymen Hussein','TBC'],
+    'England':['Kane','Palmer'],'Croatia':['Modric','Kramaric'],
+    'Ghana':['Jordan Ayew','TBC'],'Panama':['TBC','TBC'],
+    'Sweden':['Isak','Gyokeres'],'DR Congo':['Bakambu','TBC'],
+    'Uzbekistan':['Shomurodov','TBC'],'Tunisia':['TBC','TBC']
+  };
+
+  var calCache=null,calCacheAt=0;
+  var mstats={};   // per finished match: {d:kickoffMs, teams:{name:{c,y,r,opp}}}, keyed by FIFA IdMatch
+  function loadMstats(){try{var s=load('wc26_mstats');if(s)mstats=JSON.parse(s);}catch(e){mstats={};}}
+  function saveMstats(){save('wc26_mstats',JSON.stringify(mstats));}
+
+  // Count corners (event type 16), yellows (2) and reds (3) per team from one match timeline.
+  // Type 71 'Red card given' is unattributed VAR noise - ignored.
+  function statsForTimeline(fm,tl){
+    var ev=tl.Event||[],idH=String(fm.Home.IdTeam),idA=String(fm.Away.IdTeam);
+    var hn=mapTeam((fm.Home.TeamName[0]||{}).Description||''),an=mapTeam((fm.Away.TeamName[0]||{}).Description||'');
+    var agg={};agg[hn]={c:0,y:0,r:0,opp:an};agg[an]={c:0,y:0,r:0,opp:hn};
+    for(var i=0;i<ev.length;i++){
+      var t=ev[i].Type,id=String(ev[i].IdTeam||''),nm=null;
+      if(id===idH)nm=hn;else if(id===idA)nm=an;else continue;
+      if(t===16)agg[nm].c++;
+      else if(t===2)agg[nm].y++;
+      else if(t===3)agg[nm].r++;
+    }
+    return {d:new Date(fm.Date).getTime(),teams:agg};
+  }
+
+  // Make sure stats exist for every finished match, fetching missing timelines in batches of 4.
+  function ensureStats(cb){
+    if(!calCache||Date.now()-calCacheAt>600000){
+      fetch(FIFA_CAL)
+      .then(function(r){if(!r.ok)throw new Error('FIFA '+r.status);return r.json();})
+      .then(function(d){calCache=d;calCacheAt=Date.now();ensureStats(cb);})
+      .catch(function(e){cb('Could not reach the FIFA feed - showing what is cached.');});
+      return;
+    }
+    var rs=calCache.Results||[],fin=[],missing=[];
+    for(var i=0;i<rs.length;i++){var m=rs[i];
+      if(m.MatchStatus===0&&m.Home&&m.Away&&m.Home.TeamName&&m.Away.TeamName)fin.push(m);}
+    for(var j=0;j<fin.length;j++){if(!mstats[fin[j].IdMatch])missing.push(fin[j]);}
+    if(!missing.length){cb(null);return;}
+    var k=0,failed=0;
+    function nextBatch(){
+      if(k>=missing.length){saveMstats();cb(failed?'Some match feeds did not load - averages may miss '+failed+' game(s).':null);return;}
+      var batch=missing.slice(k,k+4);k+=4;
+      var ps=[];
+      for(var b=0;b<batch.length;b++){
+        (function(fm){
+          ps.push(fetch('https://api.fifa.com/api/v3/timelines/17/285023/'+fm.IdStage+'/'+fm.IdMatch+'?language=en')
+            .then(function(r){return r.ok?r.json():null;})
+            .then(function(tl){if(tl&&tl.Event)mstats[fm.IdMatch]=statsForTimeline(fm,tl);else failed++;})
+            .catch(function(e){failed++;}));
+        })(batch[b]);
+      }
+      Promise.all(ps).then(nextBatch);
+    }
+    nextBatch();
+  }
+
+  function teamLastGames(team){
+    var rows=[];
+    for(var k in mstats){var ms=mstats[k];if(ms.teams&&ms.teams[team])rows.push({d:ms.d,me:ms.teams[team]});}
+    rows.sort(function(x,y){return y.d-x.d;});
+    return rows.slice(0,4);
+  }
+
+  var stViewTeam=null;
+  function avg1(t,n){return (Math.round(t/n*10)/10).toFixed(1);}
+  function stRows(g,kind){
+    var h='';
+    for(var i=0;i<g.length;i++){var e=g[i].me;
+      var val=kind==='c'?e.c+' corners':e.y+'Y '+e.r+'R';
+      h+='<div class="st-row"><span>v <b>'+escapeHtml(e.opp)+'</b></span><span class="num">'+val+'</span></div>';}
+    return h;
+  }
+  function renderStats(warn){
+    var team=stViewTeam,body=document.getElementById('stBody');
+    var pens=PEN_TAKERS[team]||['TBC','TBC'];
+    var g=teamLastGames(team),n=g.length,c=0,y=0,r=0;
+    for(var i=0;i<n;i++){c+=g[i].me.c;y+=g[i].me.y;r+=g[i].me.r;}
+    var html='';
+    if(warn)html+='<div class="st-warn">'+escapeHtml(warn)+'</div>';
+    var now=Date.now(),next=null;
+    for(var j=0;j<matches.length;j++){var mm=matches[j];
+      if(mm.a!==team&&mm.b!==team)continue;
+      var sc=scores[mm.n];
+      if(sc&&sc.status==='FT')continue;
+      if(kickoffUTC(mm).getTime()<now-150*60000)continue;
+      next=mm;break;}
+    if(next){
+      var opp=next.a===team?next.b:next.a,o=bits(next);
+      html+='<div class="st-next">Next: '+(F[opp]||'')+' <b>v '+escapeHtml(opp)+'</b> · '+fmtShort(dayKey(o))+' · '+fmtClock(o)+'</div>';
+    }
+    html+='<div class="st-sec"><h4>Penalty takers</h4><div class="st-pen">'
+        +'<span class="rank">1</span> '+escapeHtml(pens[0]||'TBC')+'<br>'
+        +'<span class="rank">2</span> '+escapeHtml(pens[1]||'TBC')+'</div></div>';
+    if(!n){
+      html+='<div class="st-sec"><h4>Corners &amp; cards</h4><div class="st-empty">No World Cup games played yet. Averages appear right after their first match.</div></div>';
+    }else{
+      var lbl=n===1?'last game':'last '+n+' games';
+      html+='<div class="st-sec"><h4>Corners - '+lbl+'</h4><div class="st-big">'+avg1(c,n)+'<small>per game</small></div>'+stRows(g,'c')+'</div>';
+      html+='<div class="st-sec"><h4>Cards - '+lbl+'</h4>'
+          +'<div class="st-big"><span class="yc"></span>'+avg1(y,n)+'<small>yellows per game</small></div>'
+          +'<div class="st-big"><span class="rc"></span>'+avg1(r,n)+'<small>reds per game</small></div>'
+          +stRows(g,'yr')+'</div>';
+    }
+    body.innerHTML=html;
+  }
+  function buildStatsSelect(){
+    var sel=document.getElementById('stTeam'),html='',letters=['A','B','C','D','E','F','G','H','I','J','K','L'];
+    for(var li=0;li<letters.length;li++){var L=letters[li];html+='<optgroup label="Group '+L+'">';
+      for(var t=0;t<GROUPS[L].length;t++){var nm=GROUPS[L][t];
+        html+='<option value="'+escapeHtml(nm)+'"'+(nm===stViewTeam?' selected':'')+'>'+(F[nm]||'')+' '+escapeHtml(nm)+'</option>';}
+      html+='</optgroup>';}
+    sel.innerHTML=html;
+  }
+  function openStats(){
+    if(!stViewTeam||!F[stViewTeam])stViewTeam=FOLLOW;
+    buildStatsSelect();
+    document.getElementById('stOverlay').classList.add('open');
+    document.getElementById('stBody').innerHTML='<div class="st-load">Pulling match data from FIFA…</div>';
+    ensureStats(function(warn){renderStats(warn);});
+  }
+  function closeStats(){document.getElementById('stOverlay').classList.remove('open');}
 
   function updateApiStatus(ok,msg){
     var el=document.getElementById('apiStatusTxt');
@@ -1112,12 +1300,21 @@
     document.getElementById('apiPanel').classList.toggle('open');
   });
 
+  // Betting stats modal
+  document.getElementById('statsBtn').addEventListener('click',openStats);
+  document.getElementById('stClose').addEventListener('click',closeStats);
+  document.getElementById('stOverlay').addEventListener('click',function(e){if(e.target===this)closeStats();});
+  document.getElementById('stTeam').addEventListener('change',function(){
+    if(F[this.value]){stViewTeam=this.value;renderStats(null);}
+  });
+
   // ── INIT ──
   applyTheme(load('wc26_theme')==='light'?'light':'dark');
   var sf=load('wc26_follow');FOLLOW=(sf&&F[sf])?sf:'England';
   var stz=load('wc26_tz');TZSEL=(stz&&(stz==='device'||validTz[stz]))?stz:'device';
   loadScoresLS();
   applySeed();
+  loadMstats();
   buildFollowSelect();
   buildTzSelect();
   updateProgress();
