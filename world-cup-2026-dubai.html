@@ -272,7 +272,7 @@
       <span class="fl">Following</span>
       <select id="followSelect" aria-label="Choose your team to follow"></select>
     </label>
-    <button class="apibtn" id="apiBtn" aria-label="Live scores settings" title="Live scores settings">
+    <button class="apibtn" id="apiBtn" aria-label="Live scores status" title="Live scores status">
       <svg viewBox="0 0 24 24"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9c3.9 3.9 3.9 10.3 0 14.2"/></svg>
     </button>
     <button class="themebtn" id="themeBtn" aria-label="Toggle light or dark theme">
@@ -282,12 +282,11 @@
   </div>
 
   <div class="api-panel" id="apiPanel">
-    <label>Football-Data.org API Key</label>
-    <input type="text" id="apiKeyInput" placeholder="Paste your free API token here" autocomplete="off" spellcheck="false">
+    <label>Live scores</label>
     <div class="api-hint">
-      Free tier: 10 req/min, no payment needed.<br>
-      Register at <b>football-data.org</b> &rarr; copy your token.<br>
-      Scores auto-fetch every 60s during live matches.
+      Automatic, nothing to set up.<br>
+      Scores come straight from FIFA's public feed and refresh every 60s while matches are on.<br>
+      You can still tap any card's edit button to set a score by hand; manual entries always win.
     </div>
     <div class="api-status-txt" id="apiStatusTxt"></div>
   </div>
@@ -581,13 +580,21 @@
   var editingMatch=null;
 
   // ══════════════════════════════════════
-  //  API CONFIGURATION
+  //  LIVE SCORES CONFIG (FIFA public feed, no key needed)
   // ══════════════════════════════════════
-  var API_KEY='';
-  function loadApiKey(){API_KEY=load('wc26_apikey')||'';}
-  function saveApiKey(k){API_KEY=k;save('wc26_apikey',k);}
+  var FIFA_CAL='https://api.fifa.com/api/v3/calendar/matches?idCompetition=17&idSeason=285023&language=en&count=150';
+  var FIFA_LIVE='https://api.fifa.com/api/v3/live/football/now?language=en';
 
-  // Mapping from football-data.org team names to our names
+  // Final scores baked in at build time, so played games show even if the feed is down
+  var SEED={1:[2,0],2:[2,1]};
+  function applySeed(){
+    for(var n in SEED){
+      if(!scores[n])scores[n]={ga:SEED[n][0],gb:SEED[n][1],status:'FT',source:'api',minute:null};
+    }
+    saveScoresLS();
+  }
+
+  // Mapping from FIFA team names to our names
   var API_MAP={
     'Korea Republic':'South Korea','Czechia':'Czech Republic','Curaçao':'Curacao',
     "Côte d'Ivoire":'Ivory Coast','Türkiye':'Turkey','Cabo Verde':'Cape Verde',
@@ -933,10 +940,9 @@
   }
 
   // ══════════════════════════════════════
-  //  LIVE SCORE API (football-data.org)
+  //  LIVE SCORE API (FIFA public feed)
   // ══════════════════════════════════════
   function shouldPoll(){
-    if(!API_KEY)return false;
     var now=Date.now();
     for(var i=0;i<matches.length;i++){
       var ko=kickoffUTC(matches[i]).getTime();
@@ -946,54 +952,70 @@
     return false;
   }
 
-  function todayDateStr(){
-    var d=new Date();return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());
+  // Apply one FIFA match object (calendar or live feed, same shape) to our data.
+  // Matching is by team pair + kickoff within 36h: FIFA's official match numbers
+  // disagree with our Sky-sourced numbering, and a pairing can repeat in knockouts.
+  function applyApiMatch(am){
+    if(!am||!am.Home||!am.Away)return false;
+    var hs=(am.Home.Score!=null)?am.Home.Score:am.HomeTeamScore;
+    var as2=(am.Away.Score!=null)?am.Away.Score:am.AwayTeamScore;
+    if(hs==null||as2==null)return false;
+    var st;
+    if(am.MatchStatus===0)st='FT';
+    else if(am.MatchStatus===3)st='LIVE';
+    else return false; // skip scheduled, postponed, etc.
+    var home=mapTeam((am.Home.TeamName&&am.Home.TeamName[0]&&am.Home.TeamName[0].Description)||'');
+    var away=mapTeam((am.Away.TeamName&&am.Away.TeamName[0]&&am.Away.TeamName[0].Description)||'');
+    if(!home||!away)return false;
+    var koApi=new Date(am.Date).getTime();
+    if(isNaN(koApi))return false;
+    for(var j=0;j<matches.length;j++){
+      var mm=matches[j];
+      if(!((mm.a===home&&mm.b===away)||(mm.a===away&&mm.b===home)))continue;
+      if(Math.abs(kickoffUTC(mm).getTime()-koApi)>36*3600000)continue;
+      var ga_val,gb_val;
+      if(mm.a===home){ga_val=hs;gb_val=as2;}
+      else{ga_val=as2;gb_val=hs;}
+      var minute=null;
+      if(st==='LIVE'){
+        if(am.MatchTime)minute=String(am.MatchTime).replace(/'/g,'');
+        if(am.Period===4)st='HT';
+        else if(am.Period===6||am.Period===7||am.Period===8)st='ET';
+        else if(am.Period===10||am.Period===11)st='PEN';
+      }
+      setScore(mm.n,ga_val,gb_val,st,'api',minute);
+      return true;
+    }
+    return false;
   }
 
-  function fetchLiveScores(){
-    if(!API_KEY)return;
-    var today=todayDateStr();
-    var url='https://api.football-data.org/v4/competitions/WC/matches?dateFrom='+today+'&dateTo='+today;
-    fetch(url,{headers:{'X-Auth-Token':API_KEY}})
-    .then(function(r){
-      if(!r.ok)throw new Error('API '+r.status);
-      return r.json();
-    })
+  // Full-season sweep: catches final scores and anything missed while the page was closed.
+  function sweepCalendar(){
+    fetch(FIFA_CAL)
+    .then(function(r){if(!r.ok)throw new Error('FIFA '+r.status);return r.json();})
     .then(function(data){
-      if(!data.matches||!data.matches.length)return;
+      var rs=data.Results||[];
       var updated=false;
-      for(var i=0;i<data.matches.length;i++){
-        var am=data.matches[i];
-        if(!am.score||!am.homeTeam||!am.awayTeam)continue;
-        var home=mapTeam(am.homeTeam.name||am.homeTeam.shortName||'');
-        var away=mapTeam(am.awayTeam.name||am.awayTeam.shortName||'');
-        // Find matching match
-        for(var j=0;j<matches.length;j++){
-          var mm=matches[j];
-          if((mm.a===home&&mm.b===away)||(mm.a===away&&mm.b===home)){
-            var apiStatus='FT';
-            if(am.status==='FINISHED')apiStatus='FT';
-            else if(am.status==='PAUSED')apiStatus='HT';
-            else if(am.status==='IN_PLAY'||am.status==='LIVE')apiStatus='LIVE';
-            else if(am.status==='EXTRA_TIME')apiStatus='ET';
-            else if(am.status==='PENALTY_SHOOTOUT')apiStatus='PEN';
-            else continue; // skip SCHEDULED, POSTPONED, etc.
+      for(var i=0;i<rs.length;i++){if(applyApiMatch(rs[i]))updated=true;}
+      if(updated)refresh();
+      updateApiStatus(true);
+    })
+    .catch(function(e){
+      console.log('Score sweep error:',e.message);
+      updateApiStatus(false,e.message);
+    });
+  }
 
-            var gh=am.score.fullTime.home,ga2=am.score.fullTime.away;
-            if(gh===null&&am.score.halfTime){gh=am.score.halfTime.home;ga2=am.score.halfTime.away;}
-            if(gh===null)continue;
-
-            // Determine which is a/b in our data
-            var ga_val,gb_val;
-            if(mm.a===home){ga_val=gh;gb_val=ga2;}
-            else{ga_val=ga2;gb_val=gh;}
-
-            var minute=am.minute||null;
-            setScore(mm.n,ga_val,gb_val,apiStatus,'api',minute);
-            updated=true;
-            break;
-          }
-        }
+  // Light 60s poll during match windows: only games in play right now.
+  function fetchLiveScores(){
+    fetch(FIFA_LIVE)
+    .then(function(r){if(!r.ok)throw new Error('FIFA '+r.status);return r.json();})
+    .then(function(data){
+      var rs=data.Results||[];
+      var updated=false;
+      for(var i=0;i<rs.length;i++){
+        if(String(rs[i].IdCompetition)!=='17')continue;
+        if(applyApiMatch(rs[i]))updated=true;
       }
       if(updated)refresh();
       updateApiStatus(true);
@@ -1006,23 +1028,31 @@
 
   function updateApiStatus(ok,msg){
     var el=document.getElementById('apiStatusTxt');
-    if(!API_KEY){el.textContent='';el.className='api-status-txt';return;}
-    if(ok){el.textContent='✓ Connected - last check '+new Date().toLocaleTimeString();el.className='api-status-txt ok';}
-    else{el.textContent='✗ '+(msg||'Error');el.className='api-status-txt err';}
     var btn=document.getElementById('apiBtn');
-    if(API_KEY)btn.classList.add('connected');else btn.classList.remove('connected');
+    if(ok){
+      el.textContent='✓ Live scores on - updated '+new Date().toLocaleTimeString();
+      el.className='api-status-txt ok';
+      btn.classList.add('connected');
+    }else{
+      el.textContent='✗ Feed unreachable ('+(msg||'error')+') - retrying';
+      el.className='api-status-txt err';
+      btn.classList.remove('connected');
+    }
   }
 
-  var pollTimer=null;
+  var pollTimer=null,sweepTimer=null;
   function startPolling(){
     if(pollTimer)clearInterval(pollTimer);
-    if(!API_KEY)return;
-    // Initial fetch
-    fetchLiveScores();
-    // Poll every 60s
+    if(sweepTimer)clearInterval(sweepTimer);
+    // Full sweep on load, then light live polls every 60s and a re-sweep
+    // every 10 min, both only while a match window is open.
+    sweepCalendar();
     pollTimer=setInterval(function(){
       if(shouldPoll())fetchLiveScores();
     },60000);
+    sweepTimer=setInterval(function(){
+      if(shouldPoll())sweepCalendar();
+    },600000);
   }
 
   // ── EVENTS ──
@@ -1077,20 +1107,9 @@
   document.getElementById('smClear').addEventListener('click',clearScoreFromModal);
   document.getElementById('sModalOverlay').addEventListener('click',function(e){if(e.target===this)closeScoreEdit();});
 
-  // API settings panel toggle
+  // Live scores status panel toggle
   document.getElementById('apiBtn').addEventListener('click',function(){
-    var panel=document.getElementById('apiPanel');
-    panel.classList.toggle('open');
-    if(panel.classList.contains('open')){
-      document.getElementById('apiKeyInput').value=API_KEY;
-    }
-  });
-  document.getElementById('apiKeyInput').addEventListener('change',function(){
-    var key=this.value.trim();
-    saveApiKey(key);
-    var btn=document.getElementById('apiBtn');
-    if(key){btn.classList.add('connected');startPolling();}
-    else{btn.classList.remove('connected');updateApiStatus(false);}
+    document.getElementById('apiPanel').classList.toggle('open');
   });
 
   // ── INIT ──
@@ -1098,15 +1117,12 @@
   var sf=load('wc26_follow');FOLLOW=(sf&&F[sf])?sf:'England';
   var stz=load('wc26_tz');TZSEL=(stz&&(stz==='device'||validTz[stz]))?stz:'device';
   loadScoresLS();
-  loadApiKey();
+  applySeed();
   buildFollowSelect();
   buildTzSelect();
   updateProgress();
   refresh();
-  if(API_KEY){
-    document.getElementById('apiBtn').classList.add('connected');
-    startPolling();
-  }
+  startPolling();
   setInterval(tickHero,1000);
   setInterval(function(){updateProgress();refresh();},60000);
 
