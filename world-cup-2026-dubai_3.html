@@ -217,6 +217,10 @@
   .st-row b{color:var(--txt);font-weight:700}
   .st-row .num{font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap}
   .prewc{display:inline-block;margin-left:6px;padding:1px 5px;border:1px solid var(--line2);border-radius:6px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--low);font-weight:700;vertical-align:1px}
+  .statschip{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,var(--gold-tint),transparent 70%),var(--card);border:1px solid var(--ko-border);border-radius:14px;padding:10px 15px;cursor:pointer;transition:.12s}
+  .statschip:active{transform:scale(.97)}
+  .statschip .big{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-ink)}
+  .statschip .sub{font-family:'Barlow',sans-serif;font-weight:600;font-size:11px;color:var(--mut)}
   .st-empty,.st-load{font-size:13px;color:var(--mut);padding:6px 0 2px;line-height:1.5}
   .st-warn{font-size:12px;color:var(--lfc);margin-bottom:10px;line-height:1.4}
   .st-note{font-size:10.5px;color:var(--low);line-height:1.55;margin:4px 0 12px}
@@ -322,6 +326,10 @@
       <span class="fl">Times</span>
       <select id="tzSelect" aria-label="Choose the timezone for kick-off times"></select>
     </label>
+    <button class="statschip" id="statsOpen" aria-label="Open team betting stats">
+      <span class="big">&#128202; Stats</span>
+      <span class="sub">pens &middot; corners &middot; cards</span>
+    </button>
   </div>
 
   <div class="hero" id="hero">
@@ -1365,6 +1373,7 @@
 
   // Betting stats modal
   document.getElementById('statsBtn').addEventListener('click',openStats);
+  document.getElementById('statsOpen').addEventListener('click',openStats);
   document.getElementById('stClose').addEventListener('click',closeStats);
   document.getElementById('stOverlay').addEventListener('click',function(e){if(e.target===this)closeStats();});
   document.getElementById('stTeam').addEventListener('change',function(){
