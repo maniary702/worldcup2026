@@ -217,12 +217,6 @@
   .st-row b{color:var(--txt);font-weight:700}
   .st-row .num{font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap}
   .prewc{display:inline-block;margin-left:6px;padding:1px 5px;border:1px solid var(--line2);border-radius:6px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--low);font-weight:700;vertical-align:1px}
-  .lutag{display:inline-block;margin-left:6px;padding:1px 5px;border:1px solid;border-radius:6px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;vertical-align:1px}
-  .lutag.xi{color:var(--pitch);border-color:var(--pitch)}
-  .lutag.sub{color:var(--gold-ink);border-color:var(--gold)}
-  .lutag.out{color:var(--low);border-color:var(--line2)}
-  .pen-src{font-size:10px;color:var(--low);margin-top:6px;line-height:1.4}
-  .pen-src.live{color:var(--pitch);font-weight:600}
   .statschip{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,var(--gold-tint),transparent 70%),var(--card);border:1px solid var(--ko-border);border-radius:14px;padding:10px 15px;cursor:pointer;transition:.12s}
   .statschip:active{transform:scale(.97)}
   .statschip .big{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-ink)}
@@ -334,7 +328,8 @@
     <div class="api-hint">
       Automatic, nothing to set up.<br>
       Scores come straight from FIFA's public feed and refresh every 60s while matches are on.<br>
-      You can still tap any card's edit button to set a score by hand; manual entries always win.
+      You can still tap any card's edit button to set a score by hand; manual entries always win.<br>
+      Build 12 Jun 2026 (squads verified) - if features look missing, refresh the page once.
     </div>
     <div class="api-status-txt" id="apiStatusTxt"></div>
   </div>
@@ -444,7 +439,7 @@
     <div class="st-mtitle" id="stMatchTitle" style="display:none"></div>
     <select class="st-teamsel" id="stTeam" aria-label="Choose a team"></select>
     <div class="statsbody" id="stBody"></div>
-    <div class="st-note">Corners and cards are counted from FIFA's official event feed: rolling last 4 games, World Cup matches first, topped up with pre-tournament internationals (tagged pre-WC). Corners show both what the team won and the match total (totals appear where both camps are covered). Penalty takers are a ranked depth chart researched against the official squads in June 2026, re-ranked live against the confirmed starting XI and bench once FIFA publishes the team sheets - always check team news before you stake. Bet responsibly.</div>
+    <div class="st-note">Corners and cards are counted from FIFA's official event feed: rolling last 4 games, World Cup matches first, topped up with pre-tournament internationals (tagged pre-WC). Penalty takers were researched against the official squads in June 2026 - always check team news before you stake. Bet responsibly.</div>
     <div class="sm-btns">
       <button class="sm-cancel" id="stClose" style="flex:1">Close</button>
     </div>
@@ -1099,35 +1094,32 @@
   // ══════════════════════════════════════
   // Researched 2026-06-12 against the official 26-man squads (Wikipedia squad
   // lists cross-referenced with RotoWire / KhelNow / AllAboutFPL taker lists and
-  // recent qualifier/friendly penalties). Ranked depth chart, best first: slots
-  // 3-4 are the next in line if the men ahead of them are not on the pitch.
-  // Once FIFA publishes a team sheet the list is re-ranked live against the
-  // starting XI and bench. Edit here and redeploy to update.
+  // recent qualifier/friendly penalties). Edit here and redeploy to update.
   var PEN_TAKERS={
-    'Mexico':['Raul Jimenez','Orbelin Pineda','Santiago Gimenez','Alexis Vega'],'South Africa':['Oswin Appollis','Lyle Foster','Themba Zwane','Teboho Mokoena'],
-    'South Korea':['Son Heung-min','Hwang Hee-chan','Lee Kang-in','Cho Gue-sung'],'Czech Republic':['Patrik Schick','Tomas Soucek','Adam Hlozek','Lukas Provod'],
-    'Canada':['Jonathan David','Promise David','Cyle Larin','Stephen Eustaquio'],'Bosnia & Herzegovina':['Edin Dzeko','Kerim Alajbegovic','Ermedin Demirovic','Haris Hajradinovic'],
-    'USA':['Christian Pulisic','Folarin Balogun','Timothy Weah','Malik Tillman'],'Paraguay':['Julio Enciso','Miguel Almiron','Antonio Sanabria','Gustavo Gomez'],
-    'Qatar':['Akram Afif','Almoez Ali','Hassan Al-Haydos','Edmilson Junior'],'Switzerland':['Granit Xhaka','Breel Embolo','Zeki Amdouni','Dan Ndoye'],
-    'Brazil':['Raphinha','Neymar','Vinicius Junior','Lucas Paqueta'],'Morocco':['Brahim Diaz','Achraf Hakimi','Ayoub El Kaabi','Hakim Ziyech'],
-    'Haiti':['Duckens Nazon','Wilson Isidor','Frantzdy Pierrot','Danley Jean Jacques'],'Scotland':['Scott McTominay','John McGinn','Che Adams','Ryan Christie'],
-    'Australia':['Ajdin Hrustic','Nestory Irankunda','Martin Boyle','Mitchell Duke'],'Turkey':['Hakan Calhanoglu','Arda Guler','Kerem Akturkoglu','Kenan Yildiz'],
-    'France':['Mbappe','Dembele','Olise','Thuram'],'Senegal':['Mane','Jackson','Ismaila Sarr','Boulaye Dia'],
-    'Japan':['Ueda','Doan','Minamino','Kubo'],'Netherlands':['Depay','Gakpo','Weghorst','Xavi Simons'],
-    'Germany':['Havertz','Kimmich','Wirtz','Fullkrug'],'Curacao':['Leandro Bacuna','Juninho Bacuna','Rangelo Janga','Kenji Gorre'],
-    'Ivory Coast':['Kessie','Sangare','Sebastien Haller','Nicolas Pepe'],'Ecuador':['Enner Valencia','Jordy Caicedo','Gonzalo Plata','Kevin Rodriguez'],
-    'Belgium':['De Bruyne','Lukaku','Tielemans','Trossard'],'Egypt':['Salah','Marmoush','Mostafa Mohamed','Trezeguet'],
-    'Iran':['Taremi','Hosseinzadeh','Azmoun','Ghoddos'],'New Zealand':['Chris Wood','Waine','Barbarouses','Garbett'],
-    'Spain':['Oyarzabal','Lamine Yamal','Morata','Ferran Torres'],'Cape Verde':['Mendes','Rodrigues','Bebe','Semedo'],
-    'Saudi Arabia':['Al-Dawsari','Al-Buraikan','Al-Shehri','Al-Juwayr'],'Uruguay':['Valverde','Nunez','De Arrascaeta','Pellistri'],
-    'Argentina':['Messi','Alvarez','Lautaro Martinez','Dybala'],'Algeria':['Mahrez','Amoura','Gouiri','Aouar'],
-    'Austria':['Arnautovic','Sabitzer','Gregoritsch','Baumgartner'],'Jordan':['Olwan','Tamari','Al-Naimat','Al-Mardi'],
-    'Portugal':['Ronaldo','Bruno Fernandes','Goncalo Ramos','Joao Felix'],'Colombia':['James Rodriguez','Luis Diaz','Quintero','Borre'],
-    'Norway':['Haaland','Odegaard','Sorloth','Berge'],'Iraq':['Aymen Hussein','Al-Ammari','Mohanad Ali','Zidane Iqbal'],
-    'England':['Kane','Gordon','Palmer','Saka'],'Croatia':['Modric','Budimir','Kramaric','Majer'],
-    'Ghana':['Jordan Ayew','Semenyo','Kudus','Inaki Williams'],'Panama':['Davis','Diaz','Waterman','Carrasquilla'],
-    'Sweden':['Gyokeres','Isak','Claesson','Elanga'],'DR Congo':['Wissa','Bakambu','Bongonda','Elia'],
-    'Uzbekistan':['Shomurodov','Shukurov','Fayzullaev','Sergeev'],'Tunisia':['Abdi','Gharbi','Mejbri','Achouri']
+    'Mexico':['Raul Jimenez','Orbelin Pineda'],'South Africa':['Oswin Appollis','Lyle Foster'],
+    'South Korea':['Son Heung-min','Hwang Hee-chan'],'Czech Republic':['Patrik Schick','Tomas Soucek'],
+    'Canada':['Jonathan David','Promise David'],'Bosnia & Herzegovina':['Edin Dzeko','Kerim Alajbegovic'],
+    'USA':['Christian Pulisic','Folarin Balogun'],'Paraguay':['Julio Enciso','Miguel Almiron'],
+    'Qatar':['Akram Afif','Almoez Ali'],'Switzerland':['Granit Xhaka','Breel Embolo'],
+    'Brazil':['Raphinha','Neymar'],'Morocco':['Brahim Diaz','Achraf Hakimi'],
+    'Haiti':['Duckens Nazon','Wilson Isidor'],'Scotland':['Scott McTominay','John McGinn'],
+    'Australia':['Ajdin Hrustic','Nestory Irankunda'],'Turkey':['Hakan Calhanoglu','Arda Guler'],
+    'France':['Mbappe','Dembele'],'Senegal':['Mane','Jackson'],
+    'Japan':['Ueda','Doan'],'Netherlands':['Depay','Gakpo'],
+    'Germany':['Havertz','Kimmich'],'Curacao':['Leandro Bacuna','Juninho Bacuna'],
+    'Ivory Coast':['Kessie','Sangare'],'Ecuador':['Enner Valencia','Jordy Caicedo'],
+    'Belgium':['De Bruyne','Lukaku'],'Egypt':['Salah','Marmoush'],
+    'Iran':['Taremi','Hosseinzadeh'],'New Zealand':['Chris Wood','Waine'],
+    'Spain':['Oyarzabal','Lamine Yamal'],'Cape Verde':['Mendes','Rodrigues'],
+    'Saudi Arabia':['Al-Dawsari','Al-Buraikan'],'Uruguay':['Valverde','Nunez'],
+    'Argentina':['Messi','Alvarez'],'Algeria':['Mahrez','Amoura'],
+    'Austria':['Arnautovic','Sabitzer'],'Jordan':['Olwan','Al-Taamari'],
+    'Portugal':['Ronaldo','Bruno Fernandes'],'Colombia':['James Rodriguez','Luis Diaz'],
+    'Norway':['Haaland','Odegaard'],'Iraq':['Aymen Hussein','Al-Ammari'],
+    'England':['Kane','Gordon'],'Croatia':['Modric','Budimir'],
+    'Ghana':['Jordan Ayew','Semenyo'],'Panama':['Davis','Diaz'],
+    'Sweden':['Gyokeres','Isak'],'DR Congo':['Wissa','Bakambu'],
+    'Uzbekistan':['Shomurodov','Shukurov'],'Tunisia':['Abdi','Gharbi']
   };
 
   // Last <=4 pre-tournament internationals per team (newest first), counted from
@@ -1237,151 +1229,33 @@
     nextBatch();
   }
 
-  // Match total corners for a pre-WC friendly: both camps keep their own count
-  // in PRE_STATS (lists are newest first), so pair my k-th meeting with an
-  // opponent against their k-th meeting with us. Null when the opponent is not
-  // covered (non-qualified sides like Guatemala or Gibraltar).
-  function preTotal(team,idx){
-    var mine=PRE_STATS[team]||[],e=mine[idx],theirs=PRE_STATS[e.o];
-    if(!theirs)return null;
-    var k=0,seen=0,i;
-    for(i=0;i<idx;i++)if(mine[i].o===e.o)k++;
-    for(i=0;i<theirs.length;i++)if(theirs[i].o===team){if(seen===k)return e.c+theirs[i].c;seen++;}
-    return null;
-  }
-
   // Rolling 4-game window: WC games first (newest first), topped up with
   // pre-tournament internationals baked in at build time (PRE_STATS).
-  // t = total corners in that game (both sides), null when unknown.
   function teamWindow(team){
     var rows=[],k,i;
-    for(k in mstats){var ms=mstats[k];if(ms.teams&&ms.teams[team])rows.push({d:ms.d,me:ms.teams[team],them:ms.teams[ms.teams[team].opp]||null});}
+    for(k in mstats){var ms=mstats[k];if(ms.teams&&ms.teams[team])rows.push({d:ms.d,me:ms.teams[team]});}
     rows.sort(function(x,y){return y.d-x.d;});
     var win=[];
-    for(i=0;i<rows.length&&win.length<4;i++){var me=rows[i].me,th=rows[i].them;
-      win.push({o:me.opp,c:me.c,y:me.y,r:me.r,t:th?me.c+th.c:null,pre:false});}
+    for(i=0;i<rows.length&&win.length<4;i++)win.push({o:rows[i].me.opp,c:rows[i].me.c,y:rows[i].me.y,r:rows[i].me.r,pre:false});
     var pre=PRE_STATS[team]||[];
-    for(i=0;i<pre.length&&win.length<4;i++)win.push({o:pre[i].o,c:pre[i].c,y:pre[i].y,r:pre[i].r,t:preTotal(team,i),pre:true});
+    for(i=0;i<pre.length&&win.length<4;i++)win.push({o:pre[i].o,c:pre[i].c,y:pre[i].y,r:pre[i].r,pre:true});
     return win;
   }
-
-  // ── live team sheets (FIFA publishes ~75 min before kick-off) ──
-  var lineups={},luTimer=null,stNext=null; // lineups keyed by FIFA IdMatch
-  function normName(s){
-    s=(s||'').toLowerCase();
-    try{s=s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');}catch(e){}
-    return s.replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
-  }
-  // True when every word of our hand-kept taker name appears in one of the
-  // sheet names ('Mbappe' matches 'Kylian Mbappe', 'Son Heung-min' matches
-  // 'Heung-Min SON').
-  function nameInList(taker,list){
-    var tt=normName(taker).split(' ');
-    for(var i=0;i<list.length;i++){
-      var hay=' '+list[i]+' ',all=true;
-      for(var j=0;j<tt.length;j++){if(hay.indexOf(' '+tt[j]+' ')<0){all=false;break;}}
-      if(all)return true;
-    }
-    return false;
-  }
-  // Map one of our fixtures to its FIFA calendar entry (same pairing rule as
-  // applyApiMatch: team pair + kickoff within 36h).
-  function findFifaMatch(mm){
-    if(!calCache||!mm)return null;
-    var rs=calCache.Results||[];
-    for(var i=0;i<rs.length;i++){var am=rs[i];
-      if(!am.Home||!am.Away||!am.Home.TeamName||!am.Away.TeamName)continue;
-      var h=mapTeam((am.Home.TeamName[0]||{}).Description||''),a=mapTeam((am.Away.TeamName[0]||{}).Description||'');
-      if(!((mm.a===h&&mm.b===a)||(mm.a===a&&mm.b===h)))continue;
-      if(Math.abs(kickoffUTC(mm).getTime()-new Date(am.Date).getTime())>36*3600000)continue;
-      return am;}
-    return null;
-  }
-  function lineupWindow(mm){
-    if(!mm)return false;
-    var ko=kickoffUTC(mm).getTime(),now=Date.now();
-    return now>=ko-100*60000&&now<=ko+150*60000;
-  }
-  function sheetOf(side){ // FIFA player Status: 1 = starting XI, 2 = bench
-    var out={xi:[],subs:[]},ps=(side&&side.Players)||[];
-    for(var i=0;i<ps.length;i++){var p=ps[i];
-      var nm=((p.ShortName&&p.ShortName[0]&&p.ShortName[0].Description)||(p.PlayerName&&p.PlayerName[0]&&p.PlayerName[0].Description)||'');
-      if(!nm)continue;
-      if(p.Status===1)out.xi.push(normName(nm));
-      else if(p.Status===2)out.subs.push(normName(nm));}
-    return out;
-  }
-  function fetchLineup(mm,cb){
-    var fm=findFifaMatch(mm);
-    if(!fm){cb(null);return;}
-    var cached=lineups[fm.IdMatch];
-    if(cached&&Date.now()-cached.at<55000){cb(cached);return;}
-    fetch('https://api.fifa.com/api/v3/live/football/17/285023/'+fm.IdStage+'/'+fm.IdMatch+'?language=en')
-    .then(function(r){return r.ok?r.json():null;})
-    .then(function(d){
-      if(!d||!d.Home||!d.Away){cb(cached||null);return;}
-      var h=mapTeam((d.Home.TeamName&&d.Home.TeamName[0]||{}).Description||''),
-          a=mapTeam((d.Away.TeamName&&d.Away.TeamName[0]||{}).Description||'');
-      var entry={at:Date.now(),byTeam:{}};
-      entry.byTeam[h]=sheetOf(d.Home);entry.byTeam[a]=sheetOf(d.Away);
-      lineups[fm.IdMatch]=entry;cb(entry);
-    })
-    .catch(function(e){cb(cached||null);});
-  }
-  function cachedLineup(mm){var fm=findFifaMatch(mm);return fm?(lineups[fm.IdMatch]||null):null;}
-  function penConfirmed(lu,team){var sq=lu&&lu.byTeam&&lu.byTeam[team];return !!(sq&&(sq.xi.length||sq.subs.length));}
-  // Ranked taker rows: with a confirmed sheet, starters keep the top slots and
-  // the next men in line on the bench follow; anyone left out is tagged.
-  function penRowsHtml(team,lu){
-    var pens=PEN_TAKERS[team]||[];
-    if(!pens.length)return '<div class="st-pen" style="color:var(--low)">TBC</div>';
-    var parts=[],i;
-    if(penConfirmed(lu,team)){
-      var sq=lu.byTeam[team],xi=[],sub=[],out=[];
-      for(i=0;i<pens.length;i++){
-        if(nameInList(pens[i],sq.xi))xi.push(pens[i]);
-        else if(nameInList(pens[i],sq.subs))sub.push(pens[i]);
-        else out.push(pens[i]);}
-      var rk=1;
-      for(i=0;i<xi.length;i++)parts.push('<span class="rank">'+(rk++)+'</span> '+escapeHtml(xi[i])+' <span class="lutag xi">XI</span>');
-      for(i=0;i<sub.length;i++)parts.push('<span class="rank">'+(rk++)+'</span> '+escapeHtml(sub[i])+' <span class="lutag sub">Sub</span>');
-      for(i=0;i<out.length;i++)parts.push('<span class="rank">-</span> '+escapeHtml(out[i])+' <span class="lutag out">Out</span>');
-    }else{
-      for(i=0;i<pens.length;i++)parts.push('<span class="rank">'+(i+1)+'</span> '+escapeHtml(pens[i]));
-    }
-    return '<div class="st-pen">'+parts.join('<br>')+'</div>';
-  }
-  // While the stats modal is open, poll the relevant team sheet once a minute
-  // inside the lineup window and re-render as soon as the XI drops.
-  function startLineupWatch(){
-    stopLineupWatch();
-    function tick(){
-      var mm=stMatch||stNext;
-      if(!lineupWindow(mm))return;
-      fetchLineup(mm,function(entry){
-        if(!entry)return;
-        if(!document.getElementById('stOverlay').classList.contains('open'))return;
-        if(stMatch)renderMatchStats(null);else renderStats(null);
-      });
-    }
-    tick();
-    luTimer=setInterval(tick,60000);
-  }
-  function stopLineupWatch(){if(luTimer){clearInterval(luTimer);luTimer=null;}}
 
   var stViewTeam=null;
   function avg1(t,n){return (Math.round(t/n*10)/10).toFixed(1);}
   function stRows(g,kind){
     var h='';
     for(var i=0;i<g.length;i++){var e=g[i];
-      var val=kind==='c'?(e.c+' won'+(e.t!=null?' · '+e.t+' total':'')):e.y+'Y '+e.r+'R';
+      var val=kind==='c'?e.c+' corners':e.y+'Y '+e.r+'R';
       h+='<div class="st-row"><span>v <b>'+escapeHtml(e.o)+'</b>'+(e.pre?' <span class="prewc">pre-WC</span>':'')+'</span><span class="num">'+val+'</span></div>';}
     return h;
   }
   function renderStats(warn){
     var team=stViewTeam,body=document.getElementById('stBody');
-    var g=teamWindow(team),n=g.length,c=0,y=0,r=0,tSum=0,tN=0;
-    for(var i=0;i<n;i++){c+=g[i].c;y+=g[i].y;r+=g[i].r;if(g[i].t!=null){tSum+=g[i].t;tN++;}}
+    var pens=PEN_TAKERS[team]||['TBC','TBC'];
+    var g=teamWindow(team),n=g.length,c=0,y=0,r=0;
+    for(var i=0;i<n;i++){c+=g[i].c;y+=g[i].y;r+=g[i].r;}
     var html='';
     if(warn)html+='<div class="st-warn">'+escapeHtml(warn)+'</div>';
     var now=Date.now(),next=null;
@@ -1395,20 +1269,14 @@
       var opp=next.a===team?next.b:next.a,o=bits(next);
       html+='<div class="st-next">Next: '+(F[opp]||'')+' <b>v '+escapeHtml(opp)+'</b> · '+fmtShort(dayKey(o))+' · '+fmtClock(o)+'</div>';
     }
-    stNext=next;
-    var lu=cachedLineup(next),conf=penConfirmed(lu,team);
-    html+='<div class="st-sec"><h4>Penalty takers</h4>'+penRowsHtml(team,lu)
-        +'<div class="pen-src'+(conf?' live':'')+'">'
-        +(conf?'Re-ranked from the confirmed team sheet':'Squad pecking order - re-ranks live once the starting XI drops (~75 min before kick-off)')
-        +'</div></div>';
+    html+='<div class="st-sec"><h4>Penalty takers</h4><div class="st-pen">'
+        +'<span class="rank">1</span> '+escapeHtml(pens[0]||'TBC')+'<br>'
+        +'<span class="rank">2</span> '+escapeHtml(pens[1]||'TBC')+'</div></div>';
     if(!n){
       html+='<div class="st-sec"><h4>Corners &amp; cards</h4><div class="st-empty">No covered games for this team yet. Averages appear right after their first match.</div></div>';
     }else{
       var lbl=n===1?'last game':'last '+n+' games';
-      html+='<div class="st-sec"><h4>Corners - '+lbl+'</h4>'
-          +'<div class="st-big">'+avg1(c,n)+'<small>won per game</small></div>'
-          +(tN?'<div class="st-big">'+avg1(tSum,tN)+'<small>match total per game</small></div>':'')
-          +stRows(g,'c')+'</div>';
+      html+='<div class="st-sec"><h4>Corners - '+lbl+'</h4><div class="st-big">'+avg1(c,n)+'<small>per game</small></div>'+stRows(g,'c')+'</div>';
       html+='<div class="st-sec"><h4>Cards - '+lbl+'</h4>'
           +'<div class="st-big"><span class="yc"></span>'+avg1(y,n)+'<small>yellows per game</small></div>'
           +'<div class="st-big"><span class="rc"></span>'+avg1(r,n)+'<small>reds per game</small></div>'
@@ -1432,9 +1300,9 @@
     buildStatsSelect();
     document.getElementById('stOverlay').classList.add('open');
     document.getElementById('stBody').innerHTML='<div class="st-load">Pulling match data from FIFA…</div>';
-    ensureStats(function(warn){renderStats(warn);startLineupWatch();});
+    ensureStats(function(warn){renderStats(warn);});
   }
-  function closeStats(){stopLineupWatch();document.getElementById('stOverlay').classList.remove('open');}
+  function closeStats(){document.getElementById('stOverlay').classList.remove('open');}
 
   // ── head-to-head stats for one fixture (tap a match card) ──
   var stMatch=null;
@@ -1449,20 +1317,20 @@
     t.innerHTML=(F[mm.a]||'')+' '+escapeHtml(mm.a)+'<span class="vsx">v</span>'+(F[mm.b]||'')+' '+escapeHtml(mm.b);
     document.getElementById('stOverlay').classList.add('open');
     document.getElementById('stBody').innerHTML='<div class="st-load">Pulling match data from FIFA…</div>';
-    ensureStats(function(warn){renderMatchStats(warn);startLineupWatch();});
+    ensureStats(function(warn){renderMatchStats(warn);});
   }
   function h2hCol(team){
     var real=!!F[team];
+    var pens=PEN_TAKERS[team]||['-','-'];
     var g=real?teamWindow(team):[];
-    var n=g.length,c=0,y=0,r=0,tSum=0,tN=0,seqC=[],seqYR=[];
+    var n=g.length,c=0,y=0,r=0,seqC=[],seqYR=[];
     for(var i=0;i<n;i++){
       c+=g[i].c;y+=g[i].y;r+=g[i].r;
-      if(g[i].t!=null){tSum+=g[i].t;tN++;}
-      seqC.push(g[i].c+'/'+(g[i].t!=null?g[i].t:'?'));
+      seqC.push(g[i].c);
       seqYR.push(g[i].y+'Y'+(g[i].r?'+'+g[i].r+'R':''));
     }
-    return {real:real,team:team,n:n,tN:tN,
-      cAvg:n?avg1(c,n):'-',tAvg:tN?avg1(tSum,tN):'-',yAvg:n?avg1(y,n):'-',rAvg:n?avg1(r,n):'-',
+    return {real:real,team:team,pens:pens,n:n,
+      cAvg:n?avg1(c,n):'-',yAvg:n?avg1(y,n):'-',rAvg:n?avg1(r,n):'-',
       seqC:n?seqC.join(' · '):'no data',seqYR:n?seqYR.join(' · '):'no data'};
   }
   function h2hHead(team){
@@ -1472,17 +1340,13 @@
     var A=h2hCol(stMatch.a),B=h2hCol(stMatch.b);
     var html='';
     if(warn)html+='<div class="st-warn">'+escapeHtml(warn)+'</div>';
-    var lu=cachedLineup(stMatch);
-    var conf=penConfirmed(lu,stMatch.a)||penConfirmed(lu,stMatch.b);
     function penCol(C){
       if(!C.real)return '<div class="st-pen" style="color:var(--low)">Team TBD</div>';
-      return penRowsHtml(C.team,lu);
+      return '<div class="st-pen"><span class="rank">1</span> '+escapeHtml(C.pens[0])+'<br><span class="rank">2</span> '+escapeHtml(C.pens[1])+'</div>';
     }
     function corCol(C){
       if(!C.real||!C.n)return '<div class="st-big">-</div><div class="seq">no data</div>';
-      return '<div class="st-big">'+C.cAvg+'<small>won/g</small></div>'
-        +(C.tN?'<div class="st-big">'+C.tAvg+'<small>total/g</small></div>':'')
-        +'<div class="seq">'+escapeHtml(C.seqC)+(C.n<4?' ('+C.n+'g)':'')+'</div>';
+      return '<div class="st-big">'+C.cAvg+'<small>/game</small></div><div class="seq">'+escapeHtml(C.seqC)+(C.n<4?' ('+C.n+'g)':'')+'</div>';
     }
     function crdCol(C){
       if(!C.real||!C.n)return '<div class="st-big">-</div><div class="seq">no data</div>';
@@ -1492,11 +1356,8 @@
     }
     html+='<div class="st-sec"><h4>Penalty takers</h4><div class="h2h">'+
       '<div class="col">'+h2hHead(stMatch.a)+penCol(A)+'</div>'+
-      '<div class="col">'+h2hHead(stMatch.b)+penCol(B)+'</div></div>'+
-      '<div class="pen-src'+(conf?' live':'')+'">'+
-      (conf?'Re-ranked from the confirmed team sheets':'Squad pecking order - re-ranks live once the XIs drop (~75 min before kick-off)')+
-      '</div></div>';
-    html+='<div class="st-sec"><h4>Corners - last 4 games (won / match total)</h4><div class="h2h">'+
+      '<div class="col">'+h2hHead(stMatch.b)+penCol(B)+'</div></div></div>';
+    html+='<div class="st-sec"><h4>Corners - last 4 games</h4><div class="h2h">'+
       '<div class="col">'+h2hHead(stMatch.a)+corCol(A)+'</div>'+
       '<div class="col">'+h2hHead(stMatch.b)+corCol(B)+'</div></div></div>';
     html+='<div class="st-sec"><h4>Cards - last 4 games</h4><div class="h2h">'+
@@ -1609,7 +1470,7 @@
   document.getElementById('stClose').addEventListener('click',closeStats);
   document.getElementById('stOverlay').addEventListener('click',function(e){if(e.target===this)closeStats();});
   document.getElementById('stTeam').addEventListener('change',function(){
-    if(F[this.value]){stViewTeam=this.value;renderStats(null);startLineupWatch();}
+    if(F[this.value]){stViewTeam=this.value;renderStats(null);}
   });
 
   // ── INIT ──
