@@ -380,7 +380,7 @@
       Automatic, nothing to set up.<br>
       Scores come straight from FIFA's public feed and refresh every 60s while matches are on.<br>
       You can still tap any card's edit button to set a score by hand; manual entries always win.<br>
-      Build 12 Jun 2026 v7 (knockout auto-fill - every game live through the final) - if features look missing, refresh the page once.
+      Build 12 Jun 2026 v8 (self-correcting takers: learns from pens taken, flags absentees) - if features look missing, refresh the page once.
     </div>
     <div class="api-status-txt" id="apiStatusTxt"></div>
   </div>
@@ -1271,17 +1271,17 @@
     'Czech Republic':[{o:'Denmark',c:7,tc:11,y:1,r:0},{o:'Republic of Ireland',c:6,tc:15,y:1,r:0},{o:'Gibraltar',c:12,tc:13,y:0,r:0},{o:'Faroe Islands',c:7,tc:8,y:1,r:0}],
     'DR Congo':[{o:'Chile',c:7,tc:9,y:1,r:0},{o:'Denmark',c:4,tc:8,y:0,r:0},{o:'Jamaica',c:5,tc:12,y:0,r:0},{o:'Algeria',c:6,tc:10,y:2,r:0}],
     'Ecuador':[{o:'Guatemala',c:6,tc:6,y:3,r:0},{o:'Saudi Arabia',c:2,tc:4,y:1,r:0},{o:'Netherlands',c:10,tc:12,y:2,r:0},{o:'Morocco',c:1,tc:3,y:0,r:0}],
-    'Egypt':[{o:'Brazil',c:3,tc:8,y:1,r:0},{o:'Russia',c:5,tc:11,y:1,r:0},{o:'Spain',c:0,tc:11,y:4,r:0},{o:'Saudi Arabia',c:1,tc:5,y:0,r:0}],
+    'Egypt':[{o:'Brazil',c:3,tc:8,y:1,r:0},{o:'Russia',c:5,tc:11,y:1,r:0},{o:'Spain',c:0,tc:11,y:5,r:1},{o:'Saudi Arabia',c:1,tc:5,y:0,r:0}],
     'England':[{o:'Costa Rica',c:11,tc:12,y:0,r:0},{o:'New Zealand',c:8,tc:9,y:0,r:0},{o:'Japan',c:11,tc:12,y:0,r:0},{o:'Uruguay',c:7,tc:7,y:1,r:0}],
     'France':[{o:'Northern Ireland',c:5,tc:6,y:0,r:0},{o:'Ivory Coast',c:8,tc:10,y:0,r:0},{o:'Colombia',c:5,tc:14,y:3,r:0},{o:'Brazil',c:2,tc:7,y:3,r:1}],
     'Germany':[{o:'USA',c:2,tc:12,y:3,r:0},{o:'Finland',c:10,tc:13,y:0,r:0},{o:'Ghana',c:9,tc:13,y:1,r:0},{o:'Switzerland',c:10,tc:10,y:0,r:0}],
     'Ghana':[{o:'Wales',c:4,tc:9,y:2,r:0},{o:'Mexico',c:3,tc:12,y:1,r:0},{o:'Germany',c:4,tc:13,y:3,r:0},{o:'Austria',c:3,tc:8,y:2,r:0}],
-    'Haiti':[{o:'Peru',c:3,tc:6,y:1,r:0},{o:'New Zealand',c:5,tc:13,y:0,r:0},{o:'Iceland',c:1,tc:1,y:2,r:0},{o:'Tunisia',c:7,tc:10,y:3,r:0}],
-    'Iran':[{o:'Russia',c:6,tc:13,y:1,r:0},{o:'Korea DPR',c:2,tc:8,y:1,r:0},{o:'Qatar',c:3,tc:6,y:3,r:0}],
+    'Haiti':[{o:'Peru',c:3,tc:6,y:1,r:0},{o:'New Zealand',c:5,tc:13,y:0,r:0},{o:'Iceland',c:1,tc:1,y:2,r:0},{o:'Tunisia',c:7,tc:10,y:4,r:1}],
+    'Iran':[{o:'Russia',c:6,tc:13,y:1,r:0},{o:'Korea DPR',c:2,tc:8,y:1,r:0},{o:'Qatar',c:3,tc:6,y:4,r:1}],
     'Iraq':[{o:'Spain',c:3,tc:8,y:2,r:0},{o:'Bolivia',c:2,tc:18,y:3,r:0},{o:'Jordan',c:12,tc:14,y:0,r:0},{o:'Algeria',c:1,tc:7,y:0,r:1}],
     'Ivory Coast':[{o:'France',c:2,tc:10,y:1,r:0},{o:'Scotland',c:5,tc:12,y:0,r:0},{o:'South Korea',c:5,tc:12,y:0,r:0},{o:'Egypt',c:7,tc:10,y:0,r:0}],
     'Japan':[{o:'Iceland',c:5,tc:6,y:0,r:0},{o:'England',c:1,tc:12,y:2,r:0},{o:'Scotland',c:8,tc:11,y:2,r:0},{o:'Bolivia',c:1,tc:3,y:2,r:0}],
-    'Jordan':[{o:'Colombia',c:1,tc:4,y:1,r:0},{o:'Switzerland',c:4,tc:10,y:0,r:0},{o:'Morocco',c:2,tc:11,y:2,r:0},{o:'Saudi Arabia',c:4,tc:8,y:1,r:0}],
+    'Jordan':[{o:'Colombia',c:1,tc:4,y:2,r:1},{o:'Switzerland',c:4,tc:10,y:0,r:0},{o:'Morocco',c:2,tc:11,y:2,r:0},{o:'Saudi Arabia',c:4,tc:8,y:1,r:0}],
     'Mexico':[{o:'Serbia',c:6,tc:7,y:2,r:0},{o:'Australia',c:5,tc:8,y:1,r:0},{o:'Ghana',c:9,tc:12,y:1,r:0},{o:'Belgium',c:3,tc:5,y:2,r:0}],
     'Morocco':[{o:'Norway',c:3,tc:14,y:1,r:0},{o:'Madagascar',c:12,tc:13,y:2,r:0},{o:'Paraguay',c:1,tc:4,y:3,r:0},{o:'Ecuador',c:2,tc:3,y:1,r:0}],
     'Netherlands':[{o:'Uzbekistan',c:3,tc:6,y:1,r:1},{o:'Algeria',c:6,tc:9,y:0,r:0},{o:'Ecuador',c:2,tc:12,y:0,r:1},{o:'Norway',c:8,tc:10,y:0,r:0}],
@@ -1293,23 +1293,34 @@
     'Qatar':[{o:'El Salvador',c:3,tc:7,y:1,r:0},{o:'Republic of Ireland',c:3,tc:10,y:0,r:1},{o:'Tunisia',c:10,tc:14,y:0,r:0},{o:'Syria',c:7,tc:11,y:2,r:0}],
     'Saudi Arabia':[{o:'Senegal',c:1,tc:4,y:3,r:0},{o:'Puerto Rico',c:5,tc:7,y:0,r:0},{o:'Ecuador',c:2,tc:4,y:1,r:0},{o:'Serbia',c:1,tc:11,y:2,r:0}],
     'Scotland':[{o:'Bolivia',c:6,tc:9,y:1,r:0},{o:'Curacao',c:8,tc:10,y:2,r:0},{o:'Ivory Coast',c:7,tc:12,y:0,r:0},{o:'Japan',c:3,tc:11,y:0,r:0}],
-    'Senegal':[{o:'Saudi Arabia',c:3,tc:4,y:2,r:0},{o:'USA',c:7,tc:11,y:0,r:0},{o:'Peru',c:7,tc:13,y:1,r:0},{o:'Morocco',c:8,tc:18,y:5,r:0}],
+    'Senegal':[{o:'Saudi Arabia',c:3,tc:4,y:3,r:1},{o:'USA',c:7,tc:11,y:0,r:0},{o:'Peru',c:7,tc:13,y:1,r:0},{o:'Morocco',c:8,tc:18,y:5,r:0}],
     'South Africa':[{o:'Nicaragua',c:6,tc:7,y:0,r:0},{o:'Panama',c:1,tc:2,y:3,r:0},{o:'Panama',c:5,tc:6,y:1,r:0},{o:'Cameroon',c:6,tc:9,y:5,r:0}],
     'South Korea':[{o:'El Salvador',c:8,tc:10,y:4,r:0},{o:'Trinidad and Tobago',c:7,tc:8,y:1,r:0},{o:'Austria',c:6,tc:10,y:0,r:0},{o:'Ivory Coast',c:7,tc:12,y:0,r:0}],
     'Spain':[{o:'Peru',c:6,tc:10,y:0,r:0},{o:'Iraq',c:5,tc:8,y:2,r:0},{o:'Egypt',c:11,tc:11,y:0,r:0},{o:'Serbia',c:5,tc:6,y:0,r:0}],
     'Sweden':[{o:'Greece',c:1,tc:5,y:0,r:0},{o:'Norway',c:1,tc:7,y:1,r:0},{o:'Poland',c:2,tc:11,y:2,r:0},{o:'Ukraine',c:3,tc:12,y:1,r:0}],
     'Switzerland':[{o:'Australia',c:7,tc:9,y:3,r:0},{o:'Jordan',c:6,tc:10,y:0,r:0},{o:'Norway',c:2,tc:6,y:0,r:0},{o:'Germany',c:0,tc:10,y:0,r:0}],
-    'Tunisia':[{o:'Belgium',c:0,tc:14,y:1,r:0},{o:'Austria',c:4,tc:6,y:1,r:0},{o:'Canada',c:1,tc:10,y:2,r:0},{o:'Haiti',c:3,tc:10,y:2,r:0}],
+    'Tunisia':[{o:'Belgium',c:0,tc:14,y:2,r:1},{o:'Austria',c:4,tc:6,y:1,r:0},{o:'Canada',c:1,tc:10,y:2,r:0},{o:'Haiti',c:3,tc:10,y:2,r:0}],
     'Turkey':[{o:'Venezuela',c:12,tc:14,y:1,r:0},{o:'North Macedonia',c:13,tc:14,y:0,r:0},{o:'Kosovo',c:2,tc:5,y:5,r:0},{o:'Romania',c:9,tc:12,y:2,r:0}],
     'USA':[{o:'Germany',c:10,tc:12,y:1,r:0},{o:'Senegal',c:4,tc:11,y:1,r:0},{o:'Portugal',c:2,tc:10,y:1,r:0},{o:'Belgium',c:6,tc:12,y:2,r:0}],
     'Uruguay':[{o:'Algeria',c:6,tc:11,y:3,r:0},{o:'England',c:0,tc:7,y:2,r:0},{o:'USA',c:5,tc:12,y:2,r:1},{o:'Mexico',c:0,tc:0,y:6,r:0}],
     'Uzbekistan':[{o:'Netherlands',c:3,tc:6,y:1,r:0},{o:'Canada',c:3,tc:10,y:2,r:0},{o:'Venezuela',c:9,tc:9,y:0,r:0},{o:'Gabon',c:14,tc:20,y:0,r:0}]
   };
 
-  var calCache=null,calCacheAt=0;
+  var calCache=null,calCacheAt=0,calFetching=null;
+  // Single shared in-flight calendar fetch so concurrent callers never duplicate it
+  function freshCal(ok,fail){
+    if(calCache&&Date.now()-calCacheAt<=600000){ok();return;}
+    if(!calFetching){
+      calFetching=fetch(FIFA_CAL)
+        .then(function(r){if(!r.ok)throw new Error('FIFA '+r.status);return r.json();})
+        .then(function(d){calCache=d;calCacheAt=Date.now();calFetching=null;},
+              function(e){calFetching=null;throw e;});
+    }
+    calFetching.then(ok,fail);
+  }
   var mstats={};   // per finished match: {d:kickoffMs, teams:{name:{c,y,r,opp}}}, keyed by FIFA IdMatch
-  function loadMstats(){try{var s=load('wc26_mstats');if(s)mstats=JSON.parse(s);}catch(e){mstats={};}}
-  function saveMstats(){save('wc26_mstats',JSON.stringify(mstats));}
+  function loadMstats(){try{var s=load('wc26_mstats2');if(s)mstats=JSON.parse(s);}catch(e){mstats={};}}
+  function saveMstats(){save('wc26_mstats2',JSON.stringify(mstats));}
 
   // Count corners (event type 16), yellows (2) and reds (3) per team from one match timeline.
   // Type 71 'Red card given' is unattributed VAR noise - ignored.
@@ -1323,6 +1334,7 @@
       if(t===16)agg[nm].c++;
       else if(t===2)agg[nm].y++;
       else if(t===3)agg[nm].r++;
+      else if(t===4){agg[nm].y++;agg[nm].r++;} // second yellow = a yellow shown plus the red
     }
     return {d:new Date(fm.Date).getTime(),teams:agg};
   }
@@ -1330,10 +1342,8 @@
   // Make sure stats exist for every finished match, fetching missing timelines in batches of 4.
   function ensureStats(cb){
     if(!calCache||Date.now()-calCacheAt>600000){
-      fetch(FIFA_CAL)
-      .then(function(r){if(!r.ok)throw new Error('FIFA '+r.status);return r.json();})
-      .then(function(d){calCache=d;calCacheAt=Date.now();ensureStats(cb);})
-      .catch(function(e){cb('Could not reach the FIFA feed - showing what is cached.');});
+      freshCal(function(){ensureStats(cb);},
+               function(e){cb('Could not reach the FIFA feed - showing what is cached.');});
       return;
     }
     var rs=calCache.Results||[],fin=[],missing=[];
@@ -1397,29 +1407,39 @@
     var games=[];
     for(k in pstats){var ms=pstats[k];if(ms.sq&&ms.sq[team]&&ms.sq[team].length)games.push(ms);}
     games.sort(function(x,y){return x.d-y.d;});
-    if(games.length>=2){
-      var s1=games[games.length-1].sq[team],s2=games[games.length-2].sq[team];
-      for(i=0;i<out.length;i++){
-        if(!nameInList(out[i].name,s1)&&!nameInList(out[i].name,s2))out[i].nsq=true;
-      }
-    }
-    var lastPen=null;
+    // latest in-game pen, plus that game's squad for ambiguity checks
+    var lastPen=null,penSq=null;
     for(i=0;i<games.length;i++){var ps2=games[i].pens||[];
-      for(j=0;j<ps2.length;j++)if(ps2[j].t===team)lastPen=ps2[j];
+      for(j=0;j<ps2.length;j++)if(ps2[j].t===team){lastPen=ps2[j];penSq=games[i].sq[team];}
     }
     if(lastPen){
+      // a research name matching 2+ squad players (e.g. 'Isak' vs Isak Hien) is too
+      // ambiguous to award credit or drive a promotion - skip it, keep research order
+      var clear=function(nm){return nameMatchCount(nm,penSq||[])<2;};
       var tIdx=-1;
-      for(i=0;i<out.length;i++){if(nameInList(out[i].name,[lastPen.n])){tIdx=i;break;}}
+      for(i=0;i<out.length;i++){
+        if(nameInList(out[i].name,[lastPen.n])&&clear(out[i].name)){tIdx=i;break;}
+      }
       if(tIdx===0){out[0].obs=true;}
       else{
         var higherOn=false,lim=(tIdx===-1)?out.length:tIdx;
-        for(i=0;i<lim;i++){if(nameInList(out[i].name,lastPen.on)){higherOn=true;break;}}
+        for(i=0;i<lim;i++){
+          if(nameInList(out[i].name,lastPen.on)&&clear(out[i].name)){higherOn=true;break;}
+        }
         if(higherOn){
-          var promoted=(tIdx>-1)?out.splice(tIdx,1)[0]:{name:lastPen.n,nsq:false};
+          var promoted=(tIdx>-1)?out.splice(tIdx,1)[0]:{name:lastPen.n,obs:false,nsq:false};
           promoted.obs=true;
           out.unshift(promoted);
           out=out.slice(0,4);
         }else if(tIdx>-1){out[tIdx].obs=true;}
+      }
+    }
+    // flag AFTER any promotion so an unlisted promoted taker is checked too;
+    // flag only when confidently absent (zero fuzzy matches in BOTH of the last two squads)
+    if(games.length>=2){
+      var s1=games[games.length-1].sq[team],s2=games[games.length-2].sq[team];
+      for(i=0;i<out.length;i++){
+        if(!nameInList(out[i].name,s1)&&!nameInList(out[i].name,s2))out[i].nsq=true;
       }
     }
     return out;
@@ -1485,9 +1505,10 @@
     buildStatsSelect();
     document.getElementById('stOverlay').classList.add('open');
     document.getElementById('stBody').innerHTML='<div class="st-load">Pulling match data from FIFA…</div>';
-    ensureStats(function(warn){renderStats(warn);});
-    ensurePstats(function(){ // refresh taker evidence (pens taken, squad lists)
-      if(!stMatch&&document.getElementById('stOverlay').classList.contains('open'))renderStats(null);
+    var w1=null;
+    ensureStats(function(warn){w1=warn;renderStats(warn);});
+    ensurePstats(function(w2){ // refresh taker evidence (pens taken, squad lists)
+      if(!stMatch&&document.getElementById('stOverlay').classList.contains('open'))renderStats(w2||w1);
     });
   }
   function closeStats(){document.getElementById('stOverlay').classList.remove('open');}
@@ -1506,19 +1527,20 @@
     t.innerHTML=(F[mm.a]||'')+' '+escapeHtml(mm.a)+'<span class="vsx">v</span>'+(F[mm.b]||'')+' '+escapeHtml(mm.b);
     document.getElementById('stOverlay').classList.add('open');
     document.getElementById('stBody').innerHTML='<div class="st-load">Pulling match data from FIFA…</div>';
+    var w1=null;
     ensureStats(function(warn){
-      renderMatchStats(warn);
+      w1=warn;
+      if(stMatch===mm)renderMatchStats(warn);
       fetchLineup(mm,function(lu){
-        if(lu&&stMatch===mm){stLineup=lu;renderMatchStats(warn);}
+        if(lu&&stMatch===mm){stLineup=lu;renderMatchStats(w1);}
       });
     });
-    ensurePstats(function(){ // refresh taker evidence (pens taken, squad lists)
-      if(stMatch===mm&&document.getElementById('stOverlay').classList.contains('open'))renderMatchStats(null);
+    ensurePstats(function(w2){ // refresh taker evidence (pens taken, squad lists)
+      if(stMatch===mm&&document.getElementById('stOverlay').classList.contains('open'))renderMatchStats(w2||w1);
     });
   }
   function h2hCol(team){
     var real=!!F[team];
-    var pens=PEN_TAKERS[team]||['-','-'];
     var g=real?teamWindow(team):[];
     var n=g.length,c=0,y=0,r=0,tcSum=0,tcN=0,seqC=[],seqYR=[];
     for(var i=0;i<n;i++){
@@ -1527,7 +1549,7 @@
       else seqC.push(String(g[i].c));
       seqYR.push(g[i].y+'Y'+(g[i].r?'+'+g[i].r+'R':''));
     }
-    return {real:real,team:team,pens:pens,n:n,
+    return {real:real,team:team,n:n,
       cAvg:n?avg1(c,n):'-',tAvg:tcN?avg1(tcSum,tcN):'-',
       yAvg:n?avg1(y,n):'-',rAvg:n?avg1(r,n):'-',
       seqC:n?seqC.join(' · '):'no data',seqYR:n?seqYR.join(' · '):'no data'};
@@ -1536,24 +1558,26 @@
   // ── starting-XI awareness: FIFA publishes lineups ~1h before kickoff ──
   var lineupCache={},stLineup=null;
   function foldName(s){var t=String(s).toLowerCase();try{t=t.normalize('NFD').replace(/[̀-ͯ]/g,'');}catch(e){}return t;}
-  function nameInList(taker,names){
-    var tf=foldName(taker),tt=[],i,j;
+  function nameMatchCount(taker,names){
+    var tf=foldName(taker),tt=[],i,j,count=0;
     var raw=tf.split(/[^a-z]+/);
     for(i=0;i<raw.length;i++)if(raw[i])tt.push(raw[i]);
-    if(!tt.length)return false;
+    if(!tt.length)return 0;
     for(i=0;i<names.length;i++){
       var pf=foldName(names[i]),pt=[],joined='';
       var praw=pf.split(/[^a-z]+/);
       for(j=0;j<praw.length;j++)if(praw[j]){pt.push(praw[j]);joined+=praw[j];}
       var all=true;
       for(j=0;j<tt.length;j++)if(pt.indexOf(tt[j])<0){all=false;break;}
-      if(all)return true;
-      all=true;
-      for(j=0;j<tt.length;j++)if(joined.indexOf(tt[j])<0){all=false;break;}
-      if(all)return true;
+      if(!all){
+        all=true;
+        for(j=0;j<tt.length;j++)if(joined.indexOf(tt[j])<0){all=false;break;}
+      }
+      if(all)count++;
     }
-    return false;
+    return count;
   }
+  function nameInList(taker,names){return nameMatchCount(taker,names)>0;}
   function fifaRowFor(mm){
     if(!calCache)return null;
     var rs=calCache.Results||[];
@@ -1590,7 +1614,7 @@
       if(e.Type===5){var onId=String(e.IdPlayer||''),offId=String(e.IdSubPlayer||'');
         if(idName[onId]){onPitch[onId]=1;used[onId]=1;}
         if(offId)delete onPitch[offId];
-      }else if(e.Type===3){var rid=String(e.IdPlayer||'');if(rid)delete onPitch[rid];}
+      }else if(e.Type===3||e.Type===4){var rid=String(e.IdPlayer||'');if(rid)delete onPitch[rid];}
     }
     var lu={};lu[hn]={on:[],bench:[],off:[]};lu[an]={on:[],bench:[],off:[]};
     var id;
@@ -1722,7 +1746,7 @@
       for(j=0;j<tm.Players.length;j++){p=tm.Players[j];
         var nm=(p.PlayerName&&p.PlayerName[0]&&p.PlayerName[0].Description)||'';
         if(!nm)continue;
-        idx[String(p.IdPlayer)]={n:nm,t:tname,st:p.Status,pos:p.Position,on:null,off:null,g:0,a:0,y:0,r:0};
+        idx[String(p.IdPlayer)]={n:nm,t:tname,st:p.Status,pos:p.Position,on:null,off:null,onIdx:null,offIdx:null,g:0,a:0,y:0,r:0};
       }}
     var conceded={};
     conceded[hn]=(fm.Away.Score!=null)?fm.Away.Score:null;
@@ -1731,29 +1755,38 @@
     for(i=0;i<ev.length;i++){var e=ev[i],rec=idx[String(e.IdPlayer||'')],mn=parseMin(e.MatchMinute);
       if(mn!=null&&mn>maxMin)maxMin=mn;
       if(e.Type===5){ // substitution: IdPlayer comes on, IdSubPlayer goes off
-        if(rec)rec.on=mn;
-        var offRec=idx[String(e.IdSubPlayer||'')];if(offRec)offRec.off=mn;
+        if(rec){rec.on=mn;rec.onIdx=i;}
+        var offRec=idx[String(e.IdSubPlayer||'')];if(offRec){offRec.off=mn;offRec.offIdx=i;}
       }else if(rec){
         if(e.Type===0)rec.g++;
         else if(e.Type===1)rec.a++;
         else if(e.Type===2)rec.y++;
-        else if(e.Type===3){rec.r++;if(rec.off==null)rec.off=mn;}
-        // in-game penalty kicks only (41 scored / 60 saved / 65 missed); Period 10+ = shootout
+        else if(e.Type===3||e.Type===4){ // straight red, or second yellow (emitted ONLY as Type 4)
+          rec.r++;if(e.Type===4)rec.y++;
+          if(rec.off==null){rec.off=mn;rec.offIdx=i;}
+        }
+        // in-game penalty kicks only (41 scored / 60 saved / 65 missed); Period 10+ = shootout;
+        // unknown period AND minute = unplaceable, drop rather than fabricate minute 0
         else if(e.Type===41||e.Type===60||e.Type===65){
-          var sho=(e.Period!=null)?(e.Period>=10):(mn!=null&&mn>120);
-          if(!sho)pensRaw.push({pid:String(e.IdPlayer),min:(mn!=null?mn:0)});
+          var sho=(e.Period!=null)?(e.Period>=10):(mn==null||mn>120);
+          if(!sho){
+            if(e.Type===41)rec.g++; // penalty goals are emitted ONLY as Type 41, never as Type 0
+            pensRaw.push({pid:String(e.IdPlayer),min:mn,idx:i});
+          }
         }
       }
     }
-    // resolve each penalty's on-pitch teammates AFTER all sub/red info is known
+    // resolve each penalty's on-pitch teammates AFTER all sub/red info is known;
+    // same-minute subs are disambiguated by timeline event order
     var pens=[];
     for(i=0;i<pensRaw.length;i++){var pr=pensRaw[i],tk=idx[pr.pid];
       if(!tk)continue;
       var onArr=[];
       for(var k3 in idx){var q=idx[k3];
         if(q.t!==tk.t||k3===pr.pid)continue;
-        var onP=(q.st===1)?(q.off==null||q.off>pr.min):(q.on!=null&&q.on<=pr.min&&(q.off==null||q.off>pr.min));
-        if(onP)onArr.push(q.n);
+        var offOk=(q.off==null)||(q.off>pr.min)||(q.off===pr.min&&q.offIdx!=null&&q.offIdx>pr.idx);
+        var onOk=(q.st===1)||(q.on!=null&&((q.on<pr.min)||(q.on===pr.min&&q.onIdx!=null&&q.onIdx<pr.idx)));
+        if(onOk&&offOk)onArr.push(q.n);
       }
       pens.push({t:tk.t,n:tk.n,min:pr.min,on:onArr});
     }
@@ -1784,10 +1817,8 @@
 
   function ensurePstats(cb){
     if(!calCache||Date.now()-calCacheAt>600000){
-      fetch(FIFA_CAL)
-      .then(function(r){if(!r.ok)throw new Error('FIFA '+r.status);return r.json();})
-      .then(function(d){calCache=d;calCacheAt=Date.now();ensurePstats(cb);})
-      .catch(function(e){cb('FIFA feed unreachable - showing cached data',0);});
+      freshCal(function(){ensurePstats(cb);},
+               function(e){cb('FIFA feed unreachable - showing cached data',0);});
       return;
     }
     var rs=calCache.Results||[],fin=[],missing=[],i;
