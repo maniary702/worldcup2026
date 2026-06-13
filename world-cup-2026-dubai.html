@@ -316,6 +316,16 @@
   .toast.show{opacity:1}
   .st-upd{font-size:11px;color:var(--low);text-align:center;margin:-4px 0 8px}
   .st-next .golink{color:var(--gold-ink);font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+  .ref-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;color:var(--txt);margin-bottom:6px}
+  .ref-cty{font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--low);border:1px solid var(--line2);border-radius:5px;padding:1px 5px;vertical-align:2px;margin-left:4px}
+  .ref-split{font-size:12px;color:var(--mut);margin:4px 0 10px;line-height:1.5}
+  table.ref-tbl{width:100%;border-collapse:collapse;font-size:12px}
+  .ref-tbl th{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--low);text-align:right;padding:3px 4px;border-bottom:1px solid var(--line)}
+  .ref-tbl th:first-child{text-align:left}
+  .ref-tbl td{text-align:right;padding:5px 4px;border-bottom:1px dashed var(--line);font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--mut)}
+  .ref-tbl td.rm{text-align:left;font-family:'Barlow',sans-serif;font-weight:600;color:var(--txt)}
+  .ref-tbl td.rtot{color:var(--txt);font-weight:700}
+  .ref-tbl .rd{display:block;font-family:'Barlow',sans-serif;font-weight:500;font-size:10px;color:var(--low)}
   .brkt{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 10px;-webkit-overflow-scrolling:touch}
   .brkt-round{flex:0 0 210px}
   .brkt-round h5{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);margin:0 0 8px}
@@ -737,7 +747,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 13 Jun 2026 v10.4';
+  var BUILD_TAG='Build 13 Jun 2026 v11 (referee card tendencies)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line){
     try{
@@ -1441,6 +1451,38 @@
     'Uzbekistan':[{o:'Netherlands',c:3,tc:6,y:1,r:0},{o:'Canada',c:3,tc:10,y:2,r:0},{o:'Venezuela',c:9,tc:9,y:0,r:0},{o:'Gabon',c:14,tc:20,y:0,r:0}]
   };
 
+  // Referee card history, keyed by FIFA OfficialId. Last <=5 FIFA-competition games
+  // (World Cup, WC qualifiers, friendlies) with yellows/reds split by half. fr = friendly.
+  // Built 2026-06-13 by build_refstats.py; the referee for each game is read LIVE from
+  // the WC calendar at runtime, so rebuild+redeploy to add newly-assigned referees.
+  var REF_STATS={
+    '361034':{n:'Adham Mohammad Tumah Makhadmeh',c:'JOR',g:[{o:'KSA-IRQ',d:'2025-10-14',fr:false,y1:4,y2:2,r1:0,r2:0},{o:'PRK-KGZ',d:'2025-06-05',fr:false,y1:1,y2:2,r1:0,r2:0},{o:'AUS-IDN',d:'2025-03-20',fr:false,y1:0,y2:0,r1:0,r2:0},{o:'BHR-CHN',d:'2024-11-14',fr:false,y1:2,y2:1,r1:0,r2:1},{o:'UAE-PRK',d:'2024-10-10',fr:false,y1:1,y2:2,r1:0,r2:0}]},
+    '392013':{n:'Amin Mohamed Omar',c:'EGY',g:[{o:'KOR-CZE',d:'2026-06-12',fr:false,y1:0,y2:1,r1:0,r2:0},{o:'RWA-RSA',d:'2023-11-21',fr:false,y1:2,y2:0,r1:0,r2:0}]},
+    '374810':{n:'Cesar Arturo Ramos Palazuelos',c:'MEX',g:[{o:'GUA-PAN',d:'2025-11-14',fr:false,y1:0,y2:2,r1:0,r2:0},{o:'CUW-TRI',d:'2025-10-14',fr:false,y1:2,y2:2,r1:0,r2:0},{o:'ARU-CUW',d:'2024-06-09',fr:false,y1:0,y2:2,r1:0,r2:0}]},
+    '327159':{n:'Danny Desmond Makkelie',c:'NED',g:[{o:'USA-PAR',d:'2026-06-13',fr:false,y1:1,y2:5,r1:0,r2:0},{o:'ITA-NIR',d:'2026-03-26',fr:false,y1:0,y2:1,r1:0,r2:0},{o:'WAL-MKD',d:'2025-11-18',fr:false,y1:2,y2:1,r1:0,r2:0},{o:'SWE-KOS',d:'2025-10-13',fr:false,y1:1,y2:1,r1:0,r2:0},{o:'UKR-FRA',d:'2025-09-05',fr:false,y1:0,y2:0,r1:0,r2:0}]},
+    '416165':{n:'Facundo Tello',c:'ARG',g:[{o:'CAN-BIH',d:'2026-06-12',fr:false,y1:3,y2:2,r1:0,r2:0},{o:'COD-JAM',d:'2026-03-31',fr:false,y1:1,y2:1,r1:0,r2:0},{o:'URU-PER',d:'2025-09-04',fr:false,y1:2,y2:3,r1:0,r2:0},{o:'BRA-PAR',d:'2025-06-11',fr:false,y1:3,y2:0,r1:0,r2:0},{o:'COL-PAR',d:'2025-03-26',fr:false,y1:0,y2:6,r1:0,r2:0}]},
+    '399029':{n:'Francois Letexier',c:'FRA',g:[{o:'TUR-ROU',d:'2026-03-26',fr:false,y1:1,y2:2,r1:0,r2:0},{o:'GER-SVK',d:'2025-11-17',fr:false,y1:0,y2:1,r1:0,r2:0},{o:'CZE-CRO',d:'2025-10-09',fr:false,y1:0,y2:2,r1:0,r2:0},{o:'SUI-SVN',d:'2025-09-08',fr:false,y1:0,y2:2,r1:0,r2:0}]},
+    '392406':{n:'Ismail Elfath',c:'USA',g:[{o:'ECU-NZL',d:'2025-11-19',fr:true,y1:1,y2:0,r1:0,r2:0},{o:'NCA-HON',d:'2025-11-14',fr:false,y1:0,y2:3,r1:0,r2:0},{o:'MEX-COL',d:'2025-10-12',fr:true,y1:1,y2:3,r1:0,r2:0},{o:'HAI-LCA',d:'2024-06-06',fr:false,y1:1,y2:3,r1:0,r2:0}]},
+    '416524':{n:'Jalal Jayed',c:'MAR',g:[]},
+    '360305':{n:'Jesus Valenzuela Saez',c:'VEN',g:[{o:'CHI-ARG',d:'2025-06-06',fr:false,y1:1,y2:5,r1:0,r2:0},{o:'COL-CHI',d:'2024-10-15',fr:false,y1:1,y2:3,r1:0,r2:0},{o:'ARG-CHI',d:'2024-09-06',fr:false,y1:3,y2:2,r1:0,r2:0},{o:'PAR-COL',d:'2023-11-21',fr:false,y1:3,y2:3,r1:0,r2:0},{o:'PER-ARG',d:'2023-10-18',fr:false,y1:1,y2:1,r1:0,r2:0}]},
+    '415965':{n:'Maurizio Mariani',c:'ITA',g:[{o:'CZE-DEN',d:'2026-03-31',fr:false,y1:2,y2:1,r1:0,r2:0},{o:'SWE-SVN',d:'2025-11-18',fr:false,y1:1,y2:2,r1:0,r2:0},{o:'POL-NED',d:'2025-11-14',fr:false,y1:1,y2:2,r1:0,r2:0},{o:'AUT-ROU',d:'2025-06-07',fr:false,y1:1,y2:1,r1:0,r2:0}]},
+    '375306':{n:'Mustapha Ghorbal',c:'ALG',g:[{o:'ZIM-RSA',d:'2025-10-10',fr:false,y1:1,y2:6,r1:0,r2:2}]},
+    '446932':{n:'Ramon Abatti',c:'BRA',g:[]},
+    '400191':{n:'Said Martinez',c:'HON',g:[{o:'PAN-SLV',d:'2025-11-19',fr:false,y1:3,y2:0,r1:0,r2:0},{o:'PAN-GUA',d:'2025-09-09',fr:false,y1:3,y2:3,r1:0,r2:0},{o:'SLV-PUR',d:'2024-06-07',fr:false,y1:1,y2:4,r1:0,r2:0}]},
+    '315008':{n:'Slavko Vincic',c:'SVN',g:[{o:'SWE-POL',d:'2026-03-31',fr:false,y1:1,y2:4,r1:0,r2:0},{o:'FRA-UKR',d:'2025-11-13',fr:false,y1:1,y2:2,r1:0,r2:0},{o:'NED-FIN',d:'2025-10-12',fr:false,y1:0,y2:2,r1:0,r2:0},{o:'ISR-ITA',d:'2025-09-08',fr:false,y1:0,y2:0,r1:0,r2:0}]},
+    '361561':{n:'Wilton Sampaio',c:'BRA',g:[{o:'MEX-RSA',d:'2026-06-11',fr:false,y1:2,y2:1,r1:0,r2:3},{o:'VEN-COL',d:'2025-09-09',fr:false,y1:0,y2:1,r1:0,r2:0},{o:'COL-PER',d:'2025-06-06',fr:false,y1:2,y2:0,r1:0,r2:0},{o:'PER-CHI',d:'2024-11-16',fr:false,y1:1,y2:4,r1:0,r2:0},{o:'BOL-COL',d:'2024-10-10',fr:false,y1:0,y2:2,r1:1,r2:0}]},
+    '434995':{n:'Yael Falcon Perez',c:'ARG',g:[{o:'VEN-BOL',d:'2025-06-06',fr:false,y1:0,y2:3,r1:0,r2:0},{o:'PER-BOL',d:'2025-03-21',fr:false,y1:0,y2:0,r1:0,r2:0}]}
+  };
+  function refForMatch(mm){
+    var row=fifaRowFor(mm);if(!row||!row.Officials)return null;
+    for(var i=0;i<row.Officials.length;i++){var o=row.Officials[i];
+      if(o.OfficialType===1){
+        var nm=(o.Name&&o.Name[0]&&o.Name[0].Description)||(o.NameShort&&o.NameShort[0]&&o.NameShort[0].Description)||'';
+        return {id:String(o.OfficialId),name:nm,country:o.IdCountry||''};
+      }}
+    return null;
+  }
+
   var calCache=null,calCacheAt=0,calFetching=null;
   // Single shared in-flight calendar fetch so concurrent callers never duplicate it
   function freshCal(ok,fail){
@@ -1948,7 +1990,37 @@
       '<div class="col">'+h2hHead(stMatch.a)+crdCol(A)+'</div>'+
       '<div class="col">'+h2hHead(stMatch.b)+crdCol(B)+'</div></div>'+
       (anyPre?'<div class="st-note" style="margin:6px 0 0">* pre-tournament friendly.</div>':'')+'</div>';
+    html+=refereeHtml(stMatch);
     document.getElementById('stBody').innerHTML=html;
+  }
+  // ── referee card tendencies for this fixture (live ref from calendar + baked history) ──
+  function refereeHtml(mm){
+    var h='<div class="st-sec"><h4><span class="yc"></span><span class="rc"></span> Referee</h4>';
+    if(!calCache)return h+'<div class="st-empty">Loading referee…</div></div>';
+    var ref=refForMatch(mm);
+    if(!ref){
+      return h+'<div class="st-empty">Not appointed yet - FIFA names referees about two days before kick-off.</div></div>';
+    }
+    var rec=REF_STATS[ref.id];
+    h+='<div class="ref-name">'+escapeHtml(ref.name)+(ref.country?' <span class="ref-cty">'+escapeHtml(ref.country)+'</span>':'')+'</div>';
+    if(!rec||!rec.g||!rec.g.length){
+      return h+'<div class="st-empty">No recent FIFA-competition matches on record for this referee.</div></div>';
+    }
+    var g=rec.g,nn=g.length,Y1=0,Y2=0,R1=0,R2=0,i;
+    for(i=0;i<nn;i++){Y1+=g[i].y1;Y2+=g[i].y2;R1+=g[i].r1;R2+=g[i].r2;}
+    var totY=Y1+Y2,totR=R1+R2;
+    var lbl=nn===1?'last game':'last '+nn+' games';
+    h+='<div class="st-big"><span class="yc"></span>'+avg1(totY,nn)+'<small>yellows/game ('+lbl+')</small></div>'
+      +'<div class="st-big"><span class="rc"></span>'+avg1(totR,nn)+'<small>reds/game</small></div>'
+      +'<div class="ref-split">By half (per game): 1st '+avg1(Y1,nn)+'Y '+avg1(R1,nn)+'R · 2nd '+avg1(Y2,nn)+'Y '+avg1(R2,nn)+'R'
+      +(totY+totR>0?' · '+Math.round(100*(Y2+R2)/(totY+totR))+'% of cards after the break':'')+'</div>';
+    h+='<table class="ref-tbl"><tr><th>Match</th><th>1st half</th><th>2nd half</th><th>Total</th></tr>';
+    for(i=0;i<nn;i++){var x=g[i];
+      var t1=x.y1+'Y'+(x.r1?' '+x.r1+'R':''),t2=x.y2+'Y'+(x.r2?' '+x.r2+'R':''),tt=(x.y1+x.y2)+'Y'+((x.r1+x.r2)?' '+(x.r1+x.r2)+'R':'');
+      h+='<tr><td class="rm">'+escapeHtml(x.o)+(x.fr?' <span class="prewc">friendly</span>':'')+'<span class="rd">'+escapeHtml(x.d)+'</span></td><td>'+t1+'</td><td>'+t2+'</td><td class="rtot">'+tt+'</td></tr>';
+    }
+    h+='</table><div class="st-note" style="margin:6px 0 0">FIFA-competition matches only (World Cup, qualifiers, internationals). Domestic-league games are not in the feed.</div></div>';
+    return h;
   }
 
   var lastPollTs=0,lastPollOk=true;
