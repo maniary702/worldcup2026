@@ -747,7 +747,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 13 Jun 2026 v11 (referee card tendencies)';
+  var BUILD_TAG='Build 14 Jun 2026 v11.1 (referee stats + visitor analytics)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line){
     try{
@@ -2555,5 +2555,8 @@
 })();
 
 </script>
+<!-- GoatCounter: privacy-friendly visitor analytics -> https://worldcup-yahya.goatcounter.com -->
+<script data-goatcounter="https://worldcup-yahya.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
