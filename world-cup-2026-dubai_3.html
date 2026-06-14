@@ -1801,20 +1801,24 @@
     // the events list covers scorers richer, so hide the separate scorers line here.
     if(mdTimer){clearInterval(mdTimer);mdTimer=null;}
     var mdLiveEl=document.getElementById('mdLive');
-    if(st.k==='ft'||st.k==='lv'){
+    var msToKo=kickoffUTC(mm).getTime()-Date.now();
+    var started=(st.k==='ft'||st.k==='lv');
+    var preWindow=(msToKo>0&&msToKo<=6*3600000); // up to 6h before kickoff - catch line-ups as they drop
+    if((started||preWindow)&&(realA||realB)){
       scEl2.style.display='none';
-      mdSetTab('stats');
+      mdSetTab(started?'stats':'lineup'); // pre-match: open on the line-up tab fans want
       mdLiveEl.style.display='';
       document.getElementById('mdTeamStats').innerHTML='<div class="st-load">Loading match data…</div>';
       document.getElementById('mdEvents').innerHTML='';
-      document.getElementById('mdLineupPane').innerHTML='';
+      document.getElementById('mdLineupPane').innerHTML='<div class="st-load">Loading…</div>';
       var loadFull=function(){fetchMatchFull(mm,function(d){if(mdMatch===mm&&document.getElementById('mdOverlay').classList.contains('open'))renderMatchFull(d);});};
       loadFull();
-      if(st.k==='lv')mdTimer=setInterval(function(){
+      // refresh until full time: catches line-ups publishing pre-match AND live score/events
+      if(st.k!=='ft')mdTimer=setInterval(function(){
         if(mdMatch!==mm||!document.getElementById('mdOverlay').classList.contains('open')){clearInterval(mdTimer);mdTimer=null;return;}
-        var stNow=mdUpdateHeader(mm); // keep the headline score + live minute fresh
+        var stNow=mdUpdateHeader(mm);
         loadFull();
-        if(stNow.k!=='lv'){clearInterval(mdTimer);mdTimer=null;} // game ended; this load grabs the final data
+        if(stNow.k==='ft'){clearInterval(mdTimer);mdTimer=null;}
       },60000);
     }else mdLiveEl.style.display='none';
     openOverlay('mdOverlay');
@@ -1938,8 +1942,8 @@
     if(d.hasData)document.getElementById('mdTeamStats').innerHTML=renderTeamStats(d);
     else document.getElementById('mdTeamStats').innerHTML='<div class="st-empty">Match stats appear once the game kicks off.</div>';
     document.getElementById('mdEvents').innerHTML=d.hasData?renderEvents(d):'';
-    var lu=(d.lu&&(d.lu.h||d.lu.a))?(luSide(d.hN,d.lu.h)+luSide(d.aN,d.lu.a)):'<div class="st-empty">Line-ups appear about an hour before kick-off.</div>';
-    document.getElementById('mdLineupPane').innerHTML=lu;
+    var hasLu=d.lu&&((d.lu.h&&d.lu.h.xi.length)||(d.lu.a&&d.lu.a.xi.length));
+    document.getElementById('mdLineupPane').innerHTML=hasLu?(luSide(d.hN,d.lu.h)+luSide(d.aN,d.lu.a)):'<div class="st-empty">Line-ups are published about an hour before kick-off - they’ll appear here automatically.</div>';
   }
   function mdSetTab(t){
     var stats=(t==='stats');
