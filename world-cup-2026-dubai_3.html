@@ -792,7 +792,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 15 Jun 2026 v12.1 (match stats + line-ups, pre-kickoff too)';
+  var BUILD_TAG='Build 15 Jun 2026 v12.2 (live in-game feeds: score, stats, events)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line){
     try{
@@ -1880,13 +1880,15 @@
       return {form:tm.Tactics||'',xi:xi,subs:subs};
     }
     var hasData=events.length>0||(S[hId].sh+S[aId].sh+S[hId].co+S[aId].co+S[hId].fo+S[aId].fo)>0;
-    return {hN:hN,aN:aN,st:{h:S[hId],a:S[aId]},events:events,lu:{h:lside(det.HomeTeam),a:lside(det.AwayTeam)},hasData:hasData};
+    var hs=(det.HomeTeam.Score!=null)?det.HomeTeam.Score:null,as2=(det.AwayTeam.Score!=null)?det.AwayTeam.Score:null;
+    return {hN:hN,aN:aN,st:{h:S[hId],a:S[aId]},events:events,lu:{h:lside(det.HomeTeam),a:lside(det.AwayTeam)},hasData:hasData,hs:hs,as:as2,fifaLive:(row.MatchStatus===3),fifaMin:row.MatchTime||''};
   }
   function fetchMatchFull(mm,cb){
     if(!calCache){freshCal(function(){fetchMatchFull(mm,cb);},function(){cb(null);});return;}
     var row=fifaRowFor(mm);
     if(!row){cb(null);return;}
-    var key=String(row.IdMatch),live=(row.MatchStatus===3);
+    // live by FIFA status OR by the page's own clock (covers FIFA's few-minute kickoff lag)
+    var key=String(row.IdMatch),live=(row.MatchStatus===3)||(statusOf(mm).k==='lv');
     var hit=matchFullCache[key];
     // serve cache when: live and <55s old; OR finished AND the cached entry was already
     // a finished capture (so a snapshot taken while live is re-fetched once after FT)
@@ -1939,6 +1941,12 @@
   function renderMatchFull(d){
     if(!d){document.getElementById('mdLive').style.display='none';return;}
     document.getElementById('mdLive').style.display='';
+    // keep the headline score live straight from the match feed (most authoritative)
+    if(d.hs!=null&&d.as!=null){
+      var scEl=document.getElementById('mdScore');
+      var tag=d.fifaLive?'<span class="tag live">'+escapeHtml(d.fifaMin||'Live')+'</span>':'<span class="tag">FT</span>';
+      scEl.style.display='';scEl.innerHTML=d.hs+' - '+d.as+tag;
+    }
     if(d.hasData)document.getElementById('mdTeamStats').innerHTML=renderTeamStats(d);
     else document.getElementById('mdTeamStats').innerHTML='<div class="st-empty">Match stats appear once the game kicks off.</div>';
     document.getElementById('mdEvents').innerHTML=d.hasData?renderEvents(d):'';
