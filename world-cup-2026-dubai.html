@@ -792,7 +792,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 14 Jun 2026 v11.1 (referee stats + visitor analytics)';
+  var BUILD_TAG='Build 15 Jun 2026 v12 (live match stats, events, line-ups)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line){
     try{
@@ -1780,11 +1780,7 @@
     document.getElementById('mdTitle').innerHTML=
       (realA?F[mm.a]+' ':'')+escapeHtml(realA?mm.a:phPretty(mm.a))+
       '<span class="vsx">v</span>'+(realB?F[mm.b]+' ':'')+escapeHtml(realB?mm.b:phPretty(mm.b));
-    var scEl=document.getElementById('mdScore');
-    if(sc&&sc.ga!=null&&sc.gb!=null){
-      var tag=(st.k==='ft')?'<span class="tag">FT</span>':(st.k==='lv'?'<span class="tag live">'+escapeHtml(st.t)+'</span>':'');
-      scEl.style.display='';scEl.innerHTML=sc.ga+' - '+sc.gb+tag;
-    }else scEl.style.display='none';
+    mdUpdateHeader(mm);
     document.getElementById('mdWhen').textContent=fmtDayFull(dayKey(o))+' · '+fmtClock(o);
     document.getElementById('mdTz').textContent='Your time ('+escapeHtml(cityOf(TZ()))+') · '+escapeHtml(mm.v);
     document.getElementById('mdBet').style.display=(realA||realB)?'':'none';
@@ -1801,11 +1797,12 @@
         if(parts.length)scHtml='&#9917; '+parts.join(' &middot; ');
       }
     }
-    scEl2.innerHTML=scHtml;scEl2.style.display=scHtml?'':'none';
-    // live or finished: load the rich match view (team stats, events, line-ups)
+    // live or finished: load the rich match view (team stats, events, line-ups).
+    // the events list covers scorers richer, so hide the separate scorers line here.
     if(mdTimer){clearInterval(mdTimer);mdTimer=null;}
     var mdLiveEl=document.getElementById('mdLive');
     if(st.k==='ft'||st.k==='lv'){
+      scEl2.style.display='none';
       mdSetTab('stats');
       mdLiveEl.style.display='';
       document.getElementById('mdTeamStats').innerHTML='<div class="st-load">Loading match data…</div>';
@@ -1814,11 +1811,21 @@
       var loadFull=function(){fetchMatchFull(mm,function(d){if(mdMatch===mm&&document.getElementById('mdOverlay').classList.contains('open'))renderMatchFull(d);});};
       loadFull();
       if(st.k==='lv')mdTimer=setInterval(function(){
-        if(mdMatch===mm&&document.getElementById('mdOverlay').classList.contains('open'))loadFull();
-        else{clearInterval(mdTimer);mdTimer=null;}
+        if(mdMatch!==mm||!document.getElementById('mdOverlay').classList.contains('open')){clearInterval(mdTimer);mdTimer=null;return;}
+        var stNow=mdUpdateHeader(mm); // keep the headline score + live minute fresh
+        loadFull();
+        if(stNow.k!=='lv'){clearInterval(mdTimer);mdTimer=null;} // game ended; this load grabs the final data
       },60000);
     }else mdLiveEl.style.display='none';
     openOverlay('mdOverlay');
+  }
+  function mdUpdateHeader(mm){
+    var sc=scoreOf(mm),st=statusOf(mm),scEl=document.getElementById('mdScore');
+    if(sc&&sc.ga!=null&&sc.gb!=null){
+      var tag=(st.k==='ft')?'<span class="tag">FT</span>':(st.k==='lv'?'<span class="tag live">'+escapeHtml(st.t)+'</span>':'');
+      scEl.style.display='';scEl.innerHTML=sc.ga+' - '+sc.gb+tag;
+    }else scEl.style.display='none';
+    return st;
   }
   function closeMatchDetail(){closeOverlay('mdOverlay');if(mdTimer){clearInterval(mdTimer);mdTimer=null;}}
 
@@ -1839,7 +1846,7 @@
     });});
     function nm(e){return idName[String(e.IdPlayer)]||descName(e);}
     var S={};S[hId]={sh:0,co:0,fo:0,y:0,r:0,su:0};S[aId]={sh:0,co:0,fo:0,y:0,r:0,su:0};
-    var ev=(tl&&tl.Event)||[],i,events=[];
+    var ev=(tl&&tl.Event)||[],i,events=[],pendingAssist=null;
     for(i=0;i<ev.length;i++){var e=ev[i],tid=String(e.IdTeam||''),s=S[tid],t=e.Type;
       if(s){
         if(t===12)s.sh++;else if(t===16)s.co++;else if(t===18)s.fo++;
@@ -1847,11 +1854,16 @@
         else if(t===5)s.su++;
       }
       var side=(tid===hId)?'h':(tid===aId?'a':'');
-      if(t===1){ // assist -> attach to last goal
-        for(var b=events.length-1;b>=0;b--){if(events[b].kind==='goal'){events[b].assist=nm(e);break;}}
-        continue;
+      if(t===1){pendingAssist={n:nm(e),m:e.MatchMinute||''};continue;} // assist precedes its goal
+      if(t===0||t===41){
+        // skip penalty-shootout kicks (Period 10+) - they are not in-game goals
+        var sho=(e.Period!=null)?(e.Period>=10):(parseMin(e.MatchMinute)==null||parseMin(e.MatchMinute)>120);
+        if(t===41&&sho){pendingAssist=null;continue;}
+        // attach the held assist only if it shares this goal's minute (guards a dangling assist)
+        var asst=(pendingAssist&&pendingAssist.m===(e.MatchMinute||''))?pendingAssist.n:'';
+        events.push({min:e.MatchMinute||'',side:side,kind:'goal',name:nm(e),assist:asst,sc:(e.HomeGoals!=null&&e.AwayGoals!=null)?e.HomeGoals+'-'+e.AwayGoals:'',pen:(t===41)});
+        pendingAssist=null;
       }
-      if(t===0||t===41)events.push({min:e.MatchMinute||'',side:side,kind:'goal',name:nm(e),sc:(e.HomeGoals!=null&&e.AwayGoals!=null)?e.HomeGoals+'-'+e.AwayGoals:'',pen:(t===41)});
       else if(t===2)events.push({min:e.MatchMinute||'',side:side,kind:'yc',name:nm(e)});
       else if(t===3||t===4)events.push({min:e.MatchMinute||'',side:side,kind:'rc',name:nm(e),second:(t===4)});
       else if(t===5)events.push({min:e.MatchMinute||'',side:side,kind:'sub',inn:idName[String(e.IdPlayer)]||nm(e),out:idName[String(e.IdSubPlayer)]||''});
@@ -1863,7 +1875,7 @@
         if(p.Status===1)xi.push(o);else if(p.Status===2)subs.push(o);}
       return {form:tm.Tactics||'',xi:xi,subs:subs};
     }
-    var hasData=events.length>0||S[hId].sh+S[aId].sh+S[hId].co+S[aId].co>0;
+    var hasData=events.length>0||(S[hId].sh+S[aId].sh+S[hId].co+S[aId].co+S[hId].fo+S[aId].fo)>0;
     return {hN:hN,aN:aN,st:{h:S[hId],a:S[aId]},events:events,lu:{h:lside(det.HomeTeam),a:lside(det.AwayTeam)},hasData:hasData};
   }
   function fetchMatchFull(mm,cb){
@@ -1872,14 +1884,16 @@
     if(!row){cb(null);return;}
     var key=String(row.IdMatch),live=(row.MatchStatus===3);
     var hit=matchFullCache[key];
-    if(hit&&(!live||Date.now()-hit.at<55000)){cb(hit.data);return;}
+    // serve cache when: live and <55s old; OR finished AND the cached entry was already
+    // a finished capture (so a snapshot taken while live is re-fetched once after FT)
+    if(hit&&(live?(Date.now()-hit.at<55000):!hit.wasLive)){cb(hit.data);return;}
     var base='17/285023/'+row.IdStage+'/'+row.IdMatch+'?language=en';
     Promise.all([
       fetch(FIFA_API+'timelines/'+base).then(function(r){return r.ok?r.json():null;}),
       fetch(FIFA_API+'live/football/'+base).then(function(r){return r.ok?r.json():null;})
     ]).then(function(p){
       var data=buildMatchFull(row,p[0],p[1]);
-      matchFullCache[key]={at:Date.now(),data:data};cb(data);
+      matchFullCache[key]={at:Date.now(),data:data,wasLive:live};cb(data);
     }).catch(function(e){cb(null);});
   }
   function renderTeamStats(d){
@@ -1904,8 +1918,8 @@
     for(var i=0;i<d.events.length;i++){var e=d.events[i],fl=(e.side==='h')?(F[d.hN]||''):(e.side==='a'?(F[d.aN]||''):'');
       var txt;
       if(e.kind==='sub')txt='<span class="etxt">'+fl+' '+escapeHtml(e.inn||'?')+' <span class="esub">for '+escapeHtml(e.out||'?')+'</span></span>';
-      else if(e.kind==='goal')txt='<span class="etxt">'+fl+' '+escapeHtml(e.name)+(e.pen?' <span class="esub">(pen)</span>':'')+(e.assist?' <span class="esub">· assist '+escapeHtml(e.assist)+'</span>':'')+'</span><span class="escore">'+escapeHtml(e.sc)+'</span>';
-      else txt='<span class="etxt">'+fl+' '+escapeHtml(e.name)+(e.second?' <span class="esub">(2nd yellow)</span>':'')+'</span>';
+      else if(e.kind==='goal')txt='<span class="etxt">'+fl+' '+escapeHtml(e.name||'Goal')+(e.pen?' <span class="esub">(pen)</span>':'')+(e.assist?' <span class="esub">· assist '+escapeHtml(e.assist)+'</span>':'')+'</span><span class="escore">'+escapeHtml(e.sc)+'</span>';
+      else txt='<span class="etxt">'+fl+' '+escapeHtml(e.name||'Player')+(e.second?' <span class="esub">(2nd yellow)</span>':'')+'</span>';
       h+='<div class="ev"><span class="emin">'+escapeHtml(e.min)+'</span><span class="eico">'+evIcon(e)+'</span>'+txt+'</div>';
     }
     return h+'</div>';
@@ -2671,6 +2685,8 @@
   document.getElementById('mdOverlay').addEventListener('click',function(e){if(e.target===this)closeMatchDetail();});
   document.getElementById('mdBet').addEventListener('click',function(){if(mdMatch){var n=mdMatch.n;closeMatchDetail();openMatchStats(n);}});
   document.getElementById('mdCal').addEventListener('click',function(){if(mdMatch)dlIcs(mdMatch);});
+  document.getElementById('mdTabStats').addEventListener('click',function(){mdSetTab('stats');});
+  document.getElementById('mdTabLineup').addEventListener('click',function(){mdSetTab('lineup');});
 
   // Betting stats modal
   document.getElementById('statsOpen').addEventListener('click',openStats);
