@@ -792,7 +792,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 15 Jun 2026 v12.2 (live in-game feeds: score, stats, events)';
+  var BUILD_TAG='Build 15 Jun 2026 v12.3 (instant match view, no loading flash)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line){
     try{
@@ -1808,10 +1808,16 @@
       scEl2.style.display='none';
       mdSetTab(started?'stats':'lineup'); // pre-match: open on the line-up tab fans want
       mdLiveEl.style.display='';
-      document.getElementById('mdTeamStats').innerHTML='<div class="st-load">Loading match data…</div>';
-      document.getElementById('mdEvents').innerHTML='';
-      document.getElementById('mdLineupPane').innerHTML='<div class="st-load">Loading…</div>';
       var loadFull=function(){fetchMatchFull(mm,function(d){if(mdMatch===mm&&document.getElementById('mdOverlay').classList.contains('open'))renderMatchFull(d);});};
+      // render instantly from cache so the panel never flashes "Loading" on re-open;
+      // the background refresh below quietly updates it. Only show the loader on a cold first open.
+      var crow=fifaRowFor(mm),cHit=crow?matchFullCache[String(crow.IdMatch)]:null;
+      if(cHit&&cHit.data)renderMatchFull(cHit.data);
+      else{
+        document.getElementById('mdTeamStats').innerHTML='<div class="st-load">Loading match data…</div>';
+        document.getElementById('mdEvents').innerHTML='';
+        document.getElementById('mdLineupPane').innerHTML='<div class="st-load">Loading…</div>';
+      }
       loadFull();
       // refresh until full time: catches line-ups publishing pre-match AND live score/events
       if(st.k!=='ft')mdTimer=setInterval(function(){
