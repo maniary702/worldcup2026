@@ -1573,7 +1573,7 @@
       else if(t===2)agg[nm].y++;
       else if(t===3)agg[nm].r++;
       else if(t===4){agg[nm].y++;agg[nm].r++;} // second yellow = a yellow shown plus the red
-      else if(t===12&&inGoalFrame(ev[i]))agg[nm].sot++; // shot on target (est.)
+      else if(t===12&&inGoalFrame(ev[i])&&!(ev[i].Period!=null&&ev[i].Period>=10))agg[nm].sot++; // shot on target (est.), exclude shootout
     }
     return {d:new Date(fm.Date).getTime(),teams:agg};
   }
@@ -2356,7 +2356,7 @@
   var pstats={};   // per finished match: {d, n, lbl, star, p:{id:[name,team,g,a,y,r,min,gk,cs]},
                    //  pens:[{t,n,min,on:[teammates on pitch]}] (in-game only), sq:{team:[matchday squad names]}}
   function loadPstats(){try{var s=load('wc26_pstats5');if(s)pstats=JSON.parse(s);}catch(e){pstats={};}}
-  function savePstats(){try{save('wc26_pstats4',JSON.stringify(pstats));}catch(e){}}
+  function savePstats(){try{save('wc26_pstats5',JSON.stringify(pstats));}catch(e){}}
   // Official Man-of-the-Match overrides (FIFA's feed has no MOTM field). Key by match
   // number, value e.g. 'Raul Jimenez (Mexico)'. Empty = use the computed standout.
   var MOTM_OFFICIAL={};
@@ -2401,7 +2401,7 @@
             pensRaw.push({pid:String(e.IdPlayer),min:mn,idx:i});
           }
         }
-        else if(e.Type===12&&inGoalFrame(e))rec.sot++; // shot on target (est.)
+        else if(e.Type===12&&inGoalFrame(e)&&!(e.Period!=null&&e.Period>=10))rec.sot++; // shot on target (est.), exclude shootout
       }
     }
     // resolve each penalty's on-pitch teammates AFTER all sub/red info is known;
