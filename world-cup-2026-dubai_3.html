@@ -1443,57 +1443,57 @@
 
   // Last <=4 pre-tournament internationals per team (newest first), counted from
   // FIFA timelines on 2026-06-12 by build_prestats.py. c = team corners, tc = total
-  // corners in that match (both sides). Tops up the rolling window until each team
+  // corners; gf/ga = goals for/against (scoreline). Tops up the rolling window until each team
   // has 4 WC games. Cape Verde and Iran have thinner coverage.
   var PRE_STATS={
-    'Algeria':[{o:'Netherlands',c:3,tc:9,y:0,r:0},{o:'Uruguay',c:5,tc:11,y:4,r:0},{o:'Guatemala',c:8,tc:12,y:0,r:0},{o:'Nigeria',c:2,tc:6,y:5,r:0}],
-    'Argentina':[{o:'Iceland',c:2,tc:4,y:2,r:0},{o:'Honduras',c:6,tc:7,y:4,r:0},{o:'Zambia',c:6,tc:10,y:0,r:0},{o:'Mauritania',c:4,tc:6,y:1,r:0}],
-    'Australia':[{o:'Switzerland',c:2,tc:9,y:2,r:0},{o:'Mexico',c:3,tc:8,y:1,r:0},{o:'Curacao',c:1,tc:3,y:0,r:0},{o:'Cameroon',c:3,tc:7,y:2,r:0}],
-    'Austria':[{o:'Tunisia',c:2,tc:6,y:2,r:1},{o:'South Korea',c:4,tc:10,y:1,r:0},{o:'Ghana',c:5,tc:8,y:1,r:0},{o:'Bosnia & Herzegovina',c:4,tc:6,y:1,r:0}],
-    'Belgium':[{o:'Tunisia',c:14,tc:14,y:1,r:0},{o:'Croatia',c:4,tc:7,y:2,r:0},{o:'Mexico',c:2,tc:5,y:3,r:0},{o:'USA',c:6,tc:12,y:0,r:0}],
-    'Bosnia & Herzegovina':[{o:'Italy',c:10,tc:14,y:3,r:0},{o:'Wales',c:3,tc:12,y:4,r:0},{o:'Austria',c:2,tc:6,y:2,r:0},{o:'Romania',c:4,tc:5,y:5,r:0}],
-    'Brazil':[{o:'Egypt',c:5,tc:8,y:1,r:0},{o:'Panama',c:1,tc:2,y:0,r:0},{o:'Croatia',c:2,tc:4,y:1,r:0},{o:'France',c:5,tc:7,y:4,r:0}],
-    'Canada':[{o:'Republic of Ireland',c:12,tc:16,y:2,r:0},{o:'Uzbekistan',c:7,tc:10,y:2,r:0},{o:'Tunisia',c:9,tc:10,y:4,r:0},{o:'Iceland',c:8,tc:9,y:0,r:1}],
-    'Cape Verde':[{o:'Finland',c:8,tc:14,y:2,r:0},{o:'Chile',c:4,tc:5,y:1,r:1}],
-    'Colombia':[{o:'Jordan',c:3,tc:4,y:0,r:0},{o:'Costa Rica',c:5,tc:9,y:2,r:0},{o:'France',c:9,tc:14,y:1,r:0},{o:'Croatia',c:6,tc:10,y:0,r:0}],
-    'Croatia':[{o:'Slovenia',c:8,tc:12,y:0,r:0},{o:'Belgium',c:3,tc:7,y:2,r:0},{o:'Brazil',c:2,tc:4,y:3,r:0},{o:'Colombia',c:4,tc:10,y:3,r:0}],
-    'Curacao':[{o:'Scotland',c:2,tc:10,y:2,r:1},{o:'Australia',c:2,tc:3,y:0,r:0},{o:'China PR',c:4,tc:7,y:2,r:0},{o:'Jamaica',c:3,tc:6,y:2,r:0}],
-    'Czech Republic':[{o:'Denmark',c:7,tc:11,y:1,r:0},{o:'Republic of Ireland',c:6,tc:15,y:1,r:0},{o:'Gibraltar',c:12,tc:13,y:0,r:0},{o:'Faroe Islands',c:7,tc:8,y:1,r:0}],
-    'DR Congo':[{o:'Chile',c:7,tc:9,y:1,r:0},{o:'Denmark',c:4,tc:8,y:0,r:0},{o:'Jamaica',c:5,tc:12,y:0,r:0},{o:'Algeria',c:6,tc:10,y:2,r:0}],
-    'Ecuador':[{o:'Guatemala',c:6,tc:6,y:3,r:0},{o:'Saudi Arabia',c:2,tc:4,y:1,r:0},{o:'Netherlands',c:10,tc:12,y:2,r:0},{o:'Morocco',c:1,tc:3,y:0,r:0}],
-    'Egypt':[{o:'Brazil',c:3,tc:8,y:1,r:0},{o:'Russia',c:5,tc:11,y:1,r:0},{o:'Spain',c:0,tc:11,y:5,r:1},{o:'Saudi Arabia',c:1,tc:5,y:0,r:0}],
-    'England':[{o:'Costa Rica',c:11,tc:12,y:0,r:0},{o:'New Zealand',c:8,tc:9,y:0,r:0},{o:'Japan',c:11,tc:12,y:0,r:0},{o:'Uruguay',c:7,tc:7,y:1,r:0}],
-    'France':[{o:'Northern Ireland',c:5,tc:6,y:0,r:0},{o:'Ivory Coast',c:8,tc:10,y:0,r:0},{o:'Colombia',c:5,tc:14,y:3,r:0},{o:'Brazil',c:2,tc:7,y:3,r:1}],
-    'Germany':[{o:'USA',c:2,tc:12,y:3,r:0},{o:'Finland',c:10,tc:13,y:0,r:0},{o:'Ghana',c:9,tc:13,y:1,r:0},{o:'Switzerland',c:10,tc:10,y:0,r:0}],
-    'Ghana':[{o:'Wales',c:4,tc:9,y:2,r:0},{o:'Mexico',c:3,tc:12,y:1,r:0},{o:'Germany',c:4,tc:13,y:3,r:0},{o:'Austria',c:3,tc:8,y:2,r:0}],
-    'Haiti':[{o:'Peru',c:3,tc:6,y:1,r:0},{o:'New Zealand',c:5,tc:13,y:0,r:0},{o:'Iceland',c:1,tc:1,y:2,r:0},{o:'Tunisia',c:7,tc:10,y:4,r:1}],
-    'Iran':[{o:'Russia',c:6,tc:13,y:1,r:0},{o:'Korea DPR',c:2,tc:8,y:1,r:0},{o:'Qatar',c:3,tc:6,y:4,r:1}],
-    'Iraq':[{o:'Spain',c:3,tc:8,y:2,r:0},{o:'Bolivia',c:2,tc:18,y:3,r:0},{o:'Jordan',c:12,tc:14,y:0,r:0},{o:'Algeria',c:1,tc:7,y:0,r:1}],
-    'Ivory Coast':[{o:'France',c:2,tc:10,y:1,r:0},{o:'Scotland',c:5,tc:12,y:0,r:0},{o:'South Korea',c:5,tc:12,y:0,r:0},{o:'Egypt',c:7,tc:10,y:0,r:0}],
-    'Japan':[{o:'Iceland',c:5,tc:6,y:0,r:0},{o:'England',c:1,tc:12,y:2,r:0},{o:'Scotland',c:8,tc:11,y:2,r:0},{o:'Bolivia',c:1,tc:3,y:2,r:0}],
-    'Jordan':[{o:'Colombia',c:1,tc:4,y:2,r:1},{o:'Switzerland',c:4,tc:10,y:0,r:0},{o:'Morocco',c:2,tc:11,y:2,r:0},{o:'Saudi Arabia',c:4,tc:8,y:1,r:0}],
-    'Mexico':[{o:'Serbia',c:6,tc:7,y:2,r:0},{o:'Australia',c:5,tc:8,y:1,r:0},{o:'Ghana',c:9,tc:12,y:1,r:0},{o:'Belgium',c:3,tc:5,y:2,r:0}],
-    'Morocco':[{o:'Norway',c:3,tc:14,y:1,r:0},{o:'Madagascar',c:12,tc:13,y:2,r:0},{o:'Paraguay',c:1,tc:4,y:3,r:0},{o:'Ecuador',c:2,tc:3,y:1,r:0}],
-    'Netherlands':[{o:'Uzbekistan',c:3,tc:6,y:1,r:1},{o:'Algeria',c:6,tc:9,y:0,r:0},{o:'Ecuador',c:2,tc:12,y:0,r:1},{o:'Norway',c:8,tc:10,y:0,r:0}],
-    'New Zealand':[{o:'England',c:1,tc:9,y:0,r:0},{o:'Haiti',c:8,tc:13,y:1,r:0},{o:'Chile',c:7,tc:9,y:2,r:0},{o:'Finland',c:2,tc:9,y:1,r:0}],
-    'Norway':[{o:'Morocco',c:11,tc:14,y:1,r:0},{o:'Sweden',c:6,tc:7,y:0,r:0},{o:'Switzerland',c:4,tc:6,y:0,r:0},{o:'Netherlands',c:2,tc:10,y:1,r:0}],
-    'Panama':[{o:'Brazil',c:1,tc:2,y:1,r:0},{o:'South Africa',c:1,tc:2,y:4,r:0},{o:'South Africa',c:1,tc:6,y:2,r:0},{o:'Mexico',c:1,tc:10,y:1,r:0}],
-    'Paraguay':[{o:'Morocco',c:3,tc:4,y:6,r:0},{o:'Greece',c:3,tc:9,y:0,r:0},{o:'Mexico',c:3,tc:6,y:3,r:0},{o:'USA',c:8,tc:13,y:3,r:1}],
-    'Portugal':[{o:'Nigeria',c:3,tc:5,y:2,r:0},{o:'Chile',c:9,tc:12,y:0,r:1},{o:'USA',c:8,tc:10,y:1,r:0},{o:'Mexico',c:4,tc:4,y:1,r:0}],
-    'Qatar':[{o:'El Salvador',c:3,tc:7,y:1,r:0},{o:'Republic of Ireland',c:3,tc:10,y:0,r:1},{o:'Tunisia',c:10,tc:14,y:0,r:0},{o:'Syria',c:7,tc:11,y:2,r:0}],
-    'Saudi Arabia':[{o:'Senegal',c:1,tc:4,y:3,r:0},{o:'Puerto Rico',c:5,tc:7,y:0,r:0},{o:'Ecuador',c:2,tc:4,y:1,r:0},{o:'Serbia',c:1,tc:11,y:2,r:0}],
-    'Scotland':[{o:'Bolivia',c:6,tc:9,y:1,r:0},{o:'Curacao',c:8,tc:10,y:2,r:0},{o:'Ivory Coast',c:7,tc:12,y:0,r:0},{o:'Japan',c:3,tc:11,y:0,r:0}],
-    'Senegal':[{o:'Saudi Arabia',c:3,tc:4,y:3,r:1},{o:'USA',c:7,tc:11,y:0,r:0},{o:'Peru',c:7,tc:13,y:1,r:0},{o:'Morocco',c:8,tc:18,y:5,r:0}],
-    'South Africa':[{o:'Nicaragua',c:6,tc:7,y:0,r:0},{o:'Panama',c:1,tc:2,y:3,r:0},{o:'Panama',c:5,tc:6,y:1,r:0},{o:'Cameroon',c:6,tc:9,y:5,r:0}],
-    'South Korea':[{o:'El Salvador',c:8,tc:10,y:4,r:0},{o:'Trinidad and Tobago',c:7,tc:8,y:1,r:0},{o:'Austria',c:6,tc:10,y:0,r:0},{o:'Ivory Coast',c:7,tc:12,y:0,r:0}],
-    'Spain':[{o:'Peru',c:6,tc:10,y:0,r:0},{o:'Iraq',c:5,tc:8,y:2,r:0},{o:'Egypt',c:11,tc:11,y:0,r:0},{o:'Serbia',c:5,tc:6,y:0,r:0}],
-    'Sweden':[{o:'Greece',c:1,tc:5,y:0,r:0},{o:'Norway',c:1,tc:7,y:1,r:0},{o:'Poland',c:2,tc:11,y:2,r:0},{o:'Ukraine',c:3,tc:12,y:1,r:0}],
-    'Switzerland':[{o:'Australia',c:7,tc:9,y:3,r:0},{o:'Jordan',c:6,tc:10,y:0,r:0},{o:'Norway',c:2,tc:6,y:0,r:0},{o:'Germany',c:0,tc:10,y:0,r:0}],
-    'Tunisia':[{o:'Belgium',c:0,tc:14,y:2,r:1},{o:'Austria',c:4,tc:6,y:1,r:0},{o:'Canada',c:1,tc:10,y:2,r:0},{o:'Haiti',c:3,tc:10,y:2,r:0}],
-    'Turkey':[{o:'Venezuela',c:12,tc:14,y:1,r:0},{o:'North Macedonia',c:13,tc:14,y:0,r:0},{o:'Kosovo',c:2,tc:5,y:5,r:0},{o:'Romania',c:9,tc:12,y:2,r:0}],
-    'USA':[{o:'Germany',c:10,tc:12,y:1,r:0},{o:'Senegal',c:4,tc:11,y:1,r:0},{o:'Portugal',c:2,tc:10,y:1,r:0},{o:'Belgium',c:6,tc:12,y:2,r:0}],
-    'Uruguay':[{o:'Algeria',c:6,tc:11,y:3,r:0},{o:'England',c:0,tc:7,y:2,r:0},{o:'USA',c:5,tc:12,y:2,r:1},{o:'Uzbekistan',c:6,tc:8,y:0,r:0}],
-    'Uzbekistan':[{o:'Netherlands',c:3,tc:6,y:1,r:0},{o:'Canada',c:3,tc:10,y:2,r:0},{o:'Venezuela',c:9,tc:9,y:0,r:0},{o:'Gabon',c:14,tc:20,y:0,r:0}]
+    'Algeria':[{o:'Netherlands',c:3,tc:9,y:0,r:0,gf:1,ga:0},{o:'Uruguay',c:5,tc:11,y:4,r:0,gf:0,ga:0},{o:'Guatemala',c:8,tc:12,y:0,r:0,gf:7,ga:0},{o:'Nigeria',c:2,tc:6,y:5,r:0,gf:0,ga:2}],
+    'Argentina':[{o:'Iceland',c:2,tc:4,y:2,r:0,gf:3,ga:0},{o:'Honduras',c:6,tc:7,y:4,r:0,gf:2,ga:0},{o:'Zambia',c:6,tc:10,y:0,r:0,gf:5,ga:0},{o:'Mauritania',c:4,tc:6,y:1,r:0,gf:2,ga:1}],
+    'Australia':[{o:'Switzerland',c:2,tc:9,y:2,r:0,gf:1,ga:1},{o:'Mexico',c:3,tc:8,y:1,r:0,gf:0,ga:1},{o:'Curacao',c:1,tc:3,y:0,r:0,gf:5,ga:1},{o:'Cameroon',c:3,tc:7,y:2,r:0,gf:1,ga:0}],
+    'Austria':[{o:'Tunisia',c:2,tc:6,y:2,r:1,gf:1,ga:0},{o:'South Korea',c:4,tc:10,y:1,r:0,gf:1,ga:0},{o:'Ghana',c:5,tc:8,y:1,r:0,gf:5,ga:1},{o:'Bosnia & Herzegovina',c:4,tc:6,y:1,r:0,gf:1,ga:1}],
+    'Belgium':[{o:'Tunisia',c:14,tc:14,y:1,r:0,gf:5,ga:0},{o:'Croatia',c:4,tc:7,y:2,r:0,gf:2,ga:0},{o:'Mexico',c:2,tc:5,y:3,r:0,gf:1,ga:1},{o:'USA',c:6,tc:12,y:0,r:0,gf:5,ga:2}],
+    'Bosnia & Herzegovina':[{o:'Italy',c:10,tc:14,y:3,r:0,gf:1,ga:1},{o:'Wales',c:3,tc:12,y:4,r:0,gf:1,ga:1},{o:'Austria',c:2,tc:6,y:2,r:0,gf:1,ga:1},{o:'Romania',c:4,tc:5,y:5,r:0,gf:3,ga:1}],
+    'Brazil':[{o:'Egypt',c:5,tc:8,y:1,r:0,gf:2,ga:1},{o:'Panama',c:1,tc:2,y:0,r:0,gf:6,ga:2},{o:'Croatia',c:2,tc:4,y:1,r:0,gf:3,ga:1},{o:'France',c:5,tc:7,y:4,r:0,gf:1,ga:2}],
+    'Canada':[{o:'Republic of Ireland',c:12,tc:16,y:2,r:0,gf:1,ga:1},{o:'Uzbekistan',c:7,tc:10,y:2,r:0,gf:2,ga:0},{o:'Tunisia',c:9,tc:10,y:4,r:0,gf:0,ga:0},{o:'Iceland',c:8,tc:9,y:0,r:1,gf:2,ga:2}],
+    'Cape Verde':[{o:'Finland',c:8,tc:14,y:2,r:0,gf:1,ga:1},{o:'Chile',c:4,tc:5,y:1,r:1,gf:2,ga:4}],
+    'Colombia':[{o:'Jordan',c:3,tc:4,y:0,r:0,gf:2,ga:0},{o:'Costa Rica',c:5,tc:9,y:2,r:0,gf:3,ga:1},{o:'France',c:9,tc:14,y:1,r:0,gf:1,ga:3},{o:'Croatia',c:6,tc:10,y:0,r:0,gf:1,ga:2}],
+    'Croatia':[{o:'Slovenia',c:8,tc:12,y:0,r:0,gf:2,ga:1},{o:'Belgium',c:3,tc:7,y:2,r:0,gf:0,ga:2},{o:'Brazil',c:2,tc:4,y:3,r:0,gf:1,ga:3},{o:'Colombia',c:4,tc:10,y:3,r:0,gf:2,ga:1}],
+    'Curacao':[{o:'Scotland',c:2,tc:10,y:2,r:1,gf:1,ga:4},{o:'Australia',c:2,tc:3,y:0,r:0,gf:1,ga:5},{o:'China PR',c:4,tc:7,y:2,r:0,gf:0,ga:2},{o:'Jamaica',c:3,tc:6,y:2,r:0,gf:0,ga:0}],
+    'Czech Republic':[{o:'Denmark',c:7,tc:11,y:1,r:0,gf:2,ga:2},{o:'Republic of Ireland',c:6,tc:15,y:1,r:0,gf:2,ga:2},{o:'Gibraltar',c:12,tc:13,y:0,r:0,gf:6,ga:0},{o:'Faroe Islands',c:7,tc:8,y:1,r:0,gf:1,ga:2}],
+    'DR Congo':[{o:'Chile',c:7,tc:9,y:1,r:0,gf:1,ga:2},{o:'Denmark',c:4,tc:8,y:0,r:0,gf:0,ga:0},{o:'Jamaica',c:5,tc:12,y:0,r:0,gf:1,ga:0},{o:'Algeria',c:6,tc:10,y:2,r:0,gf:0,ga:1}],
+    'Ecuador':[{o:'Guatemala',c:6,tc:6,y:3,r:0,gf:3,ga:0},{o:'Saudi Arabia',c:2,tc:4,y:1,r:0,gf:2,ga:1},{o:'Netherlands',c:10,tc:12,y:2,r:0,gf:1,ga:1},{o:'Morocco',c:1,tc:3,y:0,r:0,gf:1,ga:1}],
+    'Egypt':[{o:'Brazil',c:3,tc:8,y:1,r:0,gf:1,ga:2},{o:'Russia',c:5,tc:11,y:1,r:0,gf:1,ga:0},{o:'Spain',c:0,tc:11,y:5,r:1,gf:0,ga:0},{o:'Saudi Arabia',c:1,tc:5,y:0,r:0,gf:4,ga:0}],
+    'England':[{o:'Costa Rica',c:11,tc:12,y:0,r:0,gf:3,ga:0},{o:'New Zealand',c:8,tc:9,y:0,r:0,gf:1,ga:0},{o:'Japan',c:11,tc:12,y:0,r:0,gf:0,ga:1},{o:'Uruguay',c:7,tc:7,y:1,r:0,gf:1,ga:1}],
+    'France':[{o:'Northern Ireland',c:5,tc:6,y:0,r:0,gf:3,ga:1},{o:'Ivory Coast',c:8,tc:10,y:0,r:0,gf:1,ga:2},{o:'Colombia',c:5,tc:14,y:3,r:0,gf:3,ga:1},{o:'Brazil',c:2,tc:7,y:3,r:1,gf:2,ga:1}],
+    'Germany':[{o:'USA',c:2,tc:12,y:3,r:0,gf:2,ga:1},{o:'Finland',c:10,tc:13,y:0,r:0,gf:4,ga:0},{o:'Ghana',c:9,tc:13,y:1,r:0,gf:2,ga:1},{o:'Switzerland',c:10,tc:10,y:0,r:0,gf:4,ga:3}],
+    'Ghana':[{o:'Wales',c:4,tc:9,y:2,r:0,gf:1,ga:1},{o:'Mexico',c:3,tc:12,y:1,r:0,gf:0,ga:2},{o:'Germany',c:4,tc:13,y:3,r:0,gf:1,ga:2},{o:'Austria',c:3,tc:8,y:2,r:0,gf:1,ga:5}],
+    'Haiti':[{o:'Peru',c:3,tc:6,y:1,r:0,gf:1,ga:2},{o:'New Zealand',c:5,tc:13,y:0,r:0,gf:4,ga:0},{o:'Iceland',c:1,tc:1,y:2,r:0,gf:1,ga:1},{o:'Tunisia',c:7,tc:10,y:4,r:1,gf:0,ga:1}],
+    'Iran':[{o:'Russia',c:6,tc:13,y:1,r:0,gf:1,ga:2},{o:'Korea DPR',c:2,tc:8,y:1,r:0,gf:3,ga:0},{o:'Qatar',c:3,tc:6,y:4,r:1,gf:0,ga:1}],
+    'Iraq':[{o:'Spain',c:3,tc:8,y:2,r:0,gf:1,ga:1},{o:'Bolivia',c:2,tc:18,y:3,r:0,gf:2,ga:1},{o:'Jordan',c:12,tc:14,y:0,r:0,gf:0,ga:1},{o:'Algeria',c:1,tc:7,y:0,r:1,gf:0,ga:2}],
+    'Ivory Coast':[{o:'France',c:2,tc:10,y:1,r:0,gf:2,ga:1},{o:'Scotland',c:5,tc:12,y:0,r:0,gf:1,ga:0},{o:'South Korea',c:5,tc:12,y:0,r:0,gf:4,ga:0},{o:'Egypt',c:7,tc:10,y:0,r:0,gf:2,ga:3}],
+    'Japan':[{o:'Iceland',c:5,tc:6,y:0,r:0,gf:1,ga:0},{o:'England',c:1,tc:12,y:2,r:0,gf:1,ga:0},{o:'Scotland',c:8,tc:11,y:2,r:0,gf:1,ga:0},{o:'Bolivia',c:1,tc:3,y:2,r:0,gf:3,ga:0}],
+    'Jordan':[{o:'Colombia',c:1,tc:4,y:2,r:1,gf:0,ga:2},{o:'Switzerland',c:4,tc:10,y:0,r:0,gf:1,ga:4},{o:'Morocco',c:2,tc:11,y:2,r:0,gf:2,ga:3},{o:'Saudi Arabia',c:4,tc:8,y:1,r:0,gf:1,ga:0}],
+    'Mexico':[{o:'Serbia',c:6,tc:7,y:2,r:0,gf:5,ga:1},{o:'Australia',c:5,tc:8,y:1,r:0,gf:1,ga:0},{o:'Ghana',c:9,tc:12,y:1,r:0,gf:2,ga:0},{o:'Belgium',c:3,tc:5,y:2,r:0,gf:1,ga:1}],
+    'Morocco':[{o:'Norway',c:3,tc:14,y:1,r:0,gf:1,ga:1},{o:'Madagascar',c:12,tc:13,y:2,r:0,gf:4,ga:0},{o:'Paraguay',c:1,tc:4,y:3,r:0,gf:2,ga:1},{o:'Ecuador',c:2,tc:3,y:1,r:0,gf:1,ga:1}],
+    'Netherlands':[{o:'Uzbekistan',c:3,tc:6,y:1,r:1,gf:2,ga:1},{o:'Algeria',c:6,tc:9,y:0,r:0,gf:0,ga:1},{o:'Ecuador',c:2,tc:12,y:0,r:1,gf:1,ga:1},{o:'Norway',c:8,tc:10,y:0,r:0,gf:2,ga:1}],
+    'New Zealand':[{o:'England',c:1,tc:9,y:0,r:0,gf:0,ga:1},{o:'Haiti',c:8,tc:13,y:1,r:0,gf:0,ga:4},{o:'Chile',c:7,tc:9,y:2,r:0,gf:4,ga:1},{o:'Finland',c:2,tc:9,y:1,r:0,gf:0,ga:2}],
+    'Norway':[{o:'Morocco',c:11,tc:14,y:1,r:0,gf:1,ga:1},{o:'Sweden',c:6,tc:7,y:0,r:0,gf:3,ga:1},{o:'Switzerland',c:4,tc:6,y:0,r:0,gf:0,ga:0},{o:'Netherlands',c:2,tc:10,y:1,r:0,gf:1,ga:2}],
+    'Panama':[{o:'Brazil',c:1,tc:2,y:1,r:0,gf:2,ga:6},{o:'South Africa',c:1,tc:2,y:4,r:0,gf:2,ga:1},{o:'South Africa',c:1,tc:6,y:2,r:0,gf:1,ga:1},{o:'Mexico',c:1,tc:10,y:1,r:0,gf:0,ga:1}],
+    'Paraguay':[{o:'Nicaragua',c:14,tc:14,y:0,r:0,gf:4,ga:0},{o:'Morocco',c:3,tc:4,y:6,r:0,gf:1,ga:2},{o:'Greece',c:3,tc:9,y:0,r:0,gf:1,ga:0},{o:'Mexico',c:3,tc:6,y:3,r:0,gf:2,ga:1}],
+    'Portugal':[{o:'Nigeria',c:3,tc:5,y:2,r:0,gf:2,ga:1},{o:'Chile',c:9,tc:12,y:0,r:1,gf:2,ga:1},{o:'USA',c:8,tc:10,y:1,r:0,gf:2,ga:0},{o:'Mexico',c:4,tc:4,y:1,r:0,gf:0,ga:0}],
+    'Qatar':[{o:'El Salvador',c:3,tc:7,y:1,r:0,gf:0,ga:0},{o:'Republic of Ireland',c:3,tc:10,y:0,r:1,gf:0,ga:1},{o:'Tunisia',c:10,tc:14,y:0,r:0,gf:0,ga:3},{o:'Syria',c:7,tc:11,y:2,r:0,gf:1,ga:1}],
+    'Saudi Arabia':[{o:'Senegal',c:1,tc:4,y:3,r:0,gf:0,ga:0},{o:'Puerto Rico',c:5,tc:7,y:0,r:0,gf:3,ga:0},{o:'Ecuador',c:2,tc:4,y:1,r:0,gf:1,ga:2},{o:'Serbia',c:1,tc:11,y:2,r:0,gf:1,ga:2}],
+    'Scotland':[{o:'Bolivia',c:6,tc:9,y:1,r:0,gf:4,ga:0},{o:'Curacao',c:8,tc:10,y:2,r:0,gf:4,ga:1},{o:'Ivory Coast',c:7,tc:12,y:0,r:0,gf:0,ga:1},{o:'Japan',c:3,tc:11,y:0,r:0,gf:0,ga:1}],
+    'Senegal':[{o:'Saudi Arabia',c:3,tc:4,y:3,r:1,gf:0,ga:0},{o:'USA',c:7,tc:11,y:0,r:0,gf:2,ga:3},{o:'Peru',c:7,tc:13,y:1,r:0,gf:2,ga:0},{o:'Morocco',c:8,tc:18,y:5,r:0,gf:1,ga:0}],
+    'South Africa':[{o:'Nicaragua',c:6,tc:7,y:0,r:0,gf:0,ga:0},{o:'Panama',c:1,tc:2,y:3,r:0,gf:1,ga:2},{o:'Panama',c:5,tc:6,y:1,r:0,gf:1,ga:1},{o:'Cameroon',c:6,tc:9,y:5,r:0,gf:1,ga:2}],
+    'South Korea':[{o:'El Salvador',c:8,tc:10,y:4,r:0,gf:1,ga:0},{o:'Trinidad and Tobago',c:7,tc:8,y:1,r:0,gf:5,ga:0},{o:'Austria',c:6,tc:10,y:0,r:0,gf:0,ga:1},{o:'Ivory Coast',c:7,tc:12,y:0,r:0,gf:0,ga:4}],
+    'Spain':[{o:'Peru',c:6,tc:10,y:0,r:0,gf:3,ga:1},{o:'Iraq',c:5,tc:8,y:2,r:0,gf:1,ga:1},{o:'Egypt',c:11,tc:11,y:0,r:0,gf:0,ga:0},{o:'Serbia',c:5,tc:6,y:0,r:0,gf:3,ga:0}],
+    'Sweden':[{o:'Greece',c:1,tc:5,y:0,r:0,gf:2,ga:2},{o:'Norway',c:1,tc:7,y:1,r:0,gf:1,ga:3},{o:'Poland',c:2,tc:11,y:2,r:0,gf:3,ga:2},{o:'Ukraine',c:3,tc:12,y:1,r:0,gf:3,ga:1}],
+    'Switzerland':[{o:'Australia',c:7,tc:9,y:3,r:0,gf:1,ga:1},{o:'Jordan',c:6,tc:10,y:0,r:0,gf:4,ga:1},{o:'Norway',c:2,tc:6,y:0,r:0,gf:0,ga:0},{o:'Germany',c:0,tc:10,y:0,r:0,gf:3,ga:4}],
+    'Tunisia':[{o:'Belgium',c:0,tc:14,y:2,r:1,gf:0,ga:5},{o:'Austria',c:4,tc:6,y:1,r:0,gf:0,ga:1},{o:'Canada',c:1,tc:10,y:2,r:0,gf:0,ga:0},{o:'Haiti',c:3,tc:10,y:2,r:0,gf:1,ga:0}],
+    'Turkey':[{o:'Venezuela',c:12,tc:14,y:1,r:0,gf:2,ga:1},{o:'North Macedonia',c:13,tc:14,y:0,r:0,gf:4,ga:0},{o:'Kosovo',c:2,tc:5,y:5,r:0,gf:1,ga:0},{o:'Romania',c:9,tc:12,y:2,r:0,gf:1,ga:0}],
+    'USA':[{o:'Germany',c:10,tc:12,y:1,r:0,gf:1,ga:2},{o:'Senegal',c:4,tc:11,y:1,r:0,gf:3,ga:2},{o:'Portugal',c:2,tc:10,y:1,r:0,gf:0,ga:2},{o:'Belgium',c:6,tc:12,y:2,r:0,gf:2,ga:5}],
+    'Uruguay':[{o:'Algeria',c:6,tc:11,y:3,r:0,gf:0,ga:0},{o:'England',c:0,tc:7,y:2,r:0,gf:1,ga:1},{o:'USA',c:5,tc:12,y:2,r:1,gf:1,ga:5},{o:'Uzbekistan',c:6,tc:8,y:0,r:0,gf:2,ga:1}],
+    'Uzbekistan':[{o:'Netherlands',c:3,tc:6,y:1,r:0,gf:1,ga:2},{o:'Canada',c:3,tc:10,y:2,r:0,gf:0,ga:2},{o:'Venezuela',c:9,tc:9,y:0,r:0,gf:0,ga:0},{o:'Gabon',c:14,tc:20,y:0,r:0,gf:3,ga:1}]
   };
 
   // Referee card history, keyed by FIFA OfficialId. Last <=5 FIFA-competition games
@@ -1541,15 +1541,16 @@
     calFetching.then(ok,fail);
   }
   var mstats={};   // per finished match: {d:kickoffMs, teams:{name:{c,y,r,opp}}}, keyed by FIFA IdMatch
-  function loadMstats(){try{var s=load('wc26_mstats2');if(s)mstats=JSON.parse(s);}catch(e){mstats={};}}
-  function saveMstats(){save('wc26_mstats2',JSON.stringify(mstats));}
+  function loadMstats(){try{var s=load('wc26_mstats3');if(s)mstats=JSON.parse(s);}catch(e){mstats={};}}
+  function saveMstats(){save('wc26_mstats3',JSON.stringify(mstats));}
 
   // Count corners (event type 16), yellows (2) and reds (3) per team from one match timeline.
   // Type 71 'Red card given' is unattributed VAR noise - ignored.
   function statsForTimeline(fm,tl){
     var ev=tl.Event||[],idH=String(fm.Home.IdTeam),idA=String(fm.Away.IdTeam);
     var hn=mapTeam((fm.Home.TeamName[0]||{}).Description||''),an=mapTeam((fm.Away.TeamName[0]||{}).Description||'');
-    var agg={};agg[hn]={c:0,y:0,r:0,opp:an};agg[an]={c:0,y:0,r:0,opp:hn};
+    var hsc=(fm.Home.Score!=null)?fm.Home.Score:null,asc=(fm.Away.Score!=null)?fm.Away.Score:null;
+    var agg={};agg[hn]={c:0,y:0,r:0,opp:an,gf:hsc,ga:asc};agg[an]={c:0,y:0,r:0,opp:hn,gf:asc,ga:hsc};
     for(var i=0;i<ev.length;i++){
       var t=ev[i].Type,id=String(ev[i].IdTeam||''),nm=null;
       if(id===idH)nm=hn;else if(id===idA)nm=an;else continue;
@@ -1602,9 +1603,9 @@
       }}
     rows.sort(function(x,y){return y.d-x.d;});
     var win=[];
-    for(i=0;i<rows.length&&win.length<4;i++)win.push({o:rows[i].me.opp,c:rows[i].me.c,tc:rows[i].tc,y:rows[i].me.y,r:rows[i].me.r,pre:false});
+    for(i=0;i<rows.length&&win.length<4;i++)win.push({o:rows[i].me.opp,c:rows[i].me.c,tc:rows[i].tc,y:rows[i].me.y,r:rows[i].me.r,gf:rows[i].me.gf,ga:rows[i].me.ga,pre:false});
     var pre=PRE_STATS[team]||[];
-    for(i=0;i<pre.length&&win.length<4;i++)win.push({o:pre[i].o,c:pre[i].c,tc:(pre[i].tc!=null?pre[i].tc:null),y:pre[i].y,r:pre[i].r,pre:true});
+    for(i=0;i<pre.length&&win.length<4;i++)win.push({o:pre[i].o,c:pre[i].c,tc:(pre[i].tc!=null?pre[i].tc:null),y:pre[i].y,r:pre[i].r,gf:pre[i].gf,ga:pre[i].ga,pre:true});
     return win;
   }
 
@@ -1615,6 +1616,30 @@
     for(var i=0;i<g.length;i++){var e=g[i];
       var val=kind==='c'?(e.tc!=null?e.c+' / '+e.tc+' total':e.c+' corners'):e.y+'Y '+e.r+'R';
       h+='<div class="st-row"><span>v <b>'+escapeHtml(e.o)+'</b>'+(e.pre?' <span class="prewc">pre-WC</span>':'')+'</span><span class="num">'+val+'</span></div>';}
+    return h;
+  }
+  // result of one game from this team's view -> W/D/L
+  function formRes(e){
+    if(e.gf==null||e.ga==null)return {l:'?',c:''};
+    if(e.gf>e.ga)return {l:'W',c:'fw'};
+    if(e.gf<e.ga)return {l:'L',c:'fl'};
+    return {l:'D',c:'fd'};
+  }
+  // last-4 results, single column (team view)
+  function formRowsHtml(g){
+    var h='';
+    for(var i=0;i<g.length;i++){var e=g[i],r=formRes(e);
+      h+='<div class="st-row"><span><span class="fbadge '+r.c+'">'+r.l+'</span> v <b>'+escapeHtml(e.o)+'</b>'+(e.pre?' <span class="prewc">pre-WC</span>':'')+'</span><span class="num">'+(e.gf!=null?e.gf+'-'+e.ga:'-')+'</span></div>';}
+    return h;
+  }
+  // last-4 results, compact column (head-to-head view)
+  function formColHtml(team){
+    if(!F[team])return '<div class="st-empty">-</div>';
+    var g=teamWindow(team);
+    if(!g.length)return '<div class="st-empty">no data</div>';
+    var h='';
+    for(var i=0;i<g.length;i++){var e=g[i],r=formRes(e);
+      h+='<div class="frow"><span class="fbadge '+r.c+'">'+r.l+'</span><span class="fopp">'+escapeHtml(e.o)+(e.pre?' <span class="prewc">pre-WC</span>':'')+'</span><span class="fsc">'+(e.gf!=null?e.gf+'-'+e.ga:'-')+'</span></div>';}
     return h;
   }
   // Suspension picture, walked chronologically so SERVED bans clear:
@@ -1752,6 +1777,7 @@
     }
     html+='<div class="st-sec"><h4>Penalty takers</h4>'+penListHtml(team,true)+'</div>';
     html+=suspensionHtml(team);
+    if(n)html+='<div class="st-sec"><h4>Form - last '+n+(n===1?' game':' games')+' <span style="font-weight:600;letter-spacing:0;text-transform:none">(most recent first)</span></h4>'+formRowsHtml(g)+'</div>';
     if(!n){
       html+='<div class="st-sec"><h4>Corners &amp; cards</h4><div class="st-empty">No covered games for this team yet. Averages appear right after their first match.</div></div>';
     }else{
@@ -2191,6 +2217,9 @@
       '<div class="col">'+h2hHead(stMatch.a)+suspLine(stMatch.a)+'</div>'+
       '<div class="col">'+h2hHead(stMatch.b)+suspLine(stMatch.b)+'</div></div>'+
       '<div class="st-note" style="margin:6px 0 0">From cards shown so far - verify against team news.</div></div>';
+    html+='<div class="st-sec"><h4>Form - last 4 games <span style="font-weight:600;letter-spacing:0;text-transform:none">(most recent first)</span></h4><div class="h2h">'+
+      '<div class="col">'+h2hHead(stMatch.a)+formColHtml(stMatch.a)+'</div>'+
+      '<div class="col">'+h2hHead(stMatch.b)+formColHtml(stMatch.b)+'</div></div></div>';
     html+='<div class="st-sec"><h4>Corners - last 4 games <span style="font-weight:600;letter-spacing:0;text-transform:none">(team / match total)</span></h4><div class="h2h">'+
       '<div class="col">'+h2hHead(stMatch.a)+corCol(A)+'</div>'+
       '<div class="col">'+h2hHead(stMatch.b)+corCol(B)+'</div></div>'+
