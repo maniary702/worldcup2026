@@ -1548,16 +1548,23 @@
     calFetching.then(ok,fail);
   }
   var mstats={};   // per finished match: {d:kickoffMs, teams:{name:{c,y,r,opp}}}, keyed by FIFA IdMatch
-  function loadMstats(){try{var s=load('wc26_mstats3');if(s)mstats=JSON.parse(s);}catch(e){mstats={};}}
-  function saveMstats(){save('wc26_mstats3',JSON.stringify(mstats));}
+  function loadMstats(){try{var s=load('wc26_mstats4');if(s)mstats=JSON.parse(s);}catch(e){mstats={};}}
+  function saveMstats(){save('wc26_mstats4',JSON.stringify(mstats));}
 
   // Count corners (event type 16), yellows (2) and reds (3) per team from one match timeline.
   // Type 71 'Red card given' is unattributed VAR noise - ignored.
+  // Shot on target (est.): a Type-12 shot whose GoalGatePosition lands inside the goal
+  // frame. Box validated across WC2026 finished matches (all goals fall inside; ~within 1
+  // of FotMob/Opta). FIFA only carries this shot-map for WORLD CUP games, not friendlies.
+  function inGoalFrame(e){
+    var gx=e.GoalGatePositionX,gy=e.GoalGatePositionY;
+    return gx!=null&&gy!=null&&gx>=31&&gx<=69&&gy<=45;
+  }
   function statsForTimeline(fm,tl){
     var ev=tl.Event||[],idH=String(fm.Home.IdTeam),idA=String(fm.Away.IdTeam);
     var hn=mapTeam((fm.Home.TeamName[0]||{}).Description||''),an=mapTeam((fm.Away.TeamName[0]||{}).Description||'');
     var hsc=(fm.Home.Score!=null)?fm.Home.Score:null,asc=(fm.Away.Score!=null)?fm.Away.Score:null;
-    var agg={};agg[hn]={c:0,y:0,r:0,opp:an,gf:hsc,ga:asc};agg[an]={c:0,y:0,r:0,opp:hn,gf:asc,ga:hsc};
+    var agg={};agg[hn]={c:0,y:0,r:0,opp:an,gf:hsc,ga:asc,sot:0};agg[an]={c:0,y:0,r:0,opp:hn,gf:asc,ga:hsc,sot:0};
     for(var i=0;i<ev.length;i++){
       var t=ev[i].Type,id=String(ev[i].IdTeam||''),nm=null;
       if(id===idH)nm=hn;else if(id===idA)nm=an;else continue;
@@ -1565,6 +1572,7 @@
       else if(t===2)agg[nm].y++;
       else if(t===3)agg[nm].r++;
       else if(t===4){agg[nm].y++;agg[nm].r++;} // second yellow = a yellow shown plus the red
+      else if(t===12&&inGoalFrame(ev[i]))agg[nm].sot++; // shot on target (est.)
     }
     return {d:new Date(fm.Date).getTime(),teams:agg};
   }
@@ -1610,9 +1618,9 @@
       }}
     rows.sort(function(x,y){return y.d-x.d;});
     var win=[];
-    for(i=0;i<rows.length&&win.length<4;i++)win.push({o:rows[i].me.opp,c:rows[i].me.c,tc:rows[i].tc,y:rows[i].me.y,r:rows[i].me.r,gf:rows[i].me.gf,ga:rows[i].me.ga,pre:false});
+    for(i=0;i<rows.length&&win.length<4;i++)win.push({o:rows[i].me.opp,c:rows[i].me.c,tc:rows[i].tc,y:rows[i].me.y,r:rows[i].me.r,gf:rows[i].me.gf,ga:rows[i].me.ga,sot:(rows[i].me.sot!=null?rows[i].me.sot:null),pre:false});
     var pre=PRE_STATS[team]||[];
-    for(i=0;i<pre.length&&win.length<4;i++)win.push({o:pre[i].o,c:pre[i].c,tc:(pre[i].tc!=null?pre[i].tc:null),y:pre[i].y,r:pre[i].r,gf:pre[i].gf,ga:pre[i].ga,pre:true});
+    for(i=0;i<pre.length&&win.length<4;i++)win.push({o:pre[i].o,c:pre[i].c,tc:(pre[i].tc!=null?pre[i].tc:null),y:pre[i].y,r:pre[i].r,gf:pre[i].gf,ga:pre[i].ga,sot:null,pre:true});
     return win;
   }
 
@@ -1647,6 +1655,25 @@
     var h='';
     for(var i=0;i<g.length;i++){var e=g[i],r=formRes(e);
       h+='<div class="frow"><span class="fbadge '+r.c+'">'+r.l+'</span><span class="fopp">'+escapeHtml(e.o)+(e.pre?' <span class="prewc">pre-WC</span>':'')+'</span><span class="fsc">'+(e.gf!=null?e.gf+'-'+e.ga:'-')+'</span></div>';}
+    return h;
+  }
+  // shots on target — World Cup games only (FIFA carries the shot map for WC games)
+  function wcSot(team){var g=teamWindow(team),wc=[],i;for(i=0;i<g.length;i++)if(g[i].sot!=null)wc.push(g[i]);return wc;}
+  function sotRowsHtml(team){
+    var wc=wcSot(team);
+    if(!wc.length)return '<div class="st-empty">Appears after their first World Cup game (not in the feed for friendlies).</div>';
+    var tot=0,i;for(i=0;i<wc.length;i++)tot+=wc[i].sot;
+    var h='<div class="st-big">'+avg1(tot,wc.length)+'<small>on target per game</small></div>';
+    for(i=0;i<wc.length;i++)h+='<div class="st-row"><span>v <b>'+escapeHtml(wc[i].o)+'</b></span><span class="num">'+wc[i].sot+' on target</span></div>';
+    return h;
+  }
+  function sotColHtml(team){
+    if(!F[team])return '<div class="st-empty">-</div>';
+    var wc=wcSot(team);
+    if(!wc.length)return '<div class="st-empty">after 1st WC game</div>';
+    var tot=0,i;for(i=0;i<wc.length;i++)tot+=wc[i].sot;
+    var h='<div class="st-big">'+avg1(tot,wc.length)+'<small>/game</small></div>';
+    for(i=0;i<wc.length;i++)h+='<div class="frow"><span class="fopp">v '+escapeHtml(wc[i].o)+'</span><span class="fsc">'+wc[i].sot+'</span></div>';
     return h;
   }
   // Suspension picture, walked chronologically so SERVED bans clear:
@@ -1797,6 +1824,8 @@
           +'<div class="st-big"><span class="rc"></span>'+avg1(r,n)+'<small>reds per game</small></div>'
           +stRows(g,'yr')+'</div>';
     }
+    html+='<div class="st-sec"><h4>Shots on target <span style="font-weight:600;letter-spacing:0;text-transform:none">(World Cup games, est.)</span></h4>'+sotRowsHtml(team)
+      +'<div class="st-note" style="margin:6px 0 0">Estimated from FIFA’s shot map for World Cup matches - close to FotMob but not the official line.</div></div>';
     body.innerHTML=html;
   }
   function buildStatsSelect(){
@@ -1914,7 +1943,7 @@
     function lside(tm){
       if(!tm||!tm.Players)return null;
       var xi=[],subs=[],j;
-      for(j=0;j<tm.Players.length;j++){var p=tm.Players[j],o={num:(p.ShirtNumber!=null?p.ShirtNumber:''),name:(p.PlayerName&&p.PlayerName[0]&&p.PlayerName[0].Description)||(p.ShortName&&p.ShortName[0]&&p.ShortName[0].Description)||'',pos:POSL[p.Position]||'',cap:!!p.Captain};
+      for(j=0;j<tm.Players.length;j++){var p=tm.Players[j],o={id:String(p.IdPlayer),num:(p.ShirtNumber!=null?p.ShirtNumber:''),name:(p.PlayerName&&p.PlayerName[0]&&p.PlayerName[0].Description)||(p.ShortName&&p.ShortName[0]&&p.ShortName[0].Description)||'',pos:POSL[p.Position]||'',cap:!!p.Captain};
         if(p.Status===1)xi.push(o);else if(p.Status===2)subs.push(o);}
       return {form:tm.Tactics||'',xi:xi,subs:subs};
     }
@@ -1969,10 +1998,22 @@
     }
     return h+'</div>';
   }
-  function luSide(name,s){
+  // each player's shots on target over their last <=4 World Cup games (est., from pstats)
+  function playerSotMap(){
+    var byId={},k,id,i;
+    for(k in pstats){var ms=pstats[k],P=ms.p;for(id in P){var v=P[id];
+      if(!byId[id])byId[id]=[];byId[id].push({d:ms.d,sot:(v[9]||0)});}}
+    var m={};
+    for(id in byId){var arr=byId[id];arr.sort(function(a,b){return b.d-a.d;});
+      var tot=0,n=Math.min(4,arr.length);for(i=0;i<n;i++)tot+=arr[i].sot;
+      if(tot>0)m[id]=tot;}
+    return m;
+  }
+  function luSide(name,s,sot){
     if(!s)return '';
     var h='<div class="lu-side"><div class="lu-form"><span>'+(F[name]||'')+' '+escapeHtml(name)+'</span><span class="ff">'+escapeHtml(s.form||'')+'</span></div>';
-    function row(p,sub){return '<div class="lu-p'+(sub?' sub':'')+'"><span class="pn">'+escapeHtml(String(p.num))+'</span><span class="pnm">'+escapeHtml(p.name)+(p.cap?' (C)':'')+'</span><span class="ppos">'+escapeHtml(p.pos)+'</span></div>';}
+    function row(p,sub){var ps=(sot&&sot[p.id])?' <span class="lu-sot">'+sot[p.id]+' SoT</span>':'';
+      return '<div class="lu-p'+(sub?' sub':'')+'"><span class="pn">'+escapeHtml(String(p.num))+'</span><span class="pnm">'+escapeHtml(p.name)+(p.cap?' (C)':'')+ps+'</span><span class="ppos">'+escapeHtml(p.pos)+'</span></div>';}
     for(var i=0;i<s.xi.length;i++)h+=row(s.xi[i],false);
     if(s.subs.length){h+='<div class="lu-subs-h">Substitutes</div>';for(var j=0;j<s.subs.length;j++)h+=row(s.subs[j],true);}
     return h+'</div>';
@@ -2231,6 +2272,10 @@
       '<div class="col">'+h2hHead(stMatch.a)+corCol(A)+'</div>'+
       '<div class="col">'+h2hHead(stMatch.b)+corCol(B)+'</div></div>'+
       (anyPre?'<div class="st-note" style="margin:6px 0 0">* pre-tournament friendly - included to fill the last-4 window.</div>':'')+'</div>';
+    html+='<div class="st-sec"><h4>Shots on target <span style="font-weight:600;letter-spacing:0;text-transform:none">(World Cup games, est.)</span></h4><div class="h2h">'+
+      '<div class="col">'+h2hHead(stMatch.a)+sotColHtml(stMatch.a)+'</div>'+
+      '<div class="col">'+h2hHead(stMatch.b)+sotColHtml(stMatch.b)+'</div></div>'+
+      '<div class="st-note" style="margin:6px 0 0">Estimated from FIFA’s World Cup shot map - close to FotMob, not the official line.</div></div>';
     html+='<div class="st-sec"><h4>Cards - last 4 games <span style="font-weight:600;letter-spacing:0;text-transform:none">(Y = yellows, R = reds per game)</span></h4><div class="h2h">'+
       '<div class="col">'+h2hHead(stMatch.a)+crdCol(A)+'</div>'+
       '<div class="col">'+h2hHead(stMatch.b)+crdCol(B)+'</div></div>'+
@@ -2306,7 +2351,7 @@
   // ══════════════════════════════════════
   var pstats={};   // per finished match: {d, n, lbl, star, p:{id:[name,team,g,a,y,r,min,gk,cs]},
                    //  pens:[{t,n,min,on:[teammates on pitch]}] (in-game only), sq:{team:[matchday squad names]}}
-  function loadPstats(){try{var s=load('wc26_pstats4');if(s)pstats=JSON.parse(s);}catch(e){pstats={};}}
+  function loadPstats(){try{var s=load('wc26_pstats5');if(s)pstats=JSON.parse(s);}catch(e){pstats={};}}
   function savePstats(){try{save('wc26_pstats4',JSON.stringify(pstats));}catch(e){}}
   // Official Man-of-the-Match overrides (FIFA's feed has no MOTM field). Key by match
   // number, value e.g. 'Raul Jimenez (Mexico)'. Empty = use the computed standout.
@@ -2324,7 +2369,7 @@
       for(j=0;j<tm.Players.length;j++){p=tm.Players[j];
         var nm=(p.PlayerName&&p.PlayerName[0]&&p.PlayerName[0].Description)||'';
         if(!nm)continue;
-        idx[String(p.IdPlayer)]={n:nm,t:tname,st:p.Status,pos:p.Position,on:null,off:null,onIdx:null,offIdx:null,g:0,a:0,y:0,r:0};
+        idx[String(p.IdPlayer)]={n:nm,t:tname,st:p.Status,pos:p.Position,on:null,off:null,onIdx:null,offIdx:null,g:0,a:0,y:0,r:0,sot:0};
       }}
     var conceded={};
     conceded[hn]=(fm.Away.Score!=null)?fm.Away.Score:null;
@@ -2352,6 +2397,7 @@
             pensRaw.push({pid:String(e.IdPlayer),min:mn,idx:i});
           }
         }
+        else if(e.Type===12&&inGoalFrame(e))rec.sot++; // shot on target (est.)
       }
     }
     // resolve each penalty's on-pitch teammates AFTER all sub/red info is known;
@@ -2380,11 +2426,11 @@
       var endAt=(p.off!=null)?p.off:fullLen;
       var startAt=(p.st===1)?0:(p.on!=null?p.on:null);
       var min=(startAt==null)?0:Math.max(0,Math.min(fullLen,endAt-startAt));
-      if(!(min>0||p.g||p.a||p.y||p.r))continue;
+      if(!(min>0||p.g||p.a||p.y||p.r||p.sot))continue;
       var isGk=(p.pos===0)?1:0;
       // clean sheet: starting keeper who finished the match (not subbed/sent off) conceding none
       var cs=(isGk&&p.st===1&&p.off==null&&conceded[p.t]===0)?1:0;
-      players[k]=[p.n,p.t,p.g,p.a,p.y,p.r,min,isGk,cs];
+      players[k]=[p.n,p.t,p.g,p.a,p.y,p.r,min,isGk,cs,p.sot];
       var pts=p.g*3+p.a*2+cs*2;
       if(pts>starPts){starPts=pts;star=p.n+' ('+p.t+')'+(p.g?' '+p.g+'G':'')+(p.a?' '+p.a+'A':'')+(cs?' clean sheet':'');}
     }
