@@ -230,6 +230,13 @@
   .st-row b{color:var(--txt);font-weight:700}
   .st-row .num{font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap}
   .prewc{display:inline-block;margin-left:6px;padding:1px 5px;border:1px solid var(--line2);border-radius:6px;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);font-weight:700;vertical-align:1px}
+  /* form guide (W/D/L last results) */
+  .fbadge{display:inline-block;min-width:17px;text-align:center;font-size:10px;font-weight:800;border-radius:4px;padding:1px 3px;margin-right:5px;color:#fff;vertical-align:1px}
+  .fw{background:var(--pitch)} .fd{background:var(--low)} .fl{background:var(--fav)}
+  .frow{display:flex;align-items:center;gap:4px;font-size:12px;padding:4px 0;border-top:1px dashed var(--line)}
+  .frow .fopp{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt);font-weight:600}
+  .frow .fsc{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--mut);white-space:nowrap}
+  .frow .prewc{margin-left:4px;padding:0 3px;font-size:8.5px}
   .statschip{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,var(--gold-tint),transparent 70%),var(--card);border:1px solid var(--ko-border);border-radius:14px;padding:10px 15px;cursor:pointer;transition:.12s}
   .statschip:active{transform:scale(.97)}
   .statschip .big{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-ink)}
@@ -792,7 +799,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 15 Jun 2026 v12.3 (instant match view, no loading flash)';
+  var BUILD_TAG='Build 15 Jun 2026 v13 (form guide: last 4 results)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line){
     try{
@@ -865,7 +872,7 @@
   var FIFA_LIVE=FIFA_API+'live/football/now?language=en';
 
   // Final scores baked in at build time, so played games show even if the feed is down
-  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1]};
+  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1],13:[0,0],14:[1,1],15:[1,1],16:[2,2]};
   function applySeed(){
     for(var n in SEED){
       if(!scores[n])scores[n]={ga:SEED[n][0],gb:SEED[n][1],status:'FT',source:'api',minute:null};
