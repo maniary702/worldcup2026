@@ -336,6 +336,7 @@
   .lu-p .pn{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;color:var(--low);flex:0 0 22px;text-align:center}
   .lu-p .pnm{flex:1;color:var(--txt);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .lu-p .ppos{font-size:10px;color:var(--low);font-weight:700;letter-spacing:.04em}
+  .lu-sot{display:inline-block;margin-left:6px;padding:0 5px;border-radius:5px;font-size:9.5px;font-weight:800;letter-spacing:.03em;background:linear-gradient(135deg,var(--gold-tint),transparent 70%);color:var(--gold-ink);border:1px solid var(--ko-border);vertical-align:1px}
   .lu-subs-h{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--low);margin:8px 0 4px}
   .lu-p.sub .pnm{color:var(--mut);font-weight:500}
   .card-go{color:var(--low);font-size:22px;line-height:1;font-weight:400;padding:0 2px}
@@ -799,7 +800,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 15 Jun 2026 v13 (form guide: last 4 results)';
+  var BUILD_TAG='Build 16 Jun 2026 v14 (shots on target: team + per player, WC games)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line){
     try{
@@ -1881,6 +1882,8 @@
         document.getElementById('mdLineupPane').innerHTML='<div class="st-load">Loading…</div>';
       }
       loadFull();
+      // load per-player WC stats so the line-up can show each player's shots on target
+      ensurePstats(function(){if(mdMatch===mm&&document.getElementById('mdOverlay').classList.contains('open'))loadFull();});
       // refresh until full time: catches line-ups publishing pre-match AND live score/events
       if(st.k!=='ft')mdTimer=setInterval(function(){
         if(mdMatch!==mm||!document.getElementById('mdOverlay').classList.contains('open')){clearInterval(mdTimer);mdTimer=null;return;}
@@ -2031,7 +2034,8 @@
     else document.getElementById('mdTeamStats').innerHTML='<div class="st-empty">Match stats appear once the game kicks off.</div>';
     document.getElementById('mdEvents').innerHTML=d.hasData?renderEvents(d):'';
     var hasLu=d.lu&&((d.lu.h&&d.lu.h.xi.length)||(d.lu.a&&d.lu.a.xi.length));
-    document.getElementById('mdLineupPane').innerHTML=hasLu?(luSide(d.hN,d.lu.h)+luSide(d.aN,d.lu.a)):'<div class="st-empty">Line-ups are published about an hour before kick-off - they’ll appear here automatically.</div>';
+    var sotM=playerSotMap();
+    document.getElementById('mdLineupPane').innerHTML=hasLu?(luSide(d.hN,d.lu.h,sotM)+luSide(d.aN,d.lu.a,sotM)+'<div class="st-note" style="margin:2px 2px 0">SoT = shots on target in their last World Cup games (est.).</div>'):'<div class="st-empty">Line-ups are published about an hour before kick-off - they’ll appear here automatically.</div>';
   }
   function mdSetTab(t){
     var stats=(t==='stats');
