@@ -804,12 +804,14 @@
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
-      // Ignore opaque cross-origin "Script error." (line 0, no source, no Error object): it
-      // comes from analytics (GoatCounter) or the VIEWER's browser extensions / content
-      // blockers, NOT this page, and carries zero actionable detail. A real bug in our own
-      // inline code always reports a true message + line + Error object on a same-origin page,
-      // so this only mutes third-party noise — don't scare family users with it.
-      if(!err&&(line===0||line==null||!src2)&&/script\s*error/i.test(String(msg||'')))return;
+      // Mute the opaque cross-origin "Script error." placeholder. Browsers sanitize errors from
+      // cross-origin scripts (here only GoatCounter analytics, loaded without crossorigin) and the
+      // VIEWER's own Safari extensions / content blockers down to this EXACT bare message with a
+      // null Error object — and some WebKit/Blink builds STILL report a real-looking line + source,
+      // so we key on the message + null-error tell, NOT the position. A real bug in our own
+      // same-origin code always carries a true message AND an Error object, so it still surfaces.
+      // Don't scare family users with third-party noise they can't act on.
+      if(!err&&/^script\s+error\.?$/i.test(String(msg||'').trim()))return;
       var b=document.getElementById('errBanner');
       if(!b){b=document.createElement('div');b.id='errBanner';
         b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:999;background:#c8102e;color:#fff;font:600 12px/1.4 Arial;padding:8px 12px;text-align:center';
@@ -879,7 +881,7 @@
   var FIFA_LIVE=FIFA_API+'live/football/now?language=en';
 
   // Final scores baked in at build time, so played games show even if the feed is down
-  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1],13:[0,0],14:[1,1],15:[1,1],16:[2,2]};
+  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1],13:[0,0],14:[1,1],15:[1,1],16:[2,2],17:[3,1],18:[1,4],19:[3,0],20:[3,1],21:[1,1],22:[4,2],23:[1,0],24:[1,3]};
   function applySeed(){
     for(var n in SEED){
       if(!scores[n])scores[n]={ga:SEED[n][0],gb:SEED[n][1],status:'FT',source:'api',minute:null};
