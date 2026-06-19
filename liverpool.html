@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Follow your Premier League team</title>
+<meta name="description" content="Pick your Premier League club — fixtures, results, the full table, cups, squad and top scorers. One tap, no app."/>
+<meta property="og:title" content="Follow your Premier League team"/>
+<meta property="og:description" content="Pick your club — 2026/27 fixtures, table, cups, squad & scorers. One tap, no app."/>
+<meta property="og:type" content="website"/>
+<meta name="theme-color" content="#37003c"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%2337003c'/%3E%3Ctext x='50' y='72' font-size='58' text-anchor='middle' fill='%2300ff85' font-family='Arial' font-weight='bold'%3E%E2%9A%BD%3C/text%3E%3C/svg%3E"/>
+<style>
+  :root{--pur:#37003c;--pur2:#2a002e;--pink:#e90052;--grn:#00c46a;--ink:#1a1a1a;--mut:#6b7280;--line:#e6e7eb;--bg:#f4f5f7;--card:#fff;--w:#16a34a;--d:#9ca3af;--l:#dc2626}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:15px;line-height:1.4}
+  img{display:block}
+  .wrap{max-width:680px;margin:0 auto;padding:0 12px 80px}
+  header{background:linear-gradient(135deg,var(--pur),var(--pur2));color:#fff;padding:12px;position:sticky;top:0;z-index:30;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+  .hd{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:10px}
+  .hd .crest{width:40px;height:40px;flex:0 0 auto;background:#fff;border-radius:9px;padding:3px}
+  .hd .crest img{width:100%;height:100%;object-fit:contain}
+  .hd h1{font-size:15px;margin:0;font-weight:800;line-height:1.05}
+  .hd .sub{font-size:11px;opacity:.85;font-weight:600}
+  .hd .share{margin-left:auto;background:var(--pink);color:#fff;border:0;border-radius:20px;padding:8px 14px;font-weight:800;font-size:12px;cursor:pointer}
+  .teambar{max-width:680px;margin:8px auto 0;display:flex;align-items:center;gap:8px}
+  .teambar label{font-size:11px;font-weight:700;opacity:.85;color:#fff}
+  .teambar select{flex:1;border:0;border-radius:10px;padding:9px 10px;font-weight:800;font-size:14px;background:#fff;color:var(--pur)}
+  nav.tabs{position:sticky;top:108px;z-index:20;background:var(--bg);max-width:680px;margin:0 auto;display:flex;gap:6px;padding:10px 12px 6px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  nav.tabs button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:20px;padding:7px 13px;font-weight:700;font-size:13px;cursor:pointer}
+  nav.tabs button.on{background:var(--pur);color:#fff;border-color:var(--pur)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px;margin:10px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut);margin:0 0 10px}
+  .view{display:none}.view.on{display:block}
+  .hero{background:var(--card);border:2px solid var(--pur);border-radius:16px;padding:14px;margin:12px 0}
+  .hero .top{display:flex;align-items:center;gap:12px}
+  .hero .top img{width:52px;height:52px;object-fit:contain}
+  .hero .tn{font-size:20px;font-weight:900;line-height:1}
+  .hero .ssub{font-size:12px;color:var(--mut);font-weight:700;margin-top:3px}
+  .cdbig{margin-left:auto;text-align:center;background:var(--pur);color:#fff;border-radius:12px;padding:8px 12px}
+  .cdbig b{font-size:22px;font-weight:900;display:block;line-height:1}
+  .cdbig span{font-size:10px;text-transform:uppercase;letter-spacing:.5px;opacity:.85}
+  .pos{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .posnum{font-size:34px;font-weight:900;color:var(--pur);line-height:1}
+  .poslab{font-size:12px;color:var(--mut);font-weight:700}
+  .ptsb{margin-left:auto;text-align:right}.ptsb b{font-size:26px;font-weight:900}
+  .form{display:flex;gap:5px;margin-top:8px}
+  .fp{width:22px;height:22px;border-radius:6px;color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center}
+  .fp.W{background:var(--w)}.fp.D{background:var(--d)}.fp.L{background:var(--l)}
+  .lab{font-size:11px;color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+  .fixrow{display:flex;align-items:center;gap:8px;padding:6px 0}
+  .fixrow img.b{width:24px;height:24px;object-fit:contain;flex:0 0 auto}
+  .fixrow .tn{font-weight:700;font-size:13px;flex:1}
+  .fixrow .tn.r{text-align:right}
+  .fixrow .sc{font-weight:900;font-size:15px;white-space:nowrap;padding:0 4px}
+  .fixrow .vs{color:var(--mut);font-weight:700;padding:0 4px}
+  .fmeta{font-size:11px;color:var(--mut);font-weight:600;margin:-2px 0 6px 32px}
+  .cd{color:var(--pink);font-weight:800}
+  table.lg{width:100%;border-collapse:collapse;font-size:13px}
+  table.lg th{font-size:10px;text-transform:uppercase;color:var(--mut);text-align:center;padding:6px 3px;font-weight:800}
+  table.lg td{padding:7px 3px;text-align:center;border-top:1px solid var(--line)}
+  table.lg td.tm{text-align:left;font-weight:700;white-space:nowrap}
+  table.lg td.tm img{width:20px;height:20px;object-fit:contain;display:inline-block;vertical-align:middle;margin-right:6px}
+  table.lg tr.eu td{box-shadow:inset 3px 0 0 var(--grn)}
+  table.lg tr.rel td{box-shadow:inset 3px 0 0 var(--l)}
+  table.lg tr.me{background:#faf0fb;font-weight:800}
+  table.lg td.pt{font-weight:900}
+  .miniform{display:inline-flex;gap:2px;margin-left:4px}
+  .miniform i{width:7px;height:7px;border-radius:2px;display:inline-block}
+  .miniform i.W{background:var(--w)}.miniform i.D{background:var(--d)}.miniform i.L{background:var(--l)}
+  .legend{font-size:11px;color:var(--mut);margin-top:8px;display:flex;gap:12px;flex-wrap:wrap}
+  .legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:middle}
+  .legend .eu::before{background:var(--grn)}.legend .rel::before{background:var(--l)}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:6px}
+  .chips button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);border-radius:18px;padding:6px 12px;font-weight:700;font-size:12px;cursor:pointer;color:var(--ink)}
+  .chips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .gw{font-size:11px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 2px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+  .pl{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 6px;text-align:center}
+  .pl img{width:62px;height:79px;object-fit:cover;object-position:top;margin:0 auto 4px;border-radius:8px;background:#eef0f3}
+  .pl .nm{font-weight:800;font-size:12px;line-height:1.15;min-height:28px;display:flex;align-items:center;justify-content:center}
+  .pl .st{font-size:11px;color:var(--mut);margin-top:2px}.pl .st b{color:var(--pink)}
+  .posh{font-size:12px;font-weight:800;color:var(--pur);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.5px}
+  .scr{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+  .scr:first-child{border-top:0}
+  .scr .rk{width:20px;text-align:center;font-weight:800;color:var(--mut)}
+  .scr img.pp{width:34px;height:43px;object-fit:cover;object-position:top;border-radius:7px;background:#eef0f3}
+  .scr img.bb{width:18px;height:18px;object-fit:contain}
+  .scr .nm{font-weight:700}
+  .scr .g{margin-left:auto;font-weight:900;font-size:16px;color:var(--pink)}
+  .scr .a{font-size:11px;color:var(--mut);font-weight:700;width:54px;text-align:right}
+  .cup{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .cup .ic{width:38px;height:38px;border-radius:9px;background:var(--pur);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto}
+  .cup .cn{font-weight:800}
+  .note{font-size:12px;color:var(--mut);font-weight:600;line-height:1.5}
+  .banner{background:linear-gradient(135deg,var(--pink),#b8003f);color:#fff;border-radius:12px;padding:12px;font-weight:700;font-size:13px;margin:10px 0}
+  footer{max-width:680px;margin:18px auto 0;text-align:center;color:var(--mut);font-size:11px;line-height:1.6}
+  .empty{text-align:center;color:var(--mut);padding:22px 10px;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <div class="hd">
+    <div class="crest"><img id="hcrest" src="" alt=""/></div>
+    <div>
+      <h1 id="htitle">Premier League</h1>
+      <div class="sub" id="hsub">2026/27</div>
+    </div>
+    <button class="share" id="shareBtn">Share</button>
+  </div>
+  <div class="teambar">
+    <label for="teamSel">Following</label>
+    <select id="teamSel"></select>
+  </div>
+</header>
+<nav class="tabs" id="tabs">
+  <button data-v="hub" class="on">⚽ My team</button>
+  <button data-v="table">📊 Table</button>
+  <button data-v="fixtures">📅 Fixtures</button>
+  <button data-v="cups">🏆 Cups</button>
+  <button data-v="squad">👥 Squad</button>
+  <button data-v="stats">🥇 Scorers</button>
+</nav>
+<div class="wrap">
+  <section class="view on" id="v-hub"></section>
+  <section class="view" id="v-table"></section>
+  <section class="view" id="v-fixtures"></section>
+  <section class="view" id="v-cups"></section>
+  <section class="view" id="v-squad"></section>
+  <section class="view" id="v-stats"></section>
+  <footer>
+    <div id="built"></div>
+    <div style="margin-top:6px">PL fixtures: official Premier League • squads/scorers: Fantasy PL • updates automatically • times shown in your local timezone.</div>
+    <div style="margin-top:6px" id="buildtag"></div>
+  </footer>
+</div>
+
+<script>
+/*BAKE_START*/
+  var LFC_DATA={"meta":{"season":"2026/27","built":"2026-06-19T13:12:40Z","startDate":"2026-08-21T19:00:00Z","plTotal":380,"plPlayed":0,"fplSeason":"2025/26"},"defaultTeam":14,"teams":{"3":["Arsenal","ARS"],"7":["Aston Villa","AVL"],"91":["Bournemouth","BOU"],"94":["Brentford","BRE"],"36":["Brighton & Hove Albion","BHA"],"8":["Chelsea","CHE"],"9":["Coventry City","COV"],"31":["Crystal Palace","CRY"],"11":["Everton","EVE"],"54":["Fulham","FUL"],"88":["Hull City","HUL"],"40":["Ipswich Town","IPS"],"2":["Leeds United","LEE"],"14":["Liverpool","LIV"],"43":["Manchester City","MCI"],"1":["Manchester United","MUN"],"4":["Newcastle United","NEW"],"17":["Nottingham Forest","NFO"],"56":["Sunderland","SUN"],"6":["Tottenham Hotspur","TOT"]},"table":[[1,3,0,0,0,0,0,0,""],[2,7,0,0,0,0,0,0,""],[3,91,0,0,0,0,0,0,""],[4,94,0,0,0,0,0,0,""],[5,36,0,0,0,0,0,0,""],[6,8,0,0,0,0,0,0,""],[7,9,0,0,0,0,0,0,""],[8,31,0,0,0,0,0,0,""],[9,11,0,0,0,0,0,0,""],[10,54,0,0,0,0,0,0,""],[11,88,0,0,0,0,0,0,""],[12,40,0,0,0,0,0,0,""],[13,2,0,0,0,0,0,0,""],[14,14,0,0,0,0,0,0,""],[15,43,0,0,0,0,0,0,""],[16,1,0,0,0,0,0,0,""],[17,4,0,0,0,0,0,0,""],[18,17,0,0,0,0,0,0,""],[19,56,0,0,0,0,0,0,""],[20,6,0,0,0,0,0,0,""]],"lastTable":[[1,"Arsenal",38,85,44],[2,"Man City",38,78,42],[3,"Man Utd",38,71,19],[4,"Aston Villa",38,65,7],[5,"Liverpool",38,60,10],[6,"Bournemouth",38,57,4],[7,"Sunderland",38,54,-6],[8,"Brighton",38,53,6],[9,"Brentford",38,53,3],[10,"Chelsea",38,52,6],[11,"Fulham",38,52,-4],[12,"Newcastle",38,49,-2],[13,"Everton",38,49,-3],[14,"Leeds",38,47,-7],[15,"Crystal Palace",38,45,-10],[16,"Nott'm Forest",38,44,-3],[17,"Spurs",38,41,-9],[18,"West Ham",38,39,-19],[19,"Burnley",38,22,-37],[20,"Wolves",38,20,-41]],"fixtures":[[1,"2026-08-21T19:00:00Z",3,9,null,null,"U"],[1,"2026-08-22T11:30:00Z",88,1,null,null,"U"],[1,"2026-08-22T14:00:00Z",11,31,null,null,"U"],[1,"2026-08-22T14:00:00Z",40,56,null,null,"U"],[1,"2026-08-22T14:00:00Z",17,2,null,null,"U"],[1,"2026-08-22T16:30:00Z",94,6,null,null,"U"],[1,"2026-08-23T13:00:00Z",36,7,null,null,"U"],[1,"2026-08-23T13:00:00Z",43,91,null,null,"U"],[1,"2026-08-23T15:30:00Z",4,14,null,null,"U"],[1,"2026-08-24T19:00:00Z",54,8,null,null,"U"],[2,"2026-08-29T14:00:00Z",7,3,null,null,"U"],[2,"2026-08-29T14:00:00Z",91,11,null,null,"U"],[2,"2026-08-29T14:00:00Z",8,36,null,null,"U"],[2,"2026-08-29T14:00:00Z",9,88,null,null,"U"],[2,"2026-08-29T14:00:00Z",31,43,null,null,"U"],[2,"2026-08-29T14:00:00Z",2,94,null,null,"U"],[2,"2026-08-29T14:00:00Z",14,17,null,null,"U"],[2,"2026-08-29T14:00:00Z",1,40,null,null,"U"],[2,"2026-08-29T14:00:00Z",56,54,null,null,"U"],[2,"2026-08-29T14:00:00Z",6,4,null,null,"U"],[3,"2026-09-05T14:00:00Z",3,8,null,null,"U"],[3,"2026-09-05T14:00:00Z",94,56,null,null,"U"],[3,"2026-09-05T14:00:00Z",36,2,null,null,"U"],[3,"2026-09-05T14:00:00Z",11,1,null,null,"U"],[3,"2026-09-05T14:00:00Z",54,31,null,null,"U"],[3,"2026-09-05T14:00:00Z",88,7,null,null,"U"],[3,"2026-09-05T14:00:00Z",40,14,null,null,"U"],[3,"2026-09-05T14:00:00Z",43,9,null,null,"U"],[3,"2026-09-05T14:00:00Z",4,91,null,null,"U"],[3,"2026-09-05T14:00:00Z",17,6,null,null,"U"],[4,"2026-09-12T14:00:00Z",7,17,null,null,"U"],[4,"2026-09-12T14:00:00Z",91,94,null,null,"U"],[4,"2026-09-12T14:00:00Z",8,88,null,null,"U"],[4,"2026-09-12T14:00:00Z",9,36,null,null,"U"],[4,"2026-09-12T14:00:00Z",31,40,null,null,"U"],[4,"2026-09-12T14:00:00Z",2,4,null,null,"U"],[4,"2026-09-12T14:00:00Z",14,54,null,null,"U"],[4,"2026-09-12T14:00:00Z",1,43,null,null,"U"],[4,"2026-09-12T14:00:00Z",56,3,null,null,"U"],[4,"2026-09-12T14:00:00Z",6,11,null,null,"U"],[5,"2026-09-19T14:00:00Z",91,14,null,null,"U"],[5,"2026-09-19T14:00:00Z",94,8,null,null,"U"],[5,"2026-09-19T14:00:00Z",36,3,null,null,"U"],[5,"2026-09-19T14:00:00Z",11,40,null,null,"U"],[5,"2026-09-19T14:00:00Z",54,1,null,null,"U"],[5,"2026-09-19T14:00:00Z",2,31,null,null,"U"],[5,"2026-09-19T14:00:00Z",43,56,null,null,"U"],[5,"2026-09-19T14:00:00Z",4,88,null,null,"U"],[5,"2026-09-19T14:00:00Z",17,9,null,null,"U"],[5,"2026-09-19T14:00:00Z",6,7,null,null,"U"],[6,"2026-10-10T14:00:00Z",3,2,null,null,"U"],[6,"2026-10-10T14:00:00Z",7,94,null,null,"U"],[6,"2026-10-10T14:00:00Z",8,91,null,null,"U"],[6,"2026-10-10T14:00:00Z",9,4,null,null,"U"],[6,"2026-10-10T14:00:00Z",31,17,null,null,"U"],[6,"2026-10-10T14:00:00Z",88,11,null,null,"U"],[6,"2026-10-10T14:00:00Z",40,54,null,null,"U"],[6,"2026-10-10T14:00:00Z",14,43,null,null,"U"],[6,"2026-10-10T14:00:00Z",1,6,null,null,"U"],[6,"2026-10-10T14:00:00Z",56,36,null,null,"U"],[7,"2026-10-17T14:00:00Z",91,56,null,null,"U"],[7,"2026-10-17T14:00:00Z",94,14,null,null,"U"],[7,"2026-10-17T14:00:00Z",36,31,null,null,"U"],[7,"2026-10-17T14:00:00Z",11,8,null,null,"U"],[7,"2026-10-17T14:00:00Z",54,88,null,null,"U"],[7,"2026-10-17T14:00:00Z",2,1,null,null,"U"],[7,"2026-10-17T14:00:00Z",43,40,null,null,"U"],[7,"2026-10-17T14:00:00Z",4,7,null,null,"U"],[7,"2026-10-17T14:00:00Z",17,3,null,null,"U"],[7,"2026-10-17T14:00:00Z",6,9,null,null,"U"],[8,"2026-10-24T14:00:00Z",3,11,null,null,"U"],[8,"2026-10-24T14:00:00Z",7,43,null,null,"U"],[8,"2026-10-24T14:00:00Z",8,6,null,null,"U"],[8,"2026-10-24T14:00:00Z",9,54,null,null,"U"],[8,"2026-10-24T14:00:00Z",31,4,null,null,"U"],[8,"2026-10-24T14:00:00Z",88,94,null,null,"U"],[8,"2026-10-24T14:00:00Z",40,17,null,null,"U"],[8,"2026-10-24T14:00:00Z",14,36,null,null,"U"],[8,"2026-10-24T14:00:00Z",1,91,null,null,"U"],[8,"2026-10-24T14:00:00Z",56,2,null,null,"U"],[9,"2026-10-31T15:00:00Z",7,54,null,null,"U"],[9,"2026-10-31T15:00:00Z",91,2,null,null,"U"],[9,"2026-10-31T15:00:00Z",94,17,null,null,"U"],[9,"2026-10-31T15:00:00Z",8,1,null,null,"U"],[9,"2026-10-31T15:00:00Z",9,56,null,null,"U"],[9,"2026-10-31T15:00:00Z",88,40,null,null,"U"],[9,"2026-10-31T15:00:00Z",14,3,null,null,"U"],[9,"2026-10-31T15:00:00Z",43,36,null,null,"U"],[9,"2026-10-31T15:00:00Z",4,11,null,null,"U"],[9,"2026-10-31T15:00:00Z",6,31,null,null,"U"],[10,"2026-11-07T15:00:00Z",3,88,null,null,"U"],[10,"2026-11-07T15:00:00Z",36,94,null,null,"U"],[10,"2026-11-07T15:00:00Z",31,14,null,null,"U"],[10,"2026-11-07T15:00:00Z",11,9,null,null,"U"],[10,"2026-11-07T15:00:00Z",54,4,null,null,"U"],[10,"2026-11-07T15:00:00Z",40,91,null,null,"U"],[10,"2026-11-07T15:00:00Z",2,6,null,null,"U"],[10,"2026-11-07T15:00:00Z",1,7,null,null,"U"],[10,"2026-11-07T15:00:00Z",17,43,null,null,"U"],[10,"2026-11-07T15:00:00Z",56,8,null,null,"U"],[11,"2026-11-21T15:00:00Z",7,56,null,null,"U"],[11,"2026-11-21T15:00:00Z",91,17,null,null,"U"],[11,"2026-11-21T15:00:00Z",94,11,null,null,"U"],[11,"2026-11-21T15:00:00Z",8,2,null,null,"U"],[11,"2026-11-21T15:00:00Z",9,31,null,null,"U"],[11,"2026-11-21T15:00:00Z",88,36,null,null,"U"],[11,"2026-11-21T15:00:00Z",14,1,null,null,"U"],[11,"2026-11-21T15:00:00Z",43,54,null,null,"U"],[11,"2026-11-21T15:00:00Z",4,3,null,null,"U"],[11,"2026-11-21T15:00:00Z",6,40,null,null,"U"],[12,"2026-11-28T15:00:00Z",3,43,null,null,"U"],[12,"2026-11-28T15:00:00Z",36,4,null,null,"U"],[12,"2026-11-28T15:00:00Z",31,88,null,null,"U"],[12,"2026-11-28T15:00:00Z",11,14,null,null,"U"],[12,"2026-11-28T15:00:00Z",54,91,null,null,"U"],[12,"2026-11-28T15:00:00Z",40,7,null,null,"U"],[12,"2026-11-28T15:00:00Z",2,9,null,null,"U"],[12,"2026-11-28T15:00:00Z",1,94,null,null,"U"],[12,"2026-11-28T15:00:00Z",17,8,null,null,"U"],[12,"2026-11-28T15:00:00Z",56,6,null,null,"U"],[13,"2026-12-02T20:00:00Z",7,11,null,null,"U"],[13,"2026-12-02T20:00:00Z",91,36,null,null,"U"],[13,"2026-12-02T20:00:00Z",94,3,null,null,"U"],[13,"2026-12-02T20:00:00Z",8,31,null,null,"U"],[13,"2026-12-02T20:00:00Z",9,40,null,null,"U"],[13,"2026-12-02T20:00:00Z",88,17,null,null,"U"],[13,"2026-12-02T20:00:00Z",14,56,null,null,"U"],[13,"2026-12-02T20:00:00Z",43,2,null,null,"U"],[13,"2026-12-02T20:00:00Z",4,1,null,null,"U"],[13,"2026-12-02T20:00:00Z",6,54,null,null,"U"],[14,"2026-12-05T15:00:00Z",7,31,null,null,"U"],[14,"2026-12-05T15:00:00Z",91,88,null,null,"U"],[14,"2026-12-05T15:00:00Z",94,43,null,null,"U"],[14,"2026-12-05T15:00:00Z",8,14,null,null,"U"],[14,"2026-12-05T15:00:00Z",11,54,null,null,"U"],[14,"2026-12-05T15:00:00Z",2,40,null,null,"U"],[14,"2026-12-05T15:00:00Z",1,9,null,null,"U"],[14,"2026-12-05T15:00:00Z",4,56,null,null,"U"],[14,"2026-12-05T15:00:00Z",17,36,null,null,"U"],[14,"2026-12-05T15:00:00Z",6,3,null,null,"U"],[15,"2026-12-12T15:00:00Z",3,91,null,null,"U"],[15,"2026-12-12T15:00:00Z",36,11,null,null,"U"],[15,"2026-12-12T15:00:00Z",9,7,null,null,"U"],[15,"2026-12-12T15:00:00Z",31,1,null,null,"U"],[15,"2026-12-12T15:00:00Z",54,94,null,null,"U"],[15,"2026-12-12T15:00:00Z",88,6,null,null,"U"],[15,"2026-12-12T15:00:00Z",40,4,null,null,"U"],[15,"2026-12-12T15:00:00Z",14,2,null,null,"U"],[15,"2026-12-12T15:00:00Z",43,8,null,null,"U"],[15,"2026-12-12T15:00:00Z",56,17,null,null,"U"],[16,"2026-12-19T15:00:00Z",3,1,null,null,"U"],[16,"2026-12-19T15:00:00Z",91,9,null,null,"U"],[16,"2026-12-19T15:00:00Z",94,4,null,null,"U"],[16,"2026-12-19T15:00:00Z",36,40,null,null,"U"],[16,"2026-12-19T15:00:00Z",8,7,null,null,"U"],[16,"2026-12-19T15:00:00Z",2,54,null,null,"U"],[16,"2026-12-19T15:00:00Z",14,6,null,null,"U"],[16,"2026-12-19T15:00:00Z",43,88,null,null,"U"],[16,"2026-12-19T15:00:00Z",17,11,null,null,"U"],[16,"2026-12-19T15:00:00Z",56,31,null,null,"U"],[17,"2026-12-26T15:00:00Z",7,2,null,null,"U"],[17,"2026-12-26T15:00:00Z",9,8,null,null,"U"],[17,"2026-12-26T15:00:00Z",31,3,null,null,"U"],[17,"2026-12-26T15:00:00Z",11,56,null,null,"U"],[17,"2026-12-26T15:00:00Z",54,36,null,null,"U"],[17,"2026-12-26T15:00:00Z",88,14,null,null,"U"],[17,"2026-12-26T15:00:00Z",40,94,null,null,"U"],[17,"2026-12-26T15:00:00Z",1,17,null,null,"U"],[17,"2026-12-26T15:00:00Z",4,43,null,null,"U"],[17,"2026-12-26T15:00:00Z",6,91,null,null,"U"],[18,"2026-12-30T20:00:00Z",7,14,null,null,"U"],[18,"2026-12-30T20:00:00Z",9,94,null,null,"U"],[18,"2026-12-30T20:00:00Z",31,91,null,null,"U"],[18,"2026-12-30T20:00:00Z",11,43,null,null,"U"],[18,"2026-12-30T20:00:00Z",54,3,null,null,"U"],[18,"2026-12-30T20:00:00Z",88,2,null,null,"U"],[18,"2026-12-30T20:00:00Z",40,8,null,null,"U"],[18,"2026-12-30T20:00:00Z",1,56,null,null,"U"],[18,"2026-12-30T20:00:00Z",4,17,null,null,"U"],[18,"2026-12-30T20:00:00Z",6,36,null,null,"U"],[19,"2027-01-02T15:00:00Z",3,40,null,null,"U"],[19,"2027-01-02T15:00:00Z",91,7,null,null,"U"],[19,"2027-01-02T15:00:00Z",94,31,null,null,"U"],[19,"2027-01-02T15:00:00Z",36,1,null,null,"U"],[19,"2027-01-02T15:00:00Z",8,4,null,null,"U"],[19,"2027-01-02T15:00:00Z",2,11,null,null,"U"],[19,"2027-01-02T15:00:00Z",14,9,null,null,"U"],[19,"2027-01-02T15:00:00Z",43,6,null,null,"U"],[19,"2027-01-02T15:00:00Z",17,54,null,null,"U"],[19,"2027-01-02T15:00:00Z",56,88,null,null,"U"],[20,"2027-01-06T20:00:00Z",3,94,null,null,"U"],[20,"2027-01-06T20:00:00Z",36,91,null,null,"U"],[20,"2027-01-06T20:00:00Z",31,8,null,null,"U"],[20,"2027-01-06T20:00:00Z",11,7,null,null,"U"],[20,"2027-01-06T20:00:00Z",54,6,null,null,"U"],[20,"2027-01-06T20:00:00Z",40,9,null,null,"U"],[20,"2027-01-06T20:00:00Z",2,43,null,null,"U"],[20,"2027-01-06T20:00:00Z",1,4,null,null,"U"],[20,"2027-01-06T20:00:00Z",17,88,null,null,"U"],[20,"2027-01-06T20:00:00Z",56,14,null,null,"U"],[21,"2027-01-16T15:00:00Z",7,1,null,null,"U"],[21,"2027-01-16T15:00:00Z",91,40,null,null,"U"],[21,"2027-01-16T15:00:00Z",94,36,null,null,"U"],[21,"2027-01-16T15:00:00Z",8,56,null,null,"U"],[21,"2027-01-16T15:00:00Z",9,11,null,null,"U"],[21,"2027-01-16T15:00:00Z",88,3,null,null,"U"],[21,"2027-01-16T15:00:00Z",14,31,null,null,"U"],[21,"2027-01-16T15:00:00Z",43,17,null,null,"U"],[21,"2027-01-16T15:00:00Z",4,54,null,null,"U"],[21,"2027-01-16T15:00:00Z",6,2,null,null,"U"],[22,"2027-01-23T15:00:00Z",3,4,null,null,"U"],[22,"2027-01-23T15:00:00Z",36,43,null,null,"U"],[22,"2027-01-23T15:00:00Z",31,6,null,null,"U"],[22,"2027-01-23T15:00:00Z",11,94,null,null,"U"],[22,"2027-01-23T15:00:00Z",54,7,null,null,"U"],[22,"2027-01-23T15:00:00Z",40,88,null,null,"U"],[22,"2027-01-23T15:00:00Z",2,8,null,null,"U"],[22,"2027-01-23T15:00:00Z",1,14,null,null,"U"],[22,"2027-01-23T15:00:00Z",17,91,null,null,"U"],[22,"2027-01-23T15:00:00Z",56,9,null,null,"U"],[23,"2027-01-30T15:00:00Z",7,40,null,null,"U"],[23,"2027-01-30T15:00:00Z",91,54,null,null,"U"],[23,"2027-01-30T15:00:00Z",94,1,null,null,"U"],[23,"2027-01-30T15:00:00Z",8,17,null,null,"U"],[23,"2027-01-30T15:00:00Z",9,2,null,null,"U"],[23,"2027-01-30T15:00:00Z",88,31,null,null,"U"],[23,"2027-01-30T15:00:00Z",14,11,null,null,"U"],[23,"2027-01-30T15:00:00Z",43,3,null,null,"U"],[23,"2027-01-30T15:00:00Z",4,36,null,null,"U"],[23,"2027-01-30T15:00:00Z",6,56,null,null,"U"],[24,"2027-02-06T15:00:00Z",3,14,null,null,"U"],[24,"2027-02-06T15:00:00Z",36,88,null,null,"U"],[24,"2027-02-06T15:00:00Z",31,9,null,null,"U"],[24,"2027-02-06T15:00:00Z",11,4,null,null,"U"],[24,"2027-02-06T15:00:00Z",54,43,null,null,"U"],[24,"2027-02-06T15:00:00Z",40,6,null,null,"U"],[24,"2027-02-06T15:00:00Z",2,91,null,null,"U"],[24,"2027-02-06T15:00:00Z",1,8,null,null,"U"],[24,"2027-02-06T15:00:00Z",17,94,null,null,"U"],[24,"2027-02-06T15:00:00Z",56,7,null,null,"U"],[25,"2027-02-10T20:00:00Z",7,91,null,null,"U"],[25,"2027-02-10T20:00:00Z",9,14,null,null,"U"],[25,"2027-02-10T20:00:00Z",31,94,null,null,"U"],[25,"2027-02-10T20:00:00Z",11,2,null,null,"U"],[25,"2027-02-10T20:00:00Z",54,17,null,null,"U"],[25,"2027-02-10T20:00:00Z",88,56,null,null,"U"],[25,"2027-02-10T20:00:00Z",40,3,null,null,"U"],[25,"2027-02-10T20:00:00Z",1,36,null,null,"U"],[25,"2027-02-10T20:00:00Z",4,8,null,null,"U"],[25,"2027-02-10T20:00:00Z",6,43,null,null,"U"],[26,"2027-02-20T15:00:00Z",3,54,null,null,"U"],[26,"2027-02-20T15:00:00Z",91,31,null,null,"U"],[26,"2027-02-20T15:00:00Z",94,9,null,null,"U"],[26,"2027-02-20T15:00:00Z",36,6,null,null,"U"],[26,"2027-02-20T15:00:00Z",8,40,null,null,"U"],[26,"2027-02-20T15:00:00Z",2,7,null,null,"U"],[26,"2027-02-20T15:00:00Z",14,88,null,null,"U"],[26,"2027-02-20T15:00:00Z",43,4,null,null,"U"],[26,"2027-02-20T15:00:00Z",17,1,null,null,"U"],[26,"2027-02-20T15:00:00Z",56,11,null,null,"U"],[27,"2027-02-27T15:00:00Z",7,8,null,null,"U"],[27,"2027-02-27T15:00:00Z",9,91,null,null,"U"],[27,"2027-02-27T15:00:00Z",31,56,null,null,"U"],[27,"2027-02-27T15:00:00Z",11,17,null,null,"U"],[27,"2027-02-27T15:00:00Z",54,2,null,null,"U"],[27,"2027-02-27T15:00:00Z",88,43,null,null,"U"],[27,"2027-02-27T15:00:00Z",40,36,null,null,"U"],[27,"2027-02-27T15:00:00Z",1,3,null,null,"U"],[27,"2027-02-27T15:00:00Z",4,94,null,null,"U"],[27,"2027-02-27T15:00:00Z",6,14,null,null,"U"],[28,"2027-03-03T20:00:00Z",3,31,null,null,"U"],[28,"2027-03-03T20:00:00Z",91,6,null,null,"U"],[28,"2027-03-03T20:00:00Z",94,40,null,null,"U"],[28,"2027-03-03T20:00:00Z",36,54,null,null,"U"],[28,"2027-03-03T20:00:00Z",8,9,null,null,"U"],[28,"2027-03-03T20:00:00Z",2,88,null,null,"U"],[28,"2027-03-03T20:00:00Z",14,7,null,null,"U"],[28,"2027-03-03T20:00:00Z",43,11,null,null,"U"],[28,"2027-03-03T20:00:00Z",17,4,null,null,"U"],[28,"2027-03-03T20:00:00Z",56,1,null,null,"U"],[29,"2027-03-13T15:00:00Z",7,88,null,null,"U"],[29,"2027-03-13T15:00:00Z",91,4,null,null,"U"],[29,"2027-03-13T15:00:00Z",8,3,null,null,"U"],[29,"2027-03-13T15:00:00Z",9,43,null,null,"U"],[29,"2027-03-13T15:00:00Z",31,54,null,null,"U"],[29,"2027-03-13T15:00:00Z",2,36,null,null,"U"],[29,"2027-03-13T15:00:00Z",14,40,null,null,"U"],[29,"2027-03-13T15:00:00Z",1,11,null,null,"U"],[29,"2027-03-13T15:00:00Z",56,94,null,null,"U"],[29,"2027-03-13T15:00:00Z",6,17,null,null,"U"],[30,"2027-03-20T15:00:00Z",3,56,null,null,"U"],[30,"2027-03-20T15:00:00Z",94,91,null,null,"U"],[30,"2027-03-20T15:00:00Z",36,9,null,null,"U"],[30,"2027-03-20T15:00:00Z",11,6,null,null,"U"],[30,"2027-03-20T15:00:00Z",54,14,null,null,"U"],[30,"2027-03-20T15:00:00Z",88,8,null,null,"U"],[30,"2027-03-20T15:00:00Z",40,31,null,null,"U"],[30,"2027-03-20T15:00:00Z",43,1,null,null,"U"],[30,"2027-03-20T15:00:00Z",4,2,null,null,"U"],[30,"2027-03-20T15:00:00Z",17,7,null,null,"U"],[31,"2027-04-10T14:00:00Z",7,36,null,null,"U"],[31,"2027-04-10T14:00:00Z",91,43,null,null,"U"],[31,"2027-04-10T14:00:00Z",8,54,null,null,"U"],[31,"2027-04-10T14:00:00Z",9,3,null,null,"U"],[31,"2027-04-10T14:00:00Z",31,11,null,null,"U"],[31,"2027-04-10T14:00:00Z",2,17,null,null,"U"],[31,"2027-04-10T14:00:00Z",14,4,null,null,"U"],[31,"2027-04-10T14:00:00Z",1,88,null,null,"U"],[31,"2027-04-10T14:00:00Z",56,40,null,null,"U"],[31,"2027-04-10T14:00:00Z",6,94,null,null,"U"],[32,"2027-04-17T14:00:00Z",3,7,null,null,"U"],[32,"2027-04-17T14:00:00Z",94,2,null,null,"U"],[32,"2027-04-17T14:00:00Z",36,8,null,null,"U"],[32,"2027-04-17T14:00:00Z",11,91,null,null,"U"],[32,"2027-04-17T14:00:00Z",54,56,null,null,"U"],[32,"2027-04-17T14:00:00Z",88,9,null,null,"U"],[32,"2027-04-17T14:00:00Z",40,1,null,null,"U"],[32,"2027-04-17T14:00:00Z",43,31,null,null,"U"],[32,"2027-04-17T14:00:00Z",4,6,null,null,"U"],[32,"2027-04-17T14:00:00Z",17,14,null,null,"U"],[33,"2027-04-24T14:00:00Z",7,9,null,null,"U"],[33,"2027-04-24T14:00:00Z",91,3,null,null,"U"],[33,"2027-04-24T14:00:00Z",94,54,null,null,"U"],[33,"2027-04-24T14:00:00Z",8,43,null,null,"U"],[33,"2027-04-24T14:00:00Z",11,36,null,null,"U"],[33,"2027-04-24T14:00:00Z",2,14,null,null,"U"],[33,"2027-04-24T14:00:00Z",1,31,null,null,"U"],[33,"2027-04-24T14:00:00Z",4,40,null,null,"U"],[33,"2027-04-24T14:00:00Z",17,56,null,null,"U"],[33,"2027-04-24T14:00:00Z",6,88,null,null,"U"],[34,"2027-05-01T14:00:00Z",3,6,null,null,"U"],[34,"2027-05-01T14:00:00Z",36,17,null,null,"U"],[34,"2027-05-01T14:00:00Z",9,1,null,null,"U"],[34,"2027-05-01T14:00:00Z",31,7,null,null,"U"],[34,"2027-05-01T14:00:00Z",54,11,null,null,"U"],[34,"2027-05-01T14:00:00Z",88,91,null,null,"U"],[34,"2027-05-01T14:00:00Z",40,2,null,null,"U"],[34,"2027-05-01T14:00:00Z",14,8,null,null,"U"],[34,"2027-05-01T14:00:00Z",43,94,null,null,"U"],[34,"2027-05-01T14:00:00Z",56,4,null,null,"U"],[35,"2027-05-08T14:00:00Z",91,1,null,null,"U"],[35,"2027-05-08T14:00:00Z",94,7,null,null,"U"],[35,"2027-05-08T14:00:00Z",36,56,null,null,"U"],[35,"2027-05-08T14:00:00Z",11,88,null,null,"U"],[35,"2027-05-08T14:00:00Z",54,40,null,null,"U"],[35,"2027-05-08T14:00:00Z",2,3,null,null,"U"],[35,"2027-05-08T14:00:00Z",43,14,null,null,"U"],[35,"2027-05-08T14:00:00Z",4,9,null,null,"U"],[35,"2027-05-08T14:00:00Z",17,31,null,null,"U"],[35,"2027-05-08T14:00:00Z",6,8,null,null,"U"],[36,"2027-05-15T14:00:00Z",3,17,null,null,"U"],[36,"2027-05-15T14:00:00Z",7,4,null,null,"U"],[36,"2027-05-15T14:00:00Z",8,11,null,null,"U"],[36,"2027-05-15T14:00:00Z",9,6,null,null,"U"],[36,"2027-05-15T14:00:00Z",31,36,null,null,"U"],[36,"2027-05-15T14:00:00Z",88,54,null,null,"U"],[36,"2027-05-15T14:00:00Z",40,43,null,null,"U"],[36,"2027-05-15T14:00:00Z",14,94,null,null,"U"],[36,"2027-05-15T14:00:00Z",1,2,null,null,"U"],[36,"2027-05-15T14:00:00Z",56,91,null,null,"U"],[37,"2027-05-23T14:00:00Z",91,8,null,null,"U"],[37,"2027-05-23T14:00:00Z",94,88,null,null,"U"],[37,"2027-05-23T14:00:00Z",36,14,null,null,"U"],[37,"2027-05-23T14:00:00Z",11,3,null,null,"U"],[37,"2027-05-23T14:00:00Z",54,9,null,null,"U"],[37,"2027-05-23T14:00:00Z",2,56,null,null,"U"],[37,"2027-05-23T14:00:00Z",43,7,null,null,"U"],[37,"2027-05-23T14:00:00Z",4,31,null,null,"U"],[37,"2027-05-23T14:00:00Z",17,40,null,null,"U"],[37,"2027-05-23T14:00:00Z",6,1,null,null,"U"],[38,"2027-05-30T15:00:00Z",3,36,null,null,"U"],[38,"2027-05-30T15:00:00Z",7,6,null,null,"U"],[38,"2027-05-30T15:00:00Z",8,94,null,null,"U"],[38,"2027-05-30T15:00:00Z",9,17,null,null,"U"],[38,"2027-05-30T15:00:00Z",31,2,null,null,"U"],[38,"2027-05-30T15:00:00Z",88,4,null,null,"U"],[38,"2027-05-30T15:00:00Z",40,11,null,null,"U"],[38,"2027-05-30T15:00:00Z",14,91,null,null,"U"],[38,"2027-05-30T15:00:00Z",1,54,null,null,"U"],[38,"2027-05-30T15:00:00Z",56,43,null,null,"U"]],"squads":{"3":[[154561,"Raya",1,0,0,3330],[109745,"Arrizabalaga",1,0,0,90],[463748,"Hein",1,0,0,0],[551221,"Setford",1,0,0,0],[445122,"J.Timber",2,3,6,2452],[226597,"Gabriel",2,3,5,2750],[448104,"Hincapie",2,1,2,1787],[466075,"Calafiori",2,1,2,1697],[462424,"Saliba",2,1,0,2614],[198869,"White",2,0,1,699],[500040,"Mosquera",2,0,0,986],[499169,"Lewis-Skelly",2,0,0,697],[440854,"Kiwior",2,0,0,0],[563324,"Clarke",2,0,0,0],[588793,"Kacurri",2,0,0,0],[499167,"Nichols",2,0,0,0],[616065,"Salmon",2,0,0,0],[223340,"Saka",3,7,10,2218],[204480,"Rice",3,4,9,3093],[116216,"Trossard",3,6,6,1997],[232413,"Eze",3,7,3,1885],[184029,"Ødegaard",3,1,7,1363],[195384,"Merino",3,4,3,1024],[481655,"Zubimendi",3,5,1,2991],[444145,"Martinelli",3,1,5,1065],[248857,"Madueke",3,3,1,1205],[616077,"Dowman",3,1,1,152],[499175,"Nwaneri",3,0,0,165],[128295,"Nørgaard",3,0,0,101],[438098,"Fábio Vieira",3,0,0,0],[588796,"Kabia",3,0,0,0],[437742,"Sambi",3,0,0,0],[646243,"Harriman-Annous",3,0,0,0],[224117,"Gyökeres",4,14,1,2217],[219847,"Havertz",4,2,3,577],[205651,"G.Jesus",4,3,0,418]],"7":[[98980,"Martinez",1,0,1,2835],[72147,"M.Bizot",1,0,0,585],[462492,"Gauci",1,0,0,0],[462381,"Marschall",1,0,0,0],[481283,"Wright",1,0,0,0],[564505,"Proctor",1,0,0,0],[516875,"Hollingshead",1,0,0,0],[101188,"Digne",2,0,7,1842],[199796,"Cash",2,3,3,3016],[244954,"Pau",2,0,2,1673],[199798,"Konsa",2,0,1,3035],[441302,"Maatsen",2,0,1,1590],[149484,"Mings",2,0,1,1322],[184667,"Lindelöf",2,0,1,942],[515597,"Bogarde",2,0,0,1042],[606798,"A.García",2,0,0,83],[106468,"Alex Moreno",2,0,0,0],[514315,"Sousa",2,0,0,0],[587178,"Yasin",2,0,0,0],[569577,"Rowe",2,0,0,0],[534836,"Patterson",2,0,0,0],[664015,"Leon Routh",2,0,0,0],[618027,"Carroll",2,0,0,0],[244850,"Rogers",3,10,8,3280],[122806,"McGinn",3,5,4,2136],[195546,"Buendía",3,6,2,1753],[204646,"Malen",3,4,2,640],[88894,"Barkley",3,3,2,844],[166989,"Tielemans",3,0,4,1857],[226944,"Kamara",3,1,3,1410],[449871,"Onana",3,2,0,1755],[230046,"Douglas Luiz",3,1,1,913],[209243,"Sancho",3,0,2,863],[215711,"Bailey",3,0,2,450],[444884,"Elliott",3,0,0,110],[653481,"Alysson",3,0,0,47],[577285,"George Hemmings",3,0,0,25],[645618,"Burrowes",3,0,0,16],[559962,"Jimoh-Aloba",3,0,0,8],[469247,"Iling Jr",3,0,0,0],[491287,"Barrenechea",3,0,0,0],[461421,"Dobbin",3,0,0,0],[577731,"Broggio",3,0,0,0],[151589,"Dendoncker",3,0,0,0],[537403,"Young",3,0,0,0],[178301,"Watkins",4,16,4,2833],[173879,"Abraham",4,2,0,278],[576756,"Redmond",4,0,0,0]],"90":[[67089,"Dúbravka",1,0,0,3150],[518030,"Weiss",1,0,0,270],[489571,"Green",1,0,0,0],[51943,"Hladký",1,0,0,0],[494960,"Hartman",2,0,6,1825],[58621,"Walker",2,0,2,3095],[461188,"Humphreys",2,0,2,1574],[180804,"Tuanzebe",2,1,0,1201],[519895,"Sonne",2,1,0,164],[477717,"Estève",2,0,0,2933],[478969,"Ekdal",2,0,0,1539],[549329,"Lucas Pires",2,0,0,1405],[208912,"Worrall",2,0,0,496],[192290,"Roberts",2,0,0,0],[247245,"Delcroix",2,0,0,0],[461567,"Dodgson",2,0,0,0],[241231,"Jordan",2,0,0,0],[450072,"Sambo",2,0,0,0],[444180,"Anthony",3,8,4,2717],[503714,"Ugochukwu",3,3,3,2330],[465527,"Hannibal",3,1,5,1219],[172567,"Cullen",3,2,2,1513],[469272,"Tchaouna",3,2,2,1259],[174592,"Edwards",3,1,3,1058],[216055,"Florentino",3,0,2,2100],[167887,"Laurent",3,1,0,1752],[101178,"Ward-Prowse",3,0,1,1092],[179458,"Bruun Larsen",3,0,1,1014],[437748,"Trésor",3,0,0,37],[551206,"Banel",3,0,0,9],[183751,"Benson",3,0,0,0],[578614,"Boateng",3,0,0,0],[250735,"Churlinov",3,0,0,0],[487702,"Koleosho",3,0,0,0],[447715,"A.Ramsey",3,0,0,0],[576323,"Adewumi",3,0,0,0],[647960,"Pimlott",3,0,0,0],[704232,"Brierley",3,0,0,0],[644593,"McMahon-Brown",3,0,0,0],[431639,"Flemming",4,11,0,1764],[435973,"Foster",4,3,2,1361],[440323,"Broja",4,1,1,843],[492831,"Amdouni",4,0,0,69],[44699,"Barnes",4,0,0,40],[220598,"Obafemi",4,0,0,0]],"91":[[457569,"Petrović",1,0,0,3420],[69752,"Neto",1,0,0,0],[444172,"Dennis",1,0,0,0],[568791,"McKenna",1,0,0,0],[495145,"Paulsen",1,0,0,0],[40383,"Forster",1,0,0,0],[436416,"Mandas",1,0,0,0],[494521,"Truffert",2,1,6,3378],[221466,"Senesi",2,0,6,3288],[551483,"A.Jimenez",2,1,2,2315],[463981,"Hill",2,0,3,2102],[54469,"Smith",2,0,2,1073],[242882,"Diakité",2,0,0,1275],[620487,"Milosavljević",2,0,0,367],[575901,"Soler",2,0,0,34],[477580,"Zabarnyi",2,0,0,0],[541462,"Akinmboni",2,0,0,0],[518906,"Bevan",2,0,0,0],[436893,"J.Araujo",2,0,0,0],[223911,"Mepham",2,0,0,0],[201658,"Tavernier",3,7,4,2732],[499604,"Rayan",3,5,2,1110],[503139,"Scott",3,3,2,2848],[489888,"Adli",3,3,2,1074],[200785,"Adams",3,2,2,1769],[111317,"Brooks",3,1,3,1188],[158499,"Christie",3,2,1,978],[222683,"Kluivert",3,2,0,945],[155408,"Cook",3,0,1,872],[496208,"Gannon-Doak",3,0,1,105],[424044,"H.Traorè",3,0,1,16],[614574,"Tóth.A",3,0,0,135],[606775,"Winterburn",3,0,0,6],[168991,"Philip",3,0,0,0],[224995,"Sinisterra",3,0,0,0],[441240,"Faivre",3,0,0,0],[550596,"Sadi",3,0,0,0],[530121,"Silcott-Duberry",3,0,0,0],[606774,"Rees-Dottin",3,0,0,0],[678552,"DaCosta",3,0,0,0],[658013,"Stevens",3,0,0,0],[444102,"Evanilson",4,6,7,2741],[560262,"Kroupi.Jr",4,13,0,1663],[168636,"Enes Ünal",4,1,0,214],[590760,"Adu-Adjei",4,0,0,0]],"94":[[200720,"Kelleher",1,0,0,3330],[507433,"Valdimarsson",1,0,0,90],[235448,"Balcombe",1,0,0,0],[503300,"Cox",1,0,0,0],[535017,"Eyestone",1,0,0,0],[249231,"Lewis-Potter",2,3,4,1960],[607464,"Kayode",2,1,2,3258],[432830,"Collins",2,1,2,2971],[444765,"Van den Berg",2,0,3,2761],[191866,"Ajer",2,0,2,1805],[194010,"Henry",2,0,2,1322],[472713,"Hickey",2,0,0,679],[231065,"Pinnock",2,0,0,318],[226956,"Roerslev",2,0,0,0],[622536,"Arthur",2,0,0,0],[612534,"Fredrick",2,0,0,0],[570241,"Ji-soo",2,0,0,0],[499717,"Meghoma",2,0,0,0],[494556,"Shield",2,0,0,0],[649240,"Stephenson",2,0,0,0],[587433,"McManus",2,0,0,0],[533463,"O.Dango",3,7,8,2271],[513418,"Schade",3,8,5,2744],[440089,"Damsgaard",3,4,4,2046],[207283,"Jensen",3,3,2,2239],[204580,"Janelt",3,1,4,1434],[508395,"Yarmoliuk",3,1,3,2652],[56979,"Henderson",3,1,3,1911],[428580,"Onyeka",3,0,2,88],[200641,"Nelson",3,0,1,118],[244858,"Carvalho",3,1,0,100],[543295,"Milambo",3,0,0,45],[606689,"Donovan",3,0,0,38],[183656,"Dasilva",3,0,0,2],[450539,"Peart-Harris",3,0,0,1],[626464,"Nunes",3,0,0,0],[628204,"Konak",3,0,0,0],[220695,"Maghoma",3,0,0,0],[591357,"Trevitt",3,0,0,0],[559610,"Bentt",3,0,0,0],[547671,"Owen",3,0,0,0],[502500,"Thiago",4,22,1,3282],[593174,"Furo",4,0,0,1],[533710,"Morgan",4,0,0,0]],"36":[[489639,"Verbruggen",1,0,0,3420],[49262,"Steele",1,0,0,0],[209288,"McGill",1,0,0,0],[472739,"Rushworth",1,0,0,0],[240514,"Scherpen",1,0,0,0],[469142,"Van Hecke",2,3,3,3210],[465730,"De Cuyper",2,2,3,1404],[231416,"F.Kadıoğlu",2,1,2,3130],[83299,"Dunk",2,1,1,2837],[111478,"Veltman",2,1,0,1047],[204120,"Boscagli",2,0,1,799],[550090,"Coppola",2,0,0,193],[223434,"Igor",2,0,0,103],[204214,"Estupiñan",2,0,0,0],[232792,"Lamptey",2,0,0,0],[110735,"Webster",2,0,0,0],[439135,"Cashin",2,0,0,0],[589100,"Slater",2,0,0,0],[547720,"Tasker",2,0,0,0],[604988,"Simmonds",2,0,0,0],[592031,"Minteh",3,3,8,2389],[532529,"Hinshelwood",3,4,5,1736],[463067,"Georginio",3,3,5,1776],[509416,"Ayari",3,3,4,1921],[60307,"Groß",3,1,6,1636],[514254,"Gomez",3,5,1,2117],[467779,"Wieffer",3,2,4,1901],[451340,"Mitoma",3,3,1,1714],[15157,"Milner",3,1,1,772],[513433,"Gruda",3,1,1,708],[219249,"O'Riley",3,1,0,202],[535301,"Baleba",3,0,0,1646],[597320,"Howell",3,0,0,92],[549074,"Watson",3,0,0,57],[109345,"March",3,0,0,38],[567121,"Knight",3,0,0,1],[556637,"Oriola",3,0,0,1],[474120,"Enciso",3,0,0,0],[516211,"Sima",3,0,0,0],[441192,"Sarmiento",3,0,0,0],[611695,"Yalcouye",3,0,0,0],[550141,"Mazilu",3,0,0,0],[513834,"Moran",3,0,0,0],[50175,"Welbeck",4,13,1,2249],[647850,"Kostoulas",4,2,1,351],[608181,"Tzimas",4,1,1,132],[487117,"Ferguson",4,0,0,0]],"8":[[215059,"Sánchez",1,0,1,3040],[508479,"Jörgensen",1,0,0,378],[549939,"Penders",1,0,0,0],[471798,"Slonina",1,0,0,0],[518335,"Merrick",1,0,0,0],[499857,"Sharman-Lowe",1,0,0,0],[225796,"James",2,2,6,1957],[179268,"Cucurella",2,1,4,2706],[482609,"Gusto",2,2,3,2255],[180736,"Chalobah",2,3,1,2780],[444463,"Fofana",2,0,2,1718],[577016,"Acheampong",2,1,0,657],[551210,"Hato",2,0,0,1139],[109646,"Tosin",2,0,0,788],[242880,"B.Badiashile",2,0,0,470],[460028,"Colwill",2,0,0,225],[574458,"M.Sarr",2,0,0,100],[622758,"Anselmino",2,0,0,0],[448047,"Enzo",3,10,5,3114],[247632,"Neto",3,5,7,2629],[244851,"Palmer",3,10,2,1954],[624773,"Estêvão",3,2,5,839],[493105,"Garnacho",3,1,4,1261],[486672,"Caicedo",3,3,1,2796],[463936,"Gittens",3,0,2,486],[532605,"Andrey Santos",3,1,0,1247],[514356,"Lavia",3,0,0,374],[619734,"Derry",3,0,0,45],[491007,"D.Essugo",3,0,0,26],[213198,"Nkunku",3,0,0,0],[465920,"Mudryk",3,0,0,0],[611134,"Paez",3,0,0,0],[611912,"Emenalo",3,0,0,0],[671606,"Eboué",3,0,0,0],[616286,"Kavuma-McQueen",3,0,0,0],[475168,"João Pedro",4,15,9,2658],[463034,"Delap",4,1,2,1092],[499309,"Marc Guiu",4,0,1,265],[567119,"Mheuka",4,0,0,1],[517052,"N.Jackson",4,0,0,0]],"31":[[172649,"Henderson",1,0,0,3330],[121709,"Benitez",1,0,0,90],[169593,"Matthews",1,0,0,0],[247348,"Muñoz",2,4,4,2400],[244723,"Mitchell",2,1,3,3253],[437499,"Lacroix",2,1,2,3085],[427623,"Richards",2,1,0,2825],[57328,"Clyne",2,0,1,592],[515621,"Chadi Riad",2,0,1,550],[651426,"Canvot",2,0,0,1331],[218364,"Sosa",2,0,0,99],[156074,"Holding",2,0,0,0],[590012,"Kporha",2,0,0,0],[643426,"Benamar",2,0,0,0],[591384,"King",2,0,0,0],[502988,"Imray",2,0,0,0],[232185,"Sarr",3,9,2,2173],[496221,"Wharton",3,1,6,2552],[152551,"Lerma",3,0,5,1722],[488024,"Yeremy",3,2,2,2074],[485337,"Guessand",3,1,3,909],[242898,"Johnson",3,2,1,1710],[209400,"Kamada",3,0,2,1899],[108413,"Hughes",3,0,1,1560],[489706,"Devenny",3,1,0,785],[590014,"Cardines",3,0,0,90],[606921,"Esse",3,0,0,40],[672492,"Drakes-Thomas",3,0,0,7],[530318,"Rodney",3,0,0,3],[438464,"Doucouré",3,0,0,0],[579075,"Agbinone",3,0,0,0],[466117,"Ahamada",3,0,0,0],[450535,"Ebiowei",3,0,0,0],[450542,"J.Rak-Sakyi",3,0,0,0],[536694,"M.França",3,0,0,0],[531989,"Ozoh",3,0,0,0],[574398,"Umeh",3,0,0,0],[231747,"Mateta",4,12,0,2210],[247412,"Strand Larsen",4,4,1,2301],[205533,"Nketiah",4,2,0,414],[660392,"Uche",4,0,1,159],[199670,"Édouard",4,0,0,2],[576980,"Marsh",4,0,0,0],[631106,"Casey",4,0,0,0]],"11":[[111234,"Pickford",1,0,0,3420],[229600,"Travers",1,0,0,0],[447325,"Tyrer",1,0,0,0],[138001,"King",1,0,0,0],[17761,"Tarkowski",2,2,3,3330],[512462,"O'Brien",2,1,3,3118],[106611,"Keane",2,3,1,2588],[480455,"Branthwaite",2,1,1,678],[224967,"Mykolenko",2,0,1,2959],[243571,"Patterson",2,0,0,238],[59949,"Coleman",2,0,0,19],[496178,"Dixon",2,0,0,0],[474907,"Welch",2,0,0,0],[499300,"Aznou",2,0,0,0],[491745,"Campbell",2,0,0,0],[215413,"Dewsbury-Hall",3,8,7,2629],[232928,"Garner",3,2,7,3413],[440993,"Ndiaye",3,6,3,2781],[114283,"Grealish",3,2,6,1627],[80801,"Gana",3,2,3,2094],[490094,"Iroegbunam",3,0,3,1477],[433154,"McNeil",3,0,3,1161],[513466,"Röhl",3,1,1,675],[502697,"Alcaraz",3,0,1,679],[609873,"Armstrong",3,0,0,524],[550615,"George",3,0,0,351],[496661,"Dibling",3,0,0,349],[547801,"Bates",3,0,0,0],[504296,"Ebere",3,0,0,0],[496279,"Heath",3,0,0,0],[491557,"Metcalfe",3,0,0,0],[461446,"Onyango",3,0,0,0],[486385,"Beto",4,9,1,1551],[586309,"Barry",4,8,0,1898],[491012,"Y.Chermiti",4,0,0,0],[536241,"Sherif",4,0,0,0],[629068,"Graham",4,0,0,0]],"54":[[80201,"Leno",1,0,0,3420],[428971,"Benda",1,0,0,0],[86873,"Lecomte",1,0,0,0],[505079,"McNally",1,0,0,0],[232892,"Bassey",2,1,1,2532],[166477,"Castagne",2,0,2,1838],[174874,"Andersen",2,0,1,2882],[167074,"Tete",2,1,0,1791],[169528,"Robinson",2,1,0,1487],[219924,"Diop",2,1,0,812],[246301,"J.Cuenca",2,0,0,935],[591385,"Amissah",2,0,0,0],[153682,"Wilson",3,10,9,2674],[153133,"Iwobi",3,4,3,2420],[218328,"Chukwueze",3,3,4,1067],[184349,"Sessegnon",3,3,3,1816],[212314,"Lukić",3,1,4,1730],[209289,"Smith Rowe",3,3,1,1909],[577725,"King",3,1,3,1290],[560552,"Kevin",3,1,3,1030],[207189,"Berge",3,0,3,2904],[477555,"Bobb",3,0,2,1030],[76357,"Cairney",3,2,0,756],[153366,"Reed",3,1,0,89],[156689,"Andreas",3,0,0,0],[573062,"Godo",3,0,0,0],[515024,"Harris",3,0,0,0],[619536,"Ridgeon",3,0,0,0],[102057,"Raúl",4,9,5,2183],[244042,"Muniz",4,1,1,987],[631786,"Kusi-Asare",4,0,0,49]],"2":[[59735,"Darlow",1,0,0,1980],[201595,"Perri",1,0,0,1440],[437495,"Meslier",1,0,0,0],[97846,"Cairns",1,0,0,0],[226182,"Bogle",2,1,5,2795],[434752,"Bijol",2,1,3,1888],[220627,"Justin",2,2,1,1893],[214225,"Rodon",2,2,0,2952],[222694,"Struijk",2,0,1,2935],[243526,"Gudmundsson",2,0,0,2637],[437738,"Bornauw",2,0,0,429],[113564,"Byram",2,0,0,8],[492368,"Schmidt",2,0,0,0],[643970,"Lienou",2,0,0,0],[427637,"Aaronson",3,4,8,2449],[466525,"Stach",3,5,6,2369],[435997,"Okafor",3,8,3,1553],[199598,"Ampadu",3,1,4,3119],[486520,"Gruev",3,0,4,1318],[180135,"Longstaff",3,2,2,1003],[248056,"Tanaka",3,2,1,1307],[492859,"Gnonto",3,0,3,521],[200617,"James",3,0,0,547],[221399,"Harrison",3,0,0,262],[536916,"Buonanotte",3,0,0,81],[248937,"Greenwood",3,0,0,0],[433952,"Ramazani",3,0,0,0],[536119,"Crew",3,0,0,0],[462635,"Gelhardt",3,0,0,0],[470294,"Gyabi",3,0,0,0],[565863,"Chambers",3,0,0,0],[577978,"Chadwick",3,0,0,0],[592740,"Cresswell",3,0,0,0],[177815,"Calvert-Lewin",4,14,2,2721],[174594,"Nmecha",4,6,1,1065],[235826,"Piroe",4,0,0,244],[106617,"Bamford",4,0,0,0],[565297,"Mateo Joseph",4,0,0,0],[600882,"Gray",4,0,0,0]],"14":[[116535,"A.Becker",1,0,0,2340],[449027,"Mamardashvili",1,0,0,867],[155503,"Woodman",1,0,0,212],[586268,"Pécsi",1,0,0,0],[97032,"Virgil",2,6,1,3420],[216094,"Frimpong",2,0,5,1032],[544877,"Kerkez",2,2,1,2251],[492777,"Bradley",2,0,2,928],[171287,"Gomez",2,0,2,594],[204716,"Konaté",2,1,0,3090],[122798,"Robertson",2,1,0,1165],[214285,"Tsimikas",2,0,0,0],[611926,"Nallo",2,0,0,0],[219937,"R.Williams",2,0,0,0],[489580,"Ramsay",2,0,0,0],[647681,"Leoni",2,0,0,0],[519440,"Lucky",2,0,0,0],[718875,"Ndiaye",2,0,0,0],[118748,"M.Salah",3,7,7,2144],[424876,"Szoboszlai",3,6,7,3232],[243298,"Gakpo",3,7,5,2736],[441266,"Gravenberch",3,5,5,2991],[494595,"Wirtz",3,5,4,2374],[243016,"Mac Allister",3,2,5,2654],[206915,"C.Jones",3,1,3,1923],[611922,"Ngumoha",3,2,1,547],[223541,"Chiesa",3,2,1,317],[158983,"Endo",3,0,1,170],[591386,"Nyoni",3,0,0,21],[244731,"Luis Díaz",3,0,0,0],[535928,"Bajcetic",3,0,0,0],[491501,"McConnell",3,0,0,0],[440148,"Morton",3,0,0,0],[596042,"Morrison",3,0,0,0],[510663,"Ekitiké",4,11,4,1797],[219168,"Isak",4,3,1,694],[447203,"Darwin",4,0,0,0],[500058,"Danns",4,0,0,0],[677945,"Wright",4,0,0,0]],"43":[[204936,"Donnarumma",1,0,0,3060],[432720,"Trafford",1,0,0,360],[121160,"Ederson M.",1,0,0,0],[122074,"Bettinelli",1,0,0,0],[465351,"Matheus N.",2,1,8,2861],[472769,"O'Reilly",2,5,4,2643],[209036,"Guéhi",2,3,5,3150],[477424,"Gvardiol",2,2,2,1370],[171314,"Rúben",2,2,0,2139],[448514,"Aït-Nouri",2,0,2,971],[477064,"Lewis",2,0,1,401],[578153,"Khusanov",2,0,0,1427],[126184,"Aké",2,0,0,686],[97299,"Stones",2,0,0,436],[494307,"Alleyne",2,0,0,135],[211975,"Akanji",2,0,0,0],[616222,"Vitor Reis",2,0,0,0],[566213,"Mfuni",2,0,0,0],[437730,"Semenyo",3,17,6,3200],[466052,"Cherki",3,4,13,1772],[248875,"Doku",3,5,8,1773],[209244,"Foden",3,7,5,2078],[433036,"Reijnders",3,5,3,1623],[165809,"Bernardo",3,2,4,2869],[438234,"Marmoush",3,3,3,691],[510281,"Savinho",3,1,2,817],[220566,"Rodrigo",3,1,1,1510],[465694,"N.Gonzalez",3,1,0,1561],[91651,"Kovačić",3,0,1,125],[590039,"Mukasa",3,0,0,25],[59859,"Gündoğan",3,0,0,0],[575204,"Echeverri",3,0,0,0],[566164,"Nypan",3,0,0,0],[155405,"Phillips",3,0,0,0],[616288,"McAidoo",3,0,0,0],[516234,"Gray",3,0,0,0],[580921,"Heskey",3,0,0,0],[223094,"Haaland",4,27,8,2953]],"1":[[465247,"Lammens",1,0,0,2880],[451302,"Bayindir",1,0,0,540],[202641,"Onana",1,0,0,0],[588555,"Harrison",1,0,0,0],[21205,"Heaton",1,0,0,0],[461537,"Mee",1,0,0,0],[596777,"Dorgu",2,4,4,1440],[216051,"Dalot",2,1,6,2609],[95658,"Maguire",2,1,2,1649],[106760,"Shaw",2,1,1,3220],[550864,"Yoro",2,0,1,1730],[209365,"De Ligt",2,1,0,1170],[606745,"Heaven",2,0,1,920],[221820,"Martinez",2,0,0,1229],[230001,"Mazraoui",2,0,0,977],[222690,"Malacia",2,0,0,15],[547676,"Fredricson",2,0,0,2],[661712,"D.Leon",2,0,0,0],[577974,"Amass",2,0,0,0],[576637,"Kukonki",2,0,0,0],[141746,"B.Fernandes",3,9,24,3065],[446008,"Mbeumo",3,11,3,2611],[430871,"Cunha",3,10,4,2493],[61256,"Casemiro",3,9,4,2575],[493250,"Amad",3,2,5,2339],[516895,"Mainoo",3,1,2,1653],[184341,"Mount",3,3,0,1010],[232112,"Ugarte",3,0,0,876],[547037,"J.Fletcher",3,0,0,107],[576628,"Lacey",3,0,0,40],[519913,"Fletcher",3,0,0,17],[576620,"Bendito Mantato",3,0,0,15],[176297,"Rashford",3,0,0,0],[467169,"Antony",3,0,0,0],[490881,"Collyer",3,0,0,0],[556639,"Fitzgerald",3,0,0,0],[618873,"Kone",3,0,0,0],[559684,"Moorhouse",3,0,0,0],[576634,"Thwaites",3,0,0,0],[485711,"Šeško",4,11,2,1630],[458249,"Zirkzee",4,2,1,607],[497894,"Højlund",4,0,0,0],[596047,"Obi",4,0,0,0],[575034,"Wheatley",4,0,0,0]],"4":[[98747,"Pope",1,0,1,2416],[225321,"Ramsdale",1,0,0,1003],[81441,"Gillespie",1,0,0,0],[111452,"Odysseas",1,0,0,0],[19236,"Ruddy",1,0,0,0],[465642,"Thiaw",2,4,0,2963],[78916,"Burn",2,1,3,2195],[487838,"Hall",2,1,2,2176],[220237,"Botman",2,1,1,1834],[77794,"Trippier",2,0,1,1586],[441191,"Livramento",2,0,1,1326],[119471,"Schär",2,0,0,1089],[111773,"Krafth",2,0,0,45],[101148,"Lascelles",2,0,0,19],[545477,"A.Murphy",2,0,0,7],[441024,"Ashby",2,0,0,0],[578512,"Pivas",2,0,0,0],[169359,"Targett",2,0,0,0],[553746,"Shahar",2,0,0,0],[208706,"Bruno G.",3,9,7,2456],[232826,"Gordon",3,6,4,1798],[201666,"Barnes",3,7,1,1951],[114243,"J.Murphy",3,3,2,1606],[547719,"L.Miley",3,1,4,1493],[232653,"J.Ramsey",3,2,3,1441],[180974,"Joelinton",3,2,1,1950],[432422,"Tonali",3,0,2,2534],[200089,"Willock",3,0,2,972],[449434,"Elanga",3,0,1,1302],[640108,"Antoñito C.",3,0,0,0],[153127,"Hayden",3,0,0,0],[564510,"Kuol",3,0,0,0],[461484,"White",3,0,0,0],[623110,"Seung soo",3,0,0,0],[666607,"Alabi",3,0,0,0],[470313,"Woltemade",4,8,4,1896],[538207,"Osula",4,7,1,805],[216646,"Wissa",4,1,1,517],[599303,"Neave",4,0,0,13]],"17":[[85633,"Sels",1,0,0,2667],[221389,"John",1,0,0,437],[88248,"Ortega Moreno",1,0,0,270],[107265,"Gunn",1,0,0,45],[475123,"C.Miguel",1,0,0,0],[224068,"Turner",1,0,0,0],[215136,"N.Williams",2,2,3,3203],[159506,"Aina",2,0,2,1587],[500151,"Savona",2,2,0,1025],[227444,"Milenković",2,0,1,3375],[575476,"Murillo",2,1,0,2130],[485047,"Morato",2,1,0,1340],[575458,"Jair Cunha",2,0,0,514],[470315,"Netz",2,0,0,353],[206325,"Zinchenko",2,0,0,352],[549067,"Abbott",2,0,0,165],[451432,"David Carmo",2,0,0,0],[204822,"O.Richards",2,0,0,0],[90585,"Boly",2,0,0,0],[560441,"Cuiabano",2,0,0,0],[222531,"Gibbs-White",3,15,4,3101],[215379,"Anderson",3,4,5,3332],[503301,"Hutchinson",3,1,7,1676],[209046,"Hudson-Odoi",3,3,4,1838],[210462,"Sangaré",3,2,2,2073],[456512,"Ndoye",3,1,2,1167],[250199,"Dominguez",3,1,1,1168],[204968,"Yates",3,0,2,602],[476887,"Bakwa",3,0,2,549],[432714,"McAtee",3,0,1,288],[510500,"Jota",3,0,0,11],[243345,"O'Brien",3,0,0,0],[569014,"Da Silva Moreira",3,0,0,0],[495161,"Stamenic",3,0,0,0],[568159,"Whitehall",3,0,0,0],[590040,"Sinclair",3,0,0,0],[482973,"Igor Jesus",4,6,6,2293],[210156,"Awoniyi",4,4,2,480],[60689,"Wood",4,3,0,896],[469130,"Lucca",4,1,0,126],[465680,"Kalimuendo",4,0,0,89],[687076,"Sillah",4,0,0,0]],"56":[[498016,"Roefs",1,0,0,3150],[515046,"Ellborg",1,0,0,270],[232571,"Patterson",1,0,0,0],[74854,"Moore",1,0,0,0],[490000,"Nna Noukeu",1,0,0,0],[200834,"Mukiele",2,3,5,2784],[223827,"Ballard",2,2,2,2144],[487676,"Hume",2,2,1,3032],[201895,"Alderete",2,1,1,2797],[434399,"Reinildo",2,0,2,1966],[167512,"O'Nien",2,0,1,565],[247955,"Geertruida",2,0,0,1681],[461195,"Cirkin",2,0,0,319],[519634,"Seelt",2,0,0,133],[105717,"Masuaku",2,0,0,125],[220684,"Alese",2,0,0,0],[232820,"Anderson",2,0,0,0],[477547,"Hjelde",2,0,0,0],[492066,"Huggins",2,0,0,0],[514613,"Johnson",2,0,0,0],[465702,"Pembele",2,0,0,0],[232356,"Jenson Jones",2,0,0,0],[484420,"E.Le Fée",3,5,6,2930],[547027,"Diarra",3,2,6,1403],[84450,"Xhaka",3,1,6,2901],[549912,"Talbi",3,4,2,1553],[577669,"Sadiki",3,0,2,2891],[554197,"Rigg",3,1,1,758],[535818,"Adingra",3,1,1,649],[110504,"Traoré",3,1,1,634],[536661,"Angulo",3,0,0,401],[461199,"Mundle",3,0,0,399],[699989,"Jocelin.T",3,0,0,38],[124165,"Roberts",3,0,0,27],[223336,"Neil",3,0,0,13],[626844,"Aleksić",3,0,0,0],[215460,"Poveda",3,0,0,0],[477851,"Ba",3,0,0,0],[171422,"Browne",3,0,0,0],[458297,"Ekwah",3,0,0,0],[547410,"H.Jones",3,0,0,0],[493837,"Matete",3,0,0,0],[500696,"Triantis",3,0,0,0],[604211,"Tutierov",3,0,0,0],[570929,"Whittaker",3,0,0,0],[571087,"Jones",3,0,0,0],[441264,"Brobbey",4,7,2,1920],[437505,"Isidor",4,6,1,1148],[564406,"Mayenda",4,2,0,751],[611975,"Abdullahi",4,0,0,0],[551153,"Luís Hemir",4,0,0,0],[440955,"Rusyn",4,0,0,0]],"6":[[184254,"Vicario",1,0,0,2790],[485055,"Kinsky",1,0,0,630],[214572,"Austin",1,0,0,0],[491279,"Van de Ven",2,4,1,3041],[221632,"Romero",2,4,1,1869],[441164,"Pedro Porro",2,1,3,2793],[487053,"Udogie",2,0,1,1335],[115556,"Davies",2,1,0,136],[232859,"Spence",2,0,0,2049],[135720,"Danso",2,0,0,1489],[493125,"Dragusin",2,0,0,515],[616221,"Souza",2,0,0,142],[640419,"Byfield",2,0,0,1],[499716,"Rowswell",2,0,0,1],[548308,"Phillips",2,0,0,0],[553299,"Takai",2,0,0,0],[610799,"Vuskovic",2,0,0,0],[154296,"J.Palhinha",3,5,3,2192],[460842,"Kudus",3,2,6,1535],[493362,"Xavi",3,2,5,1747],[482442,"P.M.Sarr",3,2,4,1388],[511499,"Tel",3,4,2,1334],[547701,"Gray",3,2,2,1471],[570526,"Bergvall",3,1,3,955],[202993,"Bentancur",3,1,1,1880],[232787,"Gallagher",3,1,1,1183],[550839,"Odobert",3,0,2,972],[227127,"Bissouma",3,0,0,600],[172780,"Maddison",3,0,0,34],[499726,"Olusesi",3,0,0,14],[85971,"Son",3,0,0,0],[445044,"Kulusevski",3,0,0,0],[235674,"Solomon",3,0,0,0],[436234,"Bryan",3,0,0,0],[499721,"Moore",3,0,0,0],[623095,"Min-hyeok",3,0,0,0],[590035,"Akhamrich",3,0,0,0],[611917,"Williams-Barnett",3,0,0,0],[536134,"Kyerematen",3,0,0,0],[212319,"Richarlison",4,11,4,1954],[154566,"Solanke",4,3,0,997],[247693,"Kolo Muani",4,1,1,1655],[490145,"Scarlett",4,0,0,7],[552427,"Lankshear",4,0,0,0],[613232,"Wilson",4,0,0,0]],"21":[[84182,"Areola",1,0,1,1800],[467189,"Hermansen",1,0,1,1620],[82143,"Foderingham",1,0,0,0],[483364,"Hegyi",1,0,0,0],[37096,"Fabianski",1,0,0,0],[553742,"Herrick",1,0,0,0],[613804,"Diouf",2,0,6,2706],[233963,"Mavropanos",2,3,0,2532],[214590,"Wan-Bissaka",2,0,3,2080],[462116,"Todibo",2,0,1,1817],[158534,"Walker-Peters",2,1,0,1378],[536109,"Scarles",2,0,1,656],[214048,"Kilman",2,0,0,1559],[220362,"Disasi",2,0,0,1254],[210494,"N.Aguerd",2,0,0,180],[602903,"Mayers",2,0,0,113],[109533,"Emerson",2,0,0,0],[518438,"Casey",2,0,0,0],[643473,"Golambeckis",2,0,0,0],[450070,"Summerville",3,5,4,2470],[551226,"M.Fernandes",3,3,4,3017],[215439,"Souček",3,5,2,2190],[224024,"L.Paquetá",3,4,2,1513],[490142,"Potts",3,0,1,1162],[564940,"S.Magassa",3,1,0,971],[159533,"Adama",3,0,0,376],[197024,"G.Rodriguez",3,0,0,175],[229384,"Irving",3,0,0,156],[577114,"L.Guilherme",3,0,0,121],[630699,"Mohamadou Kanté",3,0,0,67],[490885,"Earthy",3,0,0,8],[213999,"Álvarez",3,0,0,0],[149519,"Cornet",3,0,0,0],[518442,"Orford",3,0,0,0],[572702,"Lamadrid",3,0,0,0],[178186,"Bowen",4,9,13,3406],[75115,"Wilson",4,7,2,1234],[247670,"Taty",4,6,1,1384],[530335,"Pablo",4,0,1,819],[91889,"Füllkrug",4,0,0,407],[565431,"Marshall",4,0,0,58]],"39":[[149065,"José Sá",1,0,0,2070],[101982,"Johnstone",1,0,0,1080],[79602,"Bentley",1,0,0,270],[491460,"Brooks",1,0,0,0],[627888,"Gracey",1,0,0,0],[231480,"S.Bueno",2,3,2,2552],[490721,"H.Bueno",2,1,3,2359],[431248,"Krejčí",2,2,2,2356],[483081,"R.Gomes",2,3,0,954],[497949,"Møller Wolfe",2,0,2,1042],[523705,"Tchatchoua",2,0,1,1834],[501837,"Mosquera",2,0,0,2137],[510362,"Toti",2,0,0,1423],[516939,"Agbadou",2,0,0,1100],[87835,"Doherty",2,0,0,786],[441271,"Hoever",2,0,0,423],[641221,"Pedro Lima",2,0,0,257],[560248,"Meupiyou",2,0,0,0],[517179,"Pond",2,0,0,0],[601956,"Olagunju",2,0,0,0],[184754,"Hee Chan",3,2,2,1439],[448089,"J.Gomes",3,1,2,2829],[433312,"Munetsi",3,1,2,872],[231057,"Bellegarde",3,1,1,1239],[509291,"André",3,1,0,2760],[230376,"J.Arias",3,1,0,1117],[643135,"Fer López",3,0,1,228],[596054,"Edozie",3,1,0,12],[209041,"Angel",3,0,0,457],[497606,"Chirewa",3,0,0,25],[685628,"Abbey",3,0,0,16],[181284,"Guedes",3,0,0,0],[476502,"B.Traore",3,0,0,0],[593001,"Gonzalez",3,0,0,0],[240299,"Hodge",3,0,0,0],[605319,"Rawlings",3,0,0,0],[514362,"Ojinnaka",3,0,0,0],[589121,"Sutherland",3,0,0,0],[647671,"Mané",4,3,2,1787],[488213,"Tolu",4,3,2,1402],[155511,"Armstrong",4,2,2,1141],[429414,"Kalajdžić",4,0,0,14],[449988,"Fábio Silva",4,0,0,0],[589507,"Chiwome",4,0,0,0],[531363,"Fraser",4,0,0,0]]},"scorers":[[223094,43,"Haaland",27,8],[502500,94,"Thiago",22,1],[437730,43,"Semenyo",17,6],[178301,7,"Watkins",16,4],[475168,8,"João Pedro",15,9],[222531,17,"Gibbs-White",15,4],[177815,2,"Calvert-Lewin",14,2],[224117,3,"Gyökeres",14,1],[50175,36,"Welbeck",13,1],[560262,91,"Kroupi.Jr",13,0],[231747,31,"Mateta",12,0],[510663,14,"Ekitiké",11,4],[212319,6,"Richarlison",11,4],[446008,1,"Mbeumo",11,3],[485711,1,"Šeško",11,2],[431639,90,"Flemming",11,0],[153682,54,"Wilson",10,9],[244850,7,"Rogers",10,8],[448047,8,"Enzo",10,5],[430871,1,"Cunha",10,4]],"assisters":[[141746,1,"B.Fernandes",24,9],[178186,21,"Bowen",13,9],[466052,43,"Cherki",13,4],[223340,3,"Saka",10,7],[475168,8,"João Pedro",9,15],[153682,54,"Wilson",9,10],[204480,3,"Rice",9,4],[223094,43,"Haaland",8,27],[244850,7,"Rogers",8,10],[533463,94,"O.Dango",8,7],[248875,43,"Doku",8,5],[427637,2,"Aaronson",8,4],[592031,36,"Minteh",8,3],[465351,43,"Matheus N.",8,1],[208706,4,"Bruno G.",7,9]],"cups":{"ucl":{"name":"Champions League","note":"League-phase draw late Aug 2026 — your games appear here automatically once drawn.","byTeam":{}},"efl":{"name":"EFL Cup","note":"Round 3 draw late Aug 2026 (most PL clubs enter R3) — fills in after the draw.","byTeam":{}},"fac":{"name":"FA Cup","note":"PL clubs enter Round 3 (early Jan 2027) — fills in after the draw.","byTeam":{}}}};
+  /*BAKE_END*/
+var BUILD_TAG='Build 19 Jun 2026 v2 (follow any PL club: 2026/27 fixtures, table, cups, squad, scorers)';
+(function(){
+  "use strict";
+  var D=LFC_DATA, T=D.teams, M=D.meta;
+  var POS={1:'Goalkeepers',2:'Defenders',3:'Midfielders',4:'Forwards'};
+  function el(id){return document.getElementById(id);}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function tName(c){return (T[c]&&T[c][0])||'TBD';}
+  function tShort(c){return (T[c]&&T[c][1])||'TBD';}
+  function badge(c){return 'https://resources.premierleague.com/premierleague/badges/50/t'+c+'.png';}
+  var PH="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='140'%3E%3Crect width='110' height='140' fill='%23e6e7eb'/%3E%3Ccircle cx='55' cy='52' r='24' fill='%23c4c8cf'/%3E%3Crect x='22' y='84' width='66' height='52' rx='26' fill='%23c4c8cf'/%3E%3C/svg%3E";
+  function photo(code){return 'https://resources.premierleague.com/premierleague/photos/players/110x140/p'+code+'.png';}
+  function imgErr(){return "this.onerror=null;this.src='"+PH+"'";}
+  function bErr(){return "this.style.visibility='hidden'";}
+
+  // followed team (code), persisted
+  var FT;
+  try{FT=parseInt(localStorage.getItem('lfc_team'),10);}catch(e){}
+  if(!FT||!T[FT])FT=D.defaultTeam;
+
+  // time helpers (viewer local tz)
+  function parseKO(iso){if(!iso)return null;var d=new Date(iso);return isNaN(d.getTime())?null:d;}
+  function fmtDate(d){return d?d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}):'TBC';}
+  function fmtTime(d){return d?d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}):'';}
+  function daysTo(d){if(!d)return null;return Math.ceil((d.getTime()-Date.now())/86400000);}
+  function countdown(d){if(!d)return '';var ms=d.getTime()-Date.now();if(ms<=0)return 'now';var h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000);if(h>48)return 'in '+Math.round(h/24)+' days';if(h>0)return 'in '+h+'h '+m+'m';return 'in '+m+'m';}
+
+  function formPills(seq){var h='<div class="form">';for(var i=0;i<seq.length;i++){var r=seq.charAt(i);h+='<span class="fp '+r+'">'+r+'</span>';}return h+'</div>';}
+  function miniForm(seq){var h='<span class="miniform">';for(var i=0;i<seq.length;i++){h+='<i class="'+seq.charAt(i)+'"></i>';}return h+'</span>';}
+
+  function teamFixtures(c){var a=[];for(var i=0;i<D.fixtures.length;i++){var f=D.fixtures[i];if(f[2]===c||f[3]===c)a.push(f);}return a;}
+  function rowFixture(f){ // [gw,ko,h,a,hs,as,status]
+    var d=parseKO(f[1]), done=(f[6]==='C'&&f[4]!=null);
+    var h='<div class="fixrow">';
+    h+='<img class="b" src="'+badge(f[2])+'" onerror="'+bErr()+'" alt=""/>';
+    h+='<span class="tn">'+esc(tShort(f[2]))+'</span>';
+    if(done)h+='<span class="sc">'+f[4]+'–'+f[5]+'</span>';
+    else h+='<span class="vs">v</span>';
+    h+='<span class="tn r">'+esc(tShort(f[3]))+'</span>';
+    h+='<img class="b" src="'+badge(f[3])+'" onerror="'+bErr()+'" alt=""/></div>';
+    h+='<div class="fmeta">'+esc(fmtDate(d))+(d?' · '+fmtTime(d):'')+(done?'':' <span class="cd">'+countdown(d)+'</span>')+'</div>';
+    return h;
+  }
+
+  // ===== HUB =====
+  function renderHub(){
+    var lt=null;for(var i=0;i<D.table.length;i++){if(D.table[i][1]===FT){lt=D.table[i];break;}}
+    var tf=teamFixtures(FT);
+    var next=null,last=null;
+    for(var j=0;j<tf.length;j++){if(tf[j][6]==='C'&&tf[j][4]!=null)last=tf[j];else if(!next)next=tf[j];}
+    var start=parseKO(M.startDate), dleft=daysTo(start);
+    var h='<div class="hero"><div class="top"><img src="'+badge(FT)+'" onerror="'+bErr()+'" alt=""/>'+
+          '<div><div class="tn">'+esc(tName(FT))+'</div><div class="ssub">Premier League '+esc(M.season)+'</div></div>';
+    if(M.plPlayed===0&&dleft!=null&&dleft>0){h+='<div class="cdbig"><b>'+dleft+'</b><span>days to kick-off</span></div>';}
+    h+='</div>';
+    if(lt&&M.plPlayed>0){
+      h+='<div class="pos"><span class="posnum">'+lt[0]+ord(lt[0])+'</span><span class="poslab">'+lt[2]+' played · '+lt[3]+'W '+lt[4]+'D '+lt[5]+'L</span>'+
+         '<span class="ptsb"><b>'+lt[7]+'</b><br><span class="poslab">pts</span></span></div>'+formPills(lt[8]||'');
+    } else {
+      h+='<div class="pos" style="margin-top:10px"><span class="poslab">Season kicks off '+esc(fmtDate(start))+'. Position &amp; form appear once games are played.</span></div>';
+    }
+    if(next){h+='<div class="lab">Next match</div>'+rowFixture(next);}
+    if(last){h+='<div class="lab">Last result</div>'+rowFixture(last);}
+    h+='</div>';
+    h+='<div class="card"><h2>'+esc(tName(FT))+' — all Premier League games</h2>';
+    if(tf.length){for(var k=0;k<tf.length;k++)h+=rowFixture(tf[k]);}
+    else h+='<div class="empty">Fixtures not released yet.</div>';
+    h+='</div>';
+    el('v-hub').innerHTML=h;
+  }
+  function ord(n){return n==1?'st':n==2?'nd':n==3?'rd':'th';}
+
+  // ===== TABLE =====
+  function renderTable(){
+    var h='';
+    if(M.plPlayed>0){
+      h+='<div class="card"><h2>Premier League '+esc(M.season)+'</h2>'+tableHtml(D.table)+
+         '<div class="legend"><span class="eu">Top 5 (Europe)</span><span class="rel">Bottom 3</span></div></div>';
+    } else {
+      h+='<div class="banner">⚽ '+esc(M.season)+' starts '+esc(fmtDate(parseKO(M.startDate)))+'. The live table fills in as games are played — here\'s how last season finished.</div>';
+      h+='<div class="card"><h2>'+esc(M.fplSeason)+' final table</h2>'+lastTableHtml()+'</div>';
+    }
+    el('v-table').innerHTML=h;
+  }
+  function tableHtml(rows){
+    var h='<table class="lg"><thead><tr><th>#</th><th style="text-align:left">Club</th><th>Pl</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th><th>Form</th></tr></thead><tbody>';
+    for(var i=0;i<rows.length;i++){var r=rows[i];var cls=r[1]===FT?'me':(r[0]<=5?'eu':(r[0]>=18?'rel':''));
+      h+='<tr class="'+cls+'"><td>'+r[0]+'</td><td class="tm"><img src="'+badge(r[1])+'" onerror="'+bErr()+'" alt=""/>'+esc(tShort(r[1]))+'</td>'+
+         '<td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td><td>'+(r[6]>0?'+':'')+r[6]+'</td><td class="pt">'+r[7]+'</td><td>'+miniForm(r[8]||'')+'</td></tr>';
+    }
+    return h+'</tbody></table>';
+  }
+  function lastTableHtml(){
+    var rows=D.lastTable,h='<table class="lg"><thead><tr><th>#</th><th style="text-align:left">Club</th><th>Pl</th><th>GD</th><th>Pts</th></tr></thead><tbody>';
+    for(var i=0;i<rows.length;i++){var r=rows[i];
+      h+='<tr class="'+(r[0]<=4?'eu':(r[0]>=18?'rel':''))+'"><td>'+r[0]+'</td><td class="tm">'+esc(r[1])+'</td><td>'+r[2]+'</td><td>'+(r[4]>0?'+':'')+r[4]+'</td><td class="pt">'+r[3]+'</td></tr>';
+    }
+    return h+'</tbody></table>';
+  }
+
+  // ===== FIXTURES =====
+  var fixFilter=null;
+  function renderFixtures(){
+    if(fixFilter==null)fixFilter=FT;
+    var h='<div class="chips"><button data-f="'+FT+'"'+(fixFilter===FT?' class="on"':'')+'>'+esc(tShort(FT))+'</button>'+
+          '<button data-f="0"'+(fixFilter===0?' class="on"':'')+'>All clubs</button></div>';
+    var list=[];for(var i=0;i<D.fixtures.length;i++){var f=D.fixtures[i];if(fixFilter===0||f[2]===fixFilter||f[3]===fixFilter)list.push(f);}
+    h+='<div class="card">';
+    if(!list.length)h+='<div class="empty">No fixtures yet.</div>';
+    var lastGw=null;
+    for(var j=0;j<list.length;j++){var f=list[j];if(f[0]!==lastGw){lastGw=f[0];h+='<div class="gw">'+(f[0]?'Gameweek '+f[0]:'TBC')+'</div>';}h+=rowFixture(f);}
+    h+='</div>';
+    el('v-fixtures').innerHTML=h;
+  }
+
+  // ===== CUPS =====
+  // a cup fixture (opponents can be non-PL): [koISO, homeName, homeBadge, awayName, awayBadge, hs, as, status, round]
+  function cupRow(f){
+    var d=parseKO(f[0]), done=(f[7]==='C'&&f[5]!=null);
+    var h='<div class="fixrow">';
+    h+='<img class="b" src="'+esc(f[2])+'" onerror="'+bErr()+'" alt=""/><span class="tn">'+esc(f[1])+'</span>';
+    if(done)h+='<span class="sc">'+f[5]+'–'+f[6]+'</span>';else h+='<span class="vs">v</span>';
+    h+='<span class="tn r">'+esc(f[3])+'</span><img class="b" src="'+esc(f[4])+'" onerror="'+bErr()+'" alt=""/></div>';
+    h+='<div class="fmeta">'+(f[8]?esc(f[8])+' · ':'')+esc(fmtDate(d))+(d?' · '+fmtTime(d):'')+(done?'':' <span class="cd">'+countdown(d)+'</span>')+'</div>';
+    return h;
+  }
+  function renderCups(){
+    var c=D.cups,h='';
+    var icons={ucl:'⭐',efl:'🏆',fac:'🌹'};
+    var keys=['ucl','efl','fac'];
+    for(var i=0;i<keys.length;i++){var k=keys[i],cup=c[k];if(!cup)continue;
+      var mine=(cup.byTeam&&cup.byTeam[FT])||[];
+      h+='<div class="card"><div class="cup"><div class="ic">'+icons[k]+'</div><div class="cn">'+esc(cup.name)+'</div></div>';
+      if(mine.length){for(var j=0;j<mine.length;j++)h+=cupRow(mine[j]);}
+      else h+='<div class="note">'+esc(cup.note)+'</div>';
+      h+='</div>';
+    }
+    h+='<div class="note" style="text-align:center;margin-top:6px">'+esc(tName(FT))+'’s cup games appear here automatically as each draw is made.</div>';
+    el('v-cups').innerHTML=h;
+  }
+
+  // ===== SQUAD =====
+  function renderSquad(){
+    var sq=D.squads[FT];
+    var h='<div class="card"><h2>'+esc(tName(FT))+' squad</h2>';
+    if(!sq||!sq.length){h+='<div class="empty">Squad updates when the new Fantasy PL season opens (usually July) — '+esc(tName(FT))+' is newly promoted.</div></div>';el('v-squad').innerHTML=h;return;}
+    var by={1:[],2:[],3:[],4:[]};for(var i=0;i<sq.length;i++){if(by[sq[i][2]])by[sq[i][2]].push(sq[i]);}
+    for(var p=1;p<=4;p++){if(!by[p].length)continue;h+='<div class="posh">'+POS[p]+'</div><div class="grid">';
+      for(var j=0;j<by[p].length;j++){var s=by[p][j]; // [code,name,pos,g,a,min]
+        h+='<div class="pl"><img src="'+photo(s[0])+'" onerror="'+imgErr()+'" alt=""/><div class="nm">'+esc(s[1])+'</div>'+
+           '<div class="st">'+(s[3]?'<b>'+s[3]+'</b>⚽ ':'')+(s[4]?'<b>'+s[4]+'</b>🅰':'')+(!s[3]&&!s[4]?(s[5]+' min'):'')+'</div></div>';
+      }h+='</div>';
+    }
+    h+='<div class="note" style="margin-top:10px">Goals/assists shown are '+esc(M.fplSeason)+'. Refreshes when the new season starts.</div></div>';
+    el('v-squad').innerHTML=h;
+  }
+
+  // ===== STATS =====
+  function renderStats(){
+    var h='<div class="banner">Top scorers &amp; assists below are '+esc(M.fplSeason)+' (final). They reset when '+esc(M.season)+' kicks off.</div>';
+    h+='<div class="card"><h2>Top scorers — '+esc(M.fplSeason)+'</h2>';
+    for(var i=0;i<D.scorers.length;i++){var s=D.scorers[i];h+=scrRow(i+1,s[0],s[1],s[2],s[3],s[4]+' assists');}
+    h+='</div><div class="card"><h2>Most assists — '+esc(M.fplSeason)+'</h2>';
+    for(var k=0;k<D.assisters.length;k++){var a=D.assisters[k];h+=scrRow(k+1,a[0],a[1],a[2],a[3],a[4]+' goals');}
+    h+='</div>';
+    el('v-stats').innerHTML=h;
+  }
+  function scrRow(rk,pcode,tcode,name,big,sub){
+    return '<div class="scr"><span class="rk">'+rk+'</span><img class="pp" src="'+photo(pcode)+'" onerror="'+imgErr()+'" alt=""/>'+
+      '<img class="bb" src="'+badge(tcode)+'" onerror="'+bErr()+'" alt=""/><span class="nm">'+esc(name)+'</span>'+
+      '<span class="g">'+big+'</span><span class="a">'+esc(sub)+'</span></div>';
+  }
+
+  // ===== shell =====
+  var RENDERED={};
+  function rerenderAll(){RENDERED={};fixFilter=FT;var on=document.querySelector('.view.on');show(on?on.id.replace('v-',''):'hub');applyHeader();}
+  function show(v){
+    var btns=el('tabs').getElementsByTagName('button');
+    for(var i=0;i<btns.length;i++)btns[i].className=btns[i].getAttribute('data-v')===v?'on':'';
+    var views=document.getElementsByClassName('view');
+    for(var j=0;j<views.length;j++)views[j].className='view'+(views[j].id==='v-'+v?' on':'');
+    if(!RENDERED[v]){({hub:renderHub,table:renderTable,fixtures:renderFixtures,cups:renderCups,squad:renderSquad,stats:renderStats}[v])();RENDERED[v]=true;}
+    window.scrollTo(0,0);try{location.hash=v;}catch(e){}
+  }
+  el('tabs').addEventListener('click',function(e){var b=e.target;while(b&&b.tagName!=='BUTTON')b=b.parentNode;if(b&&b.getAttribute('data-v'))show(b.getAttribute('data-v'));});
+  el('v-fixtures').addEventListener('click',function(e){var b=e.target;while(b&&b!==this&&b.tagName!=='BUTTON')b=b.parentNode;if(b&&b.getAttribute&&b.getAttribute('data-f')!=null){fixFilter=parseInt(b.getAttribute('data-f'),10);RENDERED.fixtures=false;renderFixtures();RENDERED.fixtures=true;}});
+
+  // team picker
+  function buildPicker(){
+    var names=[];for(var c in T)names.push([parseInt(c,10),T[c][0]]);names.sort(function(a,b){return a[1]<b[1]?-1:1;});
+    var h='';for(var i=0;i<names.length;i++)h+='<option value="'+names[i][0]+'"'+(names[i][0]===FT?' selected':'')+'>'+esc(names[i][1])+'</option>';
+    el('teamSel').innerHTML=h;
+    el('teamSel').onchange=function(){FT=parseInt(this.value,10);try{localStorage.setItem('lfc_team',FT);}catch(e){}rerenderAll();};
+  }
+  function applyHeader(){
+    el('hcrest').style.visibility='visible';el('hcrest').onerror=function(){this.onerror=null;this.style.visibility='hidden';};el('hcrest').src=badge(FT);
+    el('htitle').textContent=tName(FT);
+    el('hsub').textContent='Premier League '+M.season;
+  }
+
+  el('shareBtn').onclick=function(){var url=location.href.split('#')[0];
+    if(navigator.share){navigator.share({title:'Follow your Premier League team',text:'Pick your club — fixtures, table, cups, scorers',url:url}).catch(function(){});}
+    else if(navigator.clipboard){navigator.clipboard.writeText(url);this.textContent='Copied!';var b=this;setTimeout(function(){b.textContent='Share';},1500);}
+  };
+
+  if(M.built){var bd=new Date(M.built);el('built').textContent='Updated '+(isNaN(bd)?M.built:bd.toLocaleString());}
+  el('buildtag').textContent=BUILD_TAG;
+  buildPicker();applyHeader();
+  var init=(location.hash||'').replace('#','');
+  show(({hub:1,table:1,fixtures:1,cups:1,squad:1,stats:1}[init])?init:'hub');
+})();
+</script>
+</body>
+</html>
