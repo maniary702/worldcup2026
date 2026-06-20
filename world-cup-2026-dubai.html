@@ -2586,12 +2586,24 @@
   function renderThirds(thirds){
     var el=document.getElementById('tvThirds');
     thirds.sort(function(x,y){return y.pts-x.pts||y.gd-x.gd||y.gf-x.gf||(x.team<y.team?-1:1);});
-    var h='<table class="gt"><tr><th></th><th class="tn">Team</th><th>Grp</th><th>P</th><th>GD</th><th>Pts</th></tr>';
+    if(!thirds.length){el.innerHTML='<div class="tv-empty">Appears once third-placed teams take shape.</div>';return;}
+    // teams here can be a round apart mid-tournament, so points aren't yet comparable.
+    var minP=99,maxP=0,allDone=true,q;
+    for(q=0;q<thirds.length;q++){var pp=thirds[q].p;if(pp<minP)minP=pp;if(pp>maxP)maxP=pp;if(pp<3)allDone=false;}
+    var uneven=(minP!==maxP);
+    var warnCss='background:#fff3cd;border:1px solid #ffe08a;color:#7a5b00;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;margin-bottom:8px;line-height:1.4';
+    var okCss='background:#e7f7ec;border:1px solid #a8e0bb;color:#1a7a3a;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:700;margin-bottom:8px';
+    var h='';
+    if(allDone)h+='<div style="'+okCss+'">Groups complete &mdash; the eight teams in green qualify for the Round of 32.</div>';
+    else if(uneven)h+='<div style="'+warnCss+'"><b>Provisional &mdash; not yet a fair comparison.</b> These teams have played different numbers of games ('+minP+'&ndash;'+maxP+'). The sides on top are simply a round ahead, so part of the gap is games in hand. The eight-team cut only locks once every group has played all three rounds.</div>';
+    else h+='<div style="'+warnCss+'">Provisional after '+minP+' game'+(minP===1?'':'s')+' each &mdash; the cut can still change.</div>';
+    h+='<table class="gt"><tr><th></th><th class="tn">Team</th><th>Grp</th><th>P</th><th>GD</th><th>GF</th><th>Pts</th></tr>';
     for(var i=0;i<thirds.length;i++){var t=thirds[i];
       var cls=[];if(i<8)cls.push('q');if(t.team===FOLLOW)cls.push('meRow');
-      h+='<tr'+(cls.length?' class="'+cls.join(' ')+'"':'')+'><td>'+(i+1)+'</td><td class="tn">'+(F[t.team]||'')+' '+escapeHtml(t.team)+(i===7?' <span class="lu lu-bn">cut</span>':'')+'</td><td>'+t.L+'</td><td>'+t.p+'</td><td>'+(t.gd>0?'+':'')+t.gd+'</td><td class="pts">'+t.pts+'</td></tr>';}
+      var hand=(t.p<maxP)?' <span style="font-size:9px;color:#9a9a9a;font-weight:700;white-space:nowrap">+'+(maxP-t.p)+' in hand</span>':'';
+      h+='<tr'+(cls.length?' class="'+cls.join(' ')+'"':'')+'><td>'+(i+1)+'</td><td class="tn">'+(F[t.team]||'')+' '+escapeHtml(t.team)+(i===7?' <span class="lu lu-bn">cut</span>':'')+hand+'</td><td>'+t.L+'</td><td>'+t.p+'</td><td>'+(t.gd>0?'+':'')+t.gd+'</td><td>'+t.gf+'</td><td class="pts">'+t.pts+'</td></tr>';}
     h+='</table>';
-    el.innerHTML=thirds.length?h:'<div class="tv-empty">Appears once third-placed teams take shape.</div>';
+    el.innerHTML=h;
   }
   function renderPlayerStats(warn,finCount){
     var agg={},stars=[],k,id,covered=0;
