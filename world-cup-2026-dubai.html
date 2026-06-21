@@ -2059,10 +2059,30 @@
   function afFor(hN,aN){var e=afEntry(hN,aN);if(!e||!e.stats)return null;var sh=afCanon(hN)===e.h;
     return {st:e.st,min:e.min,home:sh?e.stats.home:e.stats.away,away:sh?e.stats.away:e.stats.home};}
   function afKeys(o){for(var k in o)if(o.hasOwnProperty(k))return true;return false;}
+  function afNorm(s){return (s||'').toLowerCase().replace(/ç/g,'c').replace(/ü/g,'u').replace(/[éèê]/g,'e').replace(/[íî]/g,'i').replace(/[áàâãä]/g,'a').replace(/[óôõ]/g,'o').replace(/ñ/g,'n').replace(/[^a-z]/g,'');}
+  // convert an API-Football line-up side ([[num,name,pos,grid]]) to the luSide() shape (+ coach)
+  function afLuSide(s){
+    if(!s||!s.xi||!s.xi.length)return null;
+    function conv(p){return {num:(p[0]!=null?p[0]:''),name:p[1]||'',pos:p[2]||'',id:null,cap:false};}
+    var xi=[],subs=[],i;
+    for(i=0;i<s.xi.length;i++)xi.push(conv(s.xi[i]));
+    for(i=0;i<(s.subs||[]).length;i++)subs.push(conv(s.subs[i]));
+    return {form:s.form||'',xi:xi,subs:subs,coach:s.coach||''};
+  }
+  // shots-on-target over last <=4 WC games, keyed by NORMALISED player name (so API-Football
+  // line-ups keep the SoT chips even though their players carry no FIFA id)
+  function sotByName(){
+    var byNm={},k,id;
+    for(k in pstats){var P=pstats[k].p;for(id in P){var v=P[id],n=afNorm(v[0]);if(!n)continue;
+      if(!byNm[n])byNm[n]=[];byNm[n].push({d:pstats[k].d,sot:(v[9]||0)});}}
+    var m={};for(var nm in byNm){var a=byNm[nm];a.sort(function(x,y){return y.d-x.d;});
+      var t=0,c=Math.min(4,a.length);for(var i=0;i<c;i++)t+=a[i].sot;if(t>0)m[nm]=t;}
+    return m;
+  }
   function afFetch(){try{var x=new XMLHttpRequest();x.open('GET','afstats.json?cb='+Date.now(),true);
     x.onreadystatechange=function(){if(x.readyState!==4)return;
       if(x.status>=200&&x.status<300){try{var j=JSON.parse(x.responseText);AFSTATS=j.m||{};}catch(e){}}
-      if(mdLastData&&document.getElementById('mdOverlay').classList.contains('open'))document.getElementById('mdTeamStats').innerHTML=renderTeamStats(mdLastData);
+      if(mdLastData&&document.getElementById('mdOverlay').classList.contains('open')){var _ts=document.getElementById('mdTeamStats');if(_ts)_ts.innerHTML=renderTeamStats(mdLastData);}
     };x.send();}catch(e){}}
   function renderAfStats(d,af){
     var H=af.home,A=af.away;
@@ -2081,7 +2101,7 @@
   }
   function renderTeamStats(d){
     var af=afFor(d.hN,d.aN);
-    if(af&&af.home&&af.away&&(afKeys(af.home)||afKeys(af.away)))return renderAfStats(d,af);
+    if(af&&af.home&&af.away&&(af.home.poss!=null||af.home.sh!=null||af.away.poss!=null||af.away.sh!=null))return renderAfStats(d,af);
     var rows=[['Shots','sh'],['Corners','co'],['Fouls','fo'],['Yellow cards','y'],['Red cards','r'],['Subs','su']];
     var h='<div class="ts-h"><span>'+(F[d.hN]||'')+' '+escapeHtml(d.hN)+'</span><span>'+escapeHtml(d.aN)+' '+(F[d.aN]||'')+'</span></div>';
     for(var i=0;i<rows.length;i++){var hv=d.st.h[rows[i][1]],av=d.st.a[rows[i][1]],tot=hv+av,hp=tot?Math.round(hv/tot*100):50;
@@ -2120,13 +2140,14 @@
       if(tot>0)m[id]=tot;}
     return m;
   }
-  function luSide(name,s,sot){
-    if(!s)return '';
+  function luSide(name,s,sotFn){
+    if(!s||!s.xi||!s.xi.length)return '';
     var h='<div class="lu-side"><div class="lu-form"><span>'+(F[name]||'')+' '+escapeHtml(name)+'</span><span class="ff">'+escapeHtml(s.form||'')+'</span></div>';
-    function row(p,sub){var ps=(sot&&sot[p.id])?' <span class="lu-sot">'+sot[p.id]+' SoT</span>':'';
+    function row(p,sub){var sv=sotFn?sotFn(p):0;var ps=sv?' <span class="lu-sot">'+sv+' SoT</span>':'';
       return '<div class="lu-p'+(sub?' sub':'')+'"><span class="pn">'+escapeHtml(String(p.num))+'</span><span class="pnm">'+escapeHtml(p.name)+(p.cap?' (C)':'')+ps+'</span><span class="ppos">'+escapeHtml(p.pos)+'</span></div>';}
     for(var i=0;i<s.xi.length;i++)h+=row(s.xi[i],false);
-    if(s.subs.length){h+='<div class="lu-subs-h">Substitutes</div>';for(var j=0;j<s.subs.length;j++)h+=row(s.subs[j],true);}
+    if(s.subs&&s.subs.length){h+='<div class="lu-subs-h">Substitutes</div>';for(var j=0;j<s.subs.length;j++)h+=row(s.subs[j],true);}
+    if(s.coach)h+='<div class="lu-coach">&#128100; '+escapeHtml(s.coach)+'</div>';
     return h+'</div>';
   }
   function renderMatchFull(d){
@@ -2142,9 +2163,17 @@
     if(d.hasData)document.getElementById('mdTeamStats').innerHTML=renderTeamStats(d);
     else document.getElementById('mdTeamStats').innerHTML='<div class="st-empty">Match stats appear once the game kicks off.</div>';
     document.getElementById('mdEvents').innerHTML=d.hasData?renderEvents(d):'';
-    var hasLu=d.lu&&((d.lu.h&&d.lu.h.xi.length)||(d.lu.a&&d.lu.a.xi.length));
-    var sotM=playerSotMap();
-    document.getElementById('mdLineupPane').innerHTML=hasLu?(luSide(d.hN,d.lu.h,sotM)+luSide(d.aN,d.lu.a,sotM)+'<div class="st-note" style="margin:2px 2px 0">SoT = shots on target in their last World Cup games (est.).</div>'):'<div class="st-empty">Line-ups are published about an hour before kick-off - they’ll appear here automatically.</div>';
+    // line-ups: prefer the confirmed API-Football XI (adds the coach), per side, falling back to the
+    // FIFA feed when AF hasn't published. SoT chips work for both (FIFA by player id, AF by name).
+    var afE=afEntry(d.hN,d.aN),afLu=afE&&afE.lineups,hSide=null,aSide=null,viaAf=false;
+    if(afLu){var shh=afCanon(d.hN)===afE.h;hSide=afLuSide(shh?afLu.home:afLu.away);aSide=afLuSide(shh?afLu.away:afLu.home);viaAf=!!(hSide||aSide);}
+    if(!(hSide&&hSide.xi&&hSide.xi.length)&&d.lu&&d.lu.h)hSide=d.lu.h;
+    if(!(aSide&&aSide.xi&&aSide.xi.length)&&d.lu&&d.lu.a)aSide=d.lu.a;
+    var hasLu=(hSide&&hSide.xi&&hSide.xi.length)||(aSide&&aSide.xi&&aSide.xi.length);
+    var sotById=playerSotMap(),sotNm=sotByName();
+    function sotFn(p){return (p.id!=null&&sotById[p.id])?sotById[p.id]:(sotNm[afNorm(p.name)]||0);}
+    var luNote=(viaAf?'Confirmed line-ups via API-Football. ':'')+'SoT = shots on target in their last World Cup games (est.).';
+    document.getElementById('mdLineupPane').innerHTML=hasLu?(luSide(d.hN,hSide,sotFn)+luSide(d.aN,aSide,sotFn)+'<div class="st-note" style="margin:2px 2px 0">'+escapeHtml(luNote)+'</div>'):'<div class="st-empty">Line-ups are published about an hour before kick-off - they’ll appear here automatically.</div>';
   }
   function mdSetTab(t){
     var stats=(t==='stats');
