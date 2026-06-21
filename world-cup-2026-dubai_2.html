@@ -854,7 +854,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 21 Jun 2026 v15.2 (bracket: AM kick-offs shown under previous night +1)';
+  var BUILD_TAG='Build 21 Jun 2026 v15.3 (knockout bracket meta: + city/venue)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -2725,7 +2725,7 @@
     if(done&&hs===as2&&hp!=null&&ap!=null&&(hp>0||ap>0)){hW=hp>ap;aW=ap>hp;}
     var o=partsInZone(new Date(am.Date),TZ());
     var rt=am.ResultType,etx=(rt===2?' · pens'+((hp!=null&&ap!=null)?' '+hp+'-'+ap:''):(rt===3?' · AET':''));
-    var meta='M'+am.MatchNumber+' · '+fmtShort(dayKey(o))+' · '+fmtClock(o)+etx;
+    var bv=fbVenue(am),meta='M'+am.MatchNumber+' · '+fmtShort(dayKey(o))+' · '+fmtClock(o)+etx+(bv?' · &#128205;'+escapeHtml(bv):'');
     function line(nm,ph,sc,w){
       return '<div class="t'+(w?' w':'')+'"><span class="nm">'+
         (nm?(F[nm]||'')+' '+escapeHtml(nm):'<span class="ph">'+escapeHtml(phPretty(ph))+'</span>')+
