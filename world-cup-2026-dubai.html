@@ -932,7 +932,7 @@
   var FIFA_LIVE=FIFA_API+'live/football/now?language=en';
 
   // Final scores baked in at build time, so played games show even if the feed is down
-  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1],13:[0,0],14:[1,1],15:[1,1],16:[2,2],17:[3,1],18:[1,4],19:[3,0],20:[3,1],21:[1,1],22:[4,2],23:[1,0],24:[1,3],25:[1,1],26:[4,1],27:[6,0],28:[1,0],29:[2,0],30:[0,1],31:[3,0],32:[0,1]};
+  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1],13:[0,0],14:[1,1],15:[1,1],16:[2,2],17:[3,1],18:[1,4],19:[3,0],20:[3,1],21:[1,1],22:[4,2],23:[1,0],24:[1,3],25:[1,1],26:[4,1],27:[6,0],28:[1,0],29:[2,0],30:[0,1],31:[3,0],32:[0,1],33:[5,1],34:[2,1],35:[0,0],36:[0,4]};
   function applySeed(){
     for(var n in SEED){
       if(!scores[n])scores[n]={ga:SEED[n][0],gb:SEED[n][1],status:'FT',source:'api',minute:null};
@@ -2761,8 +2761,8 @@
     var done=am.MatchStatus===0,live=am.MatchStatus===3,hp=am.HomeTeamPenaltyScore,ap=am.AwayTeamPenaltyScore;
     var hW=done&&hs!=null&&as2!=null&&hs>as2,aW=done&&hs!=null&&as2!=null&&as2>hs;
     if(done&&hs===as2&&hp!=null&&ap!=null&&(hp>0||ap>0)){hW=hp>ap;aW=ap>hp;}
-    var o=partsInZone(new Date(am.Date),TZ());
-    var when=escapeHtml(fmtShort(dayKey(o)))+' &middot; '+escapeHtml(fmtClock(o));
+    var o=am.Date?partsInZone(new Date(am.Date),TZ()):null;
+    var when=o?(escapeHtml(fmtShort(dayKey(o)))+' &middot; '+escapeHtml(fmtClock(o))):'TBD';
     function side(nm,ph,sc,w){
       return '<div class="fb-row'+(w?' w':'')+'">'+
         (nm?'<span class="fl">'+(F[nm]||'')+'</span><span class="nm">'+escapeHtml(nm)+'</span>'
@@ -2775,7 +2775,7 @@
       '<div class="fb-when">'+when+'</div>'+side(hn,am.PlaceHolderA,hs,hW)+'<div class="fb-vs">v</div>'+side(an,am.PlaceHolderB,as2,aW)+'</div>';
   }
   function fbDrawLines(){
-    var inner=document.getElementById('fbInner');if(!inner)return;
+    var inner=document.getElementById('fbInner');if(!inner||!inner.querySelector('.fb-m'))return;
     var svg=inner.querySelector('.fb-lines');if(!svg)return;
     var ir=inner.getBoundingClientRect(),W=inner.scrollWidth,H=inner.scrollHeight;
     svg.setAttribute('width',W);svg.setAttribute('height',H);svg.setAttribute('viewBox','0 0 '+W+' '+H);
@@ -2795,17 +2795,17 @@
     if(!calCache){host.innerHTML='<div class="fb-empty">Bracket loads with the FIFA feed&hellip;</div>';return;}
     var rs=calCache.Results||[],SK={'Round of 32':'r32','Round of 16':'r16','Quarter-final':'qf','Semi-final':'sf','Final':'fin','Play-off for third place':'third'};
     var byNum={},cols={r32:[],r16:[],qf:[],sf:[],fin:[],third:[]},i;
-    for(i=0;i<rs.length;i++){var am=rs[i],sn=(am.StageName&&am.StageName[0]&&am.StageName[0].Description)||'',k=SK[sn];if(!k)continue;byNum[am.MatchNumber]=am;cols[k].push(am);}
+    for(i=0;i<rs.length;i++){var am=rs[i],sn=(am.StageName&&am.StageName[0]&&am.StageName[0].Description)||'',k=SK[sn];if(!k)continue;if(am.MatchNumber!=null)byNum[am.MatchNumber]=am;cols[k].push(am);}
     if(!cols.fin.length&&!cols.r32.length){host.innerHTML='<div class="fb-empty">The knockout bracket appears here as soon as FIFA confirm it.</div>';return;}
     // tree order: DFS from the Final down to the Round-of-32 leaves
     var leaf=[],seen={};
-    function dfs(num){var m=byNum[num];if(!m)return;var f=fbFeedNums(m);if(f.length){for(var j=0;j<f.length;j++)dfs(f[j]);}else if(!seen[num]){seen[num]=1;leaf.push(num);}}
+    function dfs(num){var m=byNum[num];if(!m||seen[num])return;seen[num]=1;var f=fbFeedNums(m);if(f.length){for(var j=0;j<f.length;j++)dfs(f[j]);}else leaf.push(num);}
     if(cols.fin.length)dfs(cols.fin[0].MatchNumber);
     var r32d=cols.r32.slice().sort(function(x,y){return x.Date<y.Date?-1:1;});
     for(i=0;i<r32d.length;i++){var nn=r32d[i].MatchNumber;if(!seen[nn]){seen[nn]=1;leaf.push(nn);}}
     var leafIdx={};for(i=0;i<leaf.length;i++)leafIdx[leaf[i]]=i;
     var slot={};
-    function getSlot(num){if(slot[num]!=null)return slot[num];var m=byNum[num];if(!m)return 0;var f=fbFeedNums(m);if(f.length){var s=0;for(var j=0;j<f.length;j++)s+=getSlot(f[j]);slot[num]=s/f.length;}else slot[num]=(leafIdx[num]!=null?leafIdx[num]:0);return slot[num];}
+    function getSlot(num){if(slot[num]!=null)return slot[num];var m=byNum[num];if(!m)return 0;slot[num]=(leafIdx[num]!=null?leafIdx[num]:0);var f=fbFeedNums(m);if(f.length){var s=0;for(var j=0;j<f.length;j++)s+=getSlot(f[j]);slot[num]=s/f.length;}return slot[num];}
     var order=[['r32','Round of 32'],['r16','Round of 16'],['qf','Quarter-finals'],['sf','Semi-finals'],['fin','Final']];
     var html='<div class="fb-inner" id="fbInner"><svg class="fb-lines"></svg>';
     for(var c=0;c<order.length;c++){var key=order[c][0],arr=cols[key];if(!arr.length)continue;
