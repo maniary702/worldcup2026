@@ -854,7 +854,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 21 Jun 2026 v15.3 (knockout bracket meta: + city/venue)';
+  var BUILD_TAG='Build 21 Jun 2026 v15.4 (brackets now follow the timezone selector)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1316,7 +1316,21 @@
   }
 
   var firstPaint=true;
-  function refresh(){paintChipCounts();buildDateStrip();render();tickHero();updateFabCode();updateLiveFab();updateFreshPill();}
+  // Re-render whichever non-schedule view is open (group tables + knockout bracket, or the
+  // Fan Zone bracket), preserving horizontal scroll. Called on TZ change, follow change, data
+  // updates and live ticks so the BRACKETS follow the timezone selector too, not just the schedule.
+  function renderActiveView(){
+    if(document.body.classList.contains('tab2')){
+      var br=document.getElementById('tvBracket'),sl=br?br.scrollLeft:0;
+      renderTablesView();renderBracket();
+      var nb=document.getElementById('tvBracket');if(nb)nb.scrollLeft=sl;
+    }else if(document.body.classList.contains('tab3')){
+      var fb=document.getElementById('fanBracket'),fx=fb?fb.scrollLeft:0;
+      renderFanBracket();
+      var nf=document.getElementById('fanBracket');if(nf)nf.scrollLeft=fx;
+    }
+  }
+  function refresh(){paintChipCounts();buildDateStrip();render();tickHero();updateFabCode();updateLiveFab();updateFreshPill();renderActiveView();}
   // lighter tick: refresh content in place without rebuilding the date strip or re-animating.
   // When nothing is on (or near), skip the heavy DOM work most ticks to save battery.
   var idleTicks=0;
@@ -1324,16 +1338,7 @@
     var active=shouldPoll()||!!liveMatch();
     updateProgress();tickHero();updateFreshPill();updateLiveFab();
     if(!active){idleTicks++;if(idleTicks%5)return;}else idleTicks=0;
-    paintChipCounts();render();updateFabCode();
-    if(document.body.classList.contains('tab2')){
-      var br=document.getElementById('tvBracket'),sl=br?br.scrollLeft:0;
-      renderTablesView();renderBracket();
-      if(br){var nb=document.getElementById('tvBracket');if(nb)nb.scrollLeft=sl;}
-    }else if(document.body.classList.contains('tab3')){
-      var fb=document.getElementById('fanBracket'),fx=fb?fb.scrollLeft:0;
-      renderFanBracket();
-      var nf=document.getElementById('fanBracket');if(nf)nf.scrollLeft=fx;
-    }
+    paintChipCounts();render();updateFabCode();renderActiveView();
   }
 
   function applyTheme(t){
