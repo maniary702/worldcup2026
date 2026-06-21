@@ -268,6 +268,17 @@
   .afg-l{font-size:9.5px;font-weight:700;letter-spacing:.02em;color:var(--mut);margin-top:2px;line-height:1.15}
   .af-games{margin-top:8px}
   .af-sc{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--low);font-size:11px;margin-left:4px}
+  /* betting markets (goals O/U, BTTS, xG projection, corner/card lines) */
+  .mk-r{display:flex;justify-content:space-between;gap:8px;align-items:baseline;font-size:13px;padding:6px 0;border-top:1px dashed var(--line)}
+  .mk-l{color:var(--mut);font-weight:600}
+  .mk-v{font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--txt);white-space:nowrap}
+  .mk-v small{font-family:'Barlow',sans-serif;font-weight:600;font-size:10.5px;color:var(--low);margin-left:4px}
+  .mk-proj{font-size:14px;font-weight:700;color:var(--txt);text-align:center;padding:2px 0 9px;line-height:1.55}
+  .mk-proj b{font-family:'JetBrains Mono',monospace;font-size:17px}
+  .mk-tot{display:block;font-size:11.5px;color:var(--mut);font-weight:600;margin-top:4px}
+  .mk-lean{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;vertical-align:1px}
+  .mk-lean.up{background:rgba(22,217,106,.16);color:var(--pitch);border:1px solid rgba(22,217,106,.42)}
+  .mk-lean.dn{background:rgba(255,170,60,.14);color:#e0a23c;border:1px solid rgba(255,170,60,.42)}
   /* ── tab 2: tables & tournament stats ── */
   .viewtabs{display:flex;gap:8px;margin-bottom:12px}
   .vtab{flex:1;padding:11px;border-radius:14px;border:1px solid var(--line2);background:var(--card);color:var(--mut);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:.12s}
@@ -868,7 +879,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 22 Jun 2026 v18 (Betting page: real API-Football form — shots on target, xG, possession; 1-min live refresh)';
+  var BUILD_TAG='Build 22 Jun 2026 v19 (Betting markets: goals O/U + BTTS + xG projection + corner/card lines, all from real API-Football data)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1900,6 +1911,7 @@
     html+='<div class="st-sec"><h4>Penalty takers</h4>'+penListHtml(team,true)+'</div>';
     html+=suspensionHtml(team);
     html+=afFormBlock(team);
+    html+=afMarketsBlock(team);
     if(n)html+='<div class="st-sec"><h4>Form - last '+n+(n===1?' game':' games')+' <span style="font-weight:600;letter-spacing:0;text-transform:none">(most recent first)</span></h4>'+formRowsHtml(g)+'</div>';
     if(!n){
       html+='<div class="st-sec"><h4>Corners &amp; cards</h4><div class="st-empty">No covered games for this team yet. Averages appear right after their first match.</div></div>';
@@ -2103,7 +2115,7 @@
     for(k in AFSTATS){if(!AFSTATS.hasOwnProperty(k))continue;var e=AFSTATS[k];
       if(!e||!e.stats||!e.final)continue;
       var isH=(e.h===key),isA=(e.a===key);if(!isH&&!isA)continue;
-      rows.push({d:e.date||'',me:isH?e.stats.home:e.stats.away,
+      rows.push({d:e.date||'',me:isH?e.stats.home:e.stats.away,os:isH?e.stats.away:e.stats.home,
         opp:isH?e.aN:e.hN,gf:isH?e.hg:e.ag,ga:isH?e.ag:e.hg});}
     rows.sort(function(x,y){return x.d<y.d?1:(x.d>y.d?-1:0);});
     return rows.slice(0,N||6);
@@ -2139,6 +2151,65 @@
       h+='<div class="ts-row"><div class="ts-top"><span class="v'+(an>bn?' lead':'')+'">'+afFmt(av,k)+'</span><span class="lab">'+AF_LABELS[k]+'</span><span class="v a'+(bn>an?' lead':'')+'">'+afFmt(bv,k)+'</span></div>'
         +'<div class="ts-bar"><i class="bh" style="width:'+ap+'%"></i><i class="ba" style="width:'+(100-ap)+'%"></i></div></div>';}
     h+='<div class="st-note" style="margin:8px 0 0">Real shots on target, xG &amp; possession from API-Football&rsquo;s World Cup feed (last '+ra.length+'/'+rb.length+' games) &mdash; not FIFA estimates.</div></div>';
+    return h;
+  }
+  // ── Betting markets derived from the SAME rolling window (goals O/U 2.5 & BTTS, xG projection,
+  //    corner & card lines). The rolling-window RULE is unchanged — these just read more of each
+  //    game already in the window (incl. the opponent's side, os). ──
+  function afAvgBy(rows,fn){var t=0,c=0,i;for(i=0;i<rows.length;i++){var v=fn(rows[i]);if(v!=null&&!isNaN(v)){t+=v;c++;}}return c?(t/c):null;}
+  function afPct(rows,fn){if(!rows.length)return null;var c=0,i;for(i=0;i<rows.length;i++)if(fn(rows[i]))c++;return Math.round(c/rows.length*100);}
+  function afMarkets(team){
+    var rows=afTeamWindow(team,6);if(!rows.length)return null;
+    function meN(r,k){return afNum(r.me[k]);}function osN(r,k){return r.os?afNum(r.os[k]):null;}
+    return {n:rows.length,
+      gf:afAvgBy(rows,function(r){return r.gf;}), ga:afAvgBy(rows,function(r){return r.ga;}),
+      ov25:afPct(rows,function(r){return (r.gf+r.ga)>=3;}),
+      btts:afPct(rows,function(r){return r.gf>0&&r.ga>0;}),
+      xgf:afAvgBy(rows,function(r){return meN(r,'xg');}), xga:afAvgBy(rows,function(r){return osN(r,'xg');}),
+      corF:afAvgBy(rows,function(r){return meN(r,'cor');}), corA:afAvgBy(rows,function(r){return osN(r,'cor');}),
+      cards:afAvgBy(rows,function(r){return (afNum(r.me.yc)||0)+(afNum(r.me.rc)||0);})};
+  }
+  // referee yellows+reds per game from the baked FIFA-competition history (for the bookings line)
+  function refCardsAvg(mm){
+    if(!calCache)return null;var ref=refForMatch(mm);if(!ref)return null;
+    var rec=REF_STATS[ref.id];if(!rec||!rec.g||!rec.g.length)return null;
+    var g=rec.g,n=g.length,y=0,r=0,i;for(i=0;i<n;i++){y+=g[i].y1+g[i].y2;r+=g[i].r1+g[i].r2;}
+    return {cards:(y+r)/n,n:n,name:ref.name};
+  }
+  function mkLean(yes,no,on){return '<span class="mk-lean '+(on?'up':'dn')+'">'+(on?yes:no)+'</span>';}
+  function mkRow(lab,val,sub){return '<div class="mk-r"><span class="mk-l">'+lab+'</span><span class="mk-v">'+val+(sub?' '+sub:'')+'</span></div>';}
+  // single-team markets card (team view)
+  function afMarketsBlock(team){
+    var M=afMarkets(team);if(!M)return '';
+    var h='<div class="st-sec af-sec"><h4>&#127919; Betting markets &mdash; last '+M.n+(M.n===1?' game':' games')+' <span style="font-weight:600;letter-spacing:0;text-transform:none">(API-Football)</span></h4>';
+    h+=mkRow('Goals for / against',(M.gf!=null?M.gf.toFixed(1):'-')+' / '+(M.ga!=null?M.ga.toFixed(1):'-'),'<small>per game</small>');
+    if(M.ov25!=null)h+=mkRow('Over 2.5 goals',M.ov25+'%','<small>hit '+Math.round(M.ov25/100*M.n)+'/'+M.n+'</small>');
+    if(M.btts!=null)h+=mkRow('Both teams to score',M.btts+'%','');
+    if(M.xgf!=null||M.xga!=null)h+=mkRow('xG for / against',(M.xgf!=null?M.xgf.toFixed(2):'-')+' / '+(M.xga!=null?M.xga.toFixed(2):'-'),'<small>per game</small>');
+    if(M.corF!=null||M.corA!=null)h+=mkRow('Corners for / against',(M.corF!=null?M.corF.toFixed(1):'-')+' / '+(M.corA!=null?M.corA.toFixed(1):'-'),'<small>per game</small>');
+    if(M.cards!=null)h+=mkRow('Cards drawn',M.cards.toFixed(1),'<small>bookings/game</small>');
+    h+='<div class="st-note" style="margin:6px 0 0">Real results &amp; xG from API-Football&rsquo;s World Cup feed over their last '+M.n+' games &mdash; not estimates.</div></div>';
+    return h;
+  }
+  // head-to-head match projection (match view) — needs both teams to have played
+  function afMatchMarkets(a,b,mm){
+    var MA=afMarkets(a),MB=afMarkets(b);
+    if(!MA||!MB)return '';
+    function mid(x,y){if(x==null&&y==null)return null;if(x==null)return y;if(y==null)return x;return (x+y)/2;}
+    var pA=mid(MA.xgf,MB.xga),pB=mid(MB.xgf,MA.xga);
+    if(pA==null)pA=mid(MA.gf,MB.ga);if(pB==null)pB=mid(MB.gf,MA.ga);
+    var tot=(pA!=null&&pB!=null)?(pA+pB):null;
+    var ov=mid(MA.ov25,MB.ov25),btts=mid(MA.btts,MB.btts);
+    var corners=mid((MA.corF!=null&&MA.corA!=null)?(MA.corF+MA.corA):null,(MB.corF!=null&&MB.corA!=null)?(MB.corF+MB.corA):null);
+    var teamCards=(MA.cards!=null&&MB.cards!=null)?(MA.cards+MB.cards):null;
+    var ref=refCardsAvg(mm);
+    var h='<div class="st-sec af-sec"><h4>&#127919; Match markets <span style="font-weight:600;letter-spacing:0;text-transform:none">(projection from form &amp; xG)</span></h4>';
+    if(tot!=null)h+='<div class="mk-proj">'+(F[a]||'')+' '+escapeHtml(a)+' <b>'+pA.toFixed(1)+'</b> &ndash; <b>'+pB.toFixed(1)+'</b> '+escapeHtml(b)+' '+(F[b]||'')+'<span class="mk-tot">projected total '+tot.toFixed(1)+' goals '+mkLean('Over 2.5','Under 2.5',tot>=2.5)+'</span></div>';
+    if(ov!=null)h+=mkRow('Over 2.5 goals',Math.round(ov)+'%',mkLean('Over','Under',ov>=50));
+    if(btts!=null)h+=mkRow('Both teams to score',Math.round(btts)+'%',mkLean('Yes','No',btts>=50));
+    if(corners!=null)h+=mkRow('Projected corners',corners.toFixed(1),'');
+    if(teamCards!=null)h+=mkRow('Projected bookings',teamCards.toFixed(1),ref?'<small>ref '+ref.cards.toFixed(1)+'/g</small>':'');
+    h+='<div class="st-note" style="margin:6px 0 0">Blends each team&rsquo;s attack with the other&rsquo;s defence over their last '+MA.n+'/'+MB.n+' games (xG where available). A guide, not a guarantee &mdash; check team news before staking.</div></div>';
     return h;
   }
   function afLiveRerenderStats(){
@@ -2483,6 +2554,7 @@
       '<div class="col">'+h2hHead(stMatch.a)+formColHtml(stMatch.a)+'</div>'+
       '<div class="col">'+h2hHead(stMatch.b)+formColHtml(stMatch.b)+'</div></div></div>';
     html+=afBarsH2H(stMatch.a,stMatch.b);
+    html+=afMatchMarkets(stMatch.a,stMatch.b,stMatch);
     html+='<div class="st-sec"><h4>Corners - last 4 games <span style="font-weight:600;letter-spacing:0;text-transform:none">(team / match total)</span></h4><div class="h2h">'+
       '<div class="col">'+h2hHead(stMatch.a)+corCol(A)+'</div>'+
       '<div class="col">'+h2hHead(stMatch.b)+corCol(B)+'</div></div>'+
