@@ -284,7 +284,9 @@
   .fb-colwrap{display:flex;flex-direction:column}
   .fb-col-h{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;text-align:center;color:#d3cdf8;height:18px;margin-bottom:4px}
   .fb-col{flex:1;display:flex;flex-direction:column;justify-content:space-around;position:relative;z-index:2;width:150px}
-  .fb-m{height:60px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:9px;padding:5px 7px;margin:4px 0;box-shadow:0 2px 6px rgba(0,0,0,.28);overflow:hidden}
+  .fb-m{height:86px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:9px;padding:5px 7px;margin:4px 0;box-shadow:0 2px 6px rgba(0,0,0,.28);overflow:hidden}
+  .fb-venue{font-size:8.5px;font-weight:700;color:#a79edf;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px;letter-spacing:.2px}
+  .fb-venue .pin{margin-right:1px;opacity:.85}
   .fb-when{font-size:8.5px;font-weight:800;letter-spacing:.2px;color:#bcb4ee;text-align:center;margin-bottom:3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .fb-row{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;line-height:1.25}
   .fb-row .fl{width:17px;flex:0 0 auto;text-align:center}
@@ -297,7 +299,7 @@
   .fb-m.live{border-color:#ff5a5f;box-shadow:0 0 0 1px #ff5a5f}
   .fb-col.r32 .fb-m{border-top:3px solid #7cc3ff}.fb-col.r16 .fb-m{border-top:3px solid #74e0a8}
   .fb-col.qf .fb-m{border-top:3px solid #ffd86b}.fb-col.sf .fb-m{border-top:3px solid #ffb56b}
-  .fb-col.fin .fb-m{border-top:3px solid #ffd24a;background:rgba(255,210,74,.15);height:66px}
+  .fb-col.fin .fb-m{border-top:3px solid #ffd24a;background:rgba(255,210,74,.15);height:92px}
   .fb-lines{position:absolute;top:0;left:0;z-index:1;pointer-events:none;overflow:visible}
   .fb-lines path{stroke:rgba(255,255,255,.30);stroke-width:1.4;fill:none}
   .fb-third{margin:16px auto 0;max-width:230px;text-align:center}
@@ -851,7 +853,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 20 Jun 2026 v15 (Fan Zone bracket tab: flowing R32->Final, mobile + desktop)';
+  var BUILD_TAG='Build 21 Jun 2026 v15.1 (Fan Zone bracket: + stadium location per tie)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
