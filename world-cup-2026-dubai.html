@@ -266,6 +266,44 @@
   #tablesView{display:none}
   body.tab2 #tablesView{display:block}
   body.tab2 .hero,body.tab2 .stickynav,body.tab2 #sch,body.tab2 .fab.fav{display:none}
+  /* ===== Fan Zone bracket (tab 3) ===== */
+  #bracketView{display:none}
+  body.tab3 #bracketView{display:block}
+  body.tab3 .hero,body.tab3 .stickynav,body.tab3 #sch,body.tab3 .fab.fav{display:none}
+  #bracketView{background:linear-gradient(160deg,#241a63,#171034);border-radius:16px;margin:4px 0 24px;padding:16px 10px 20px;color:#fff;overflow:hidden}
+  .fb-head{text-align:center;margin-bottom:12px;padding:0 6px}
+  .fb-title{font-size:19px;font-weight:900;margin:0 0 5px;letter-spacing:.4px}
+  .fb-sub{font-size:12px;color:#c8c1f2;max-width:560px;margin:0 auto;line-height:1.5}
+  .fb-legend{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+  .fb-lg{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;padding:3px 8px;border-radius:20px;color:#171034}
+  .fb-lg.r32{background:#7cc3ff}.fb-lg.r16{background:#74e0a8}.fb-lg.qf{background:#ffd86b}.fb-lg.sf{background:#ffb56b}.fb-lg.fin{background:#ffd24a}
+  .fb-hint{font-size:11px;color:#a99fe6;margin-top:9px;font-weight:700}
+  @media(min-width:920px){.fb-hint{display:none}}
+  .fan-bracket{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:4px 2px 12px}
+  .fb-inner{position:relative;display:flex;gap:30px;min-width:-webkit-max-content;min-width:max-content;align-items:stretch}
+  .fb-colwrap{display:flex;flex-direction:column}
+  .fb-col-h{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;text-align:center;color:#d3cdf8;height:18px;margin-bottom:4px}
+  .fb-col{flex:1;display:flex;flex-direction:column;justify-content:space-around;position:relative;z-index:2;width:150px}
+  .fb-m{height:60px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:9px;padding:5px 7px;margin:4px 0;box-shadow:0 2px 6px rgba(0,0,0,.28);overflow:hidden}
+  .fb-when{font-size:8.5px;font-weight:800;letter-spacing:.2px;color:#bcb4ee;text-align:center;margin-bottom:3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fb-row{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;line-height:1.25}
+  .fb-row .fl{width:17px;flex:0 0 auto;text-align:center}
+  .fb-row .nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fb-row .ph{color:#9b93d6;font-weight:600;font-size:10.5px}
+  .fb-row .sc{font-weight:900;margin-left:auto;padding-left:6px}
+  .fb-row.w .nm{color:#9bffca}.fb-row.w .sc{color:#9bffca}
+  .fb-vs{text-align:center;font-size:8px;color:#867dc4;font-weight:800;line-height:1}
+  .fb-m.me{border-color:#ffd24a;box-shadow:0 0 0 1px #ffd24a,0 2px 8px rgba(0,0,0,.3)}
+  .fb-m.live{border-color:#ff5a5f;box-shadow:0 0 0 1px #ff5a5f}
+  .fb-col.r32 .fb-m{border-top:3px solid #7cc3ff}.fb-col.r16 .fb-m{border-top:3px solid #74e0a8}
+  .fb-col.qf .fb-m{border-top:3px solid #ffd86b}.fb-col.sf .fb-m{border-top:3px solid #ffb56b}
+  .fb-col.fin .fb-m{border-top:3px solid #ffd24a;background:rgba(255,210,74,.15);height:66px}
+  .fb-lines{position:absolute;top:0;left:0;z-index:1;pointer-events:none;overflow:visible}
+  .fb-lines path{stroke:rgba(255,255,255,.30);stroke-width:1.4;fill:none}
+  .fb-third{margin:16px auto 0;max-width:230px;text-align:center}
+  .fb-third .fb-col-h{color:#ffb3a3;height:auto;margin-bottom:6px}
+  .fb-third .fb-m{border-top:3px solid #ff8a6b;background:rgba(255,138,107,.12)}
+  .fb-empty{text-align:center;color:#bdb5ef;padding:30px 14px;font-weight:600}
   .tv-jump{display:flex;gap:7px;margin-bottom:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
   .tv-jump .chip{flex:0 0 auto}
   .tv-h{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;text-transform:uppercase;color:var(--txt);margin:16px 0 6px}
@@ -476,6 +514,7 @@
   <div class="viewtabs">
     <button class="vtab on" id="tabSched" type="button" aria-pressed="true">&#128197; Schedule</button>
     <button class="vtab" id="tabStats" type="button" aria-pressed="false">&#127942; Tables &amp; Players</button>
+    <button class="vtab" id="tabBracket" type="button" aria-pressed="false">&#127937; Bracket</button>
   </div>
 
   <div class="controls c2">
@@ -558,6 +597,18 @@
     <div class="tv-card"><h4>&#129000; Cards &amp; Suspension Watch</h4><div id="tvCards"></div></div>
     <div class="tv-card"><h4>&#128081; Our Pick of Each Match</h4><div id="tvStars"></div><div class="tv-note" style="margin-top:8px">Our own pick, computed from goals, assists and clean sheets - not an official Man-of-the-Match award.</div></div>
   </div>
+</div>
+
+<div id="bracketView">
+  <div class="fb-head">
+    <h2 class="fb-title">&#127942; The Road to the Final</h2>
+    <div class="fb-sub">Every knockout tie from the Round of 32 to the Final &mdash; dates &amp; kick-offs in your selected timezone. Slots fill in automatically as groups finish and winners go through.</div>
+    <div class="fb-legend">
+      <span class="fb-lg r32">Round of 32</span><span class="fb-lg r16">Round of 16</span><span class="fb-lg qf">Quarter-finals</span><span class="fb-lg sf">Semi-finals</span><span class="fb-lg fin">Final</span>
+    </div>
+    <div class="fb-hint">&#128072; Swipe across to follow the bracket</div>
+  </div>
+  <div id="fanBracket" class="fan-bracket"></div>
 </div>
 
 <div class="fabs">
@@ -800,7 +851,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 20 Jun 2026 v14.2 (best-thirds: provisional banner + games-in-hand + GF column)';
+  var BUILD_TAG='Build 20 Jun 2026 v15 (Fan Zone bracket tab: flowing R32->Final, mobile + desktop)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1275,6 +1326,10 @@
       var br=document.getElementById('tvBracket'),sl=br?br.scrollLeft:0;
       renderTablesView();renderBracket();
       if(br){var nb=document.getElementById('tvBracket');if(nb)nb.scrollLeft=sl;}
+    }else if(document.body.classList.contains('tab3')){
+      var fb=document.getElementById('fanBracket'),fx=fb?fb.scrollLeft:0;
+      renderFanBracket();
+      var nf=document.getElementById('fanBracket');if(nf)nf.scrollLeft=fx;
     }
   }
 
@@ -2697,21 +2752,88 @@
     }
     el.innerHTML=html||'<div class="tv-empty">Knockout schedule not published yet.</div>';
   }
-  var tabScroll={1:0,2:0};
-  function setTab(n){
-    var two=(n===2),was=document.body.classList.contains('tab2')?2:1;
-    if(was!==n)tabScroll[was]=window.pageYOffset||0;
-    if(two)document.body.classList.add('tab2');else document.body.classList.remove('tab2');
-    var ts=document.getElementById('tabSched'),tt=document.getElementById('tabStats');
-    ts.classList.toggle('on',!two);tt.classList.toggle('on',two);
-    ts.setAttribute('aria-pressed',two?'false':'true');tt.setAttribute('aria-pressed',two?'true':'false');
-    save('wc26_tab',two?'2':'1');
-    if(two){
-      renderTablesView();
-      renderBracket();
-      renderPlayerStats(null,0);
-      ensurePstats(function(warn,finCount){renderPlayerStats(warn,finCount);renderBracket();});
+  // ── Fan Zone flowing bracket (tab 3) ──
+  function fbFeedNums(am){var r=[],a=/^W(\d+)$/.exec(am.PlaceHolderA||''),b=/^W(\d+)$/.exec(am.PlaceHolderB||'');if(a)r.push(a[1]);if(b)r.push(b[1]);return r;}
+  function fbMatchBox(am,key){
+    var hn=(am.Home&&am.Home.TeamName)?mapTeam(am.Home.TeamName[0].Description):null;
+    var an=(am.Away&&am.Away.TeamName)?mapTeam(am.Away.TeamName[0].Description):null;
+    var hs=(am.Home&&am.Home.Score!=null)?am.Home.Score:null,as2=(am.Away&&am.Away.Score!=null)?am.Away.Score:null;
+    var done=am.MatchStatus===0,live=am.MatchStatus===3,hp=am.HomeTeamPenaltyScore,ap=am.AwayTeamPenaltyScore;
+    var hW=done&&hs!=null&&as2!=null&&hs>as2,aW=done&&hs!=null&&as2!=null&&as2>hs;
+    if(done&&hs===as2&&hp!=null&&ap!=null&&(hp>0||ap>0)){hW=hp>ap;aW=ap>hp;}
+    var o=partsInZone(new Date(am.Date),TZ());
+    var when=escapeHtml(fmtShort(dayKey(o)))+' &middot; '+escapeHtml(fmtClock(o));
+    function side(nm,ph,sc,w){
+      return '<div class="fb-row'+(w?' w':'')+'">'+
+        (nm?'<span class="fl">'+(F[nm]||'')+'</span><span class="nm">'+escapeHtml(nm)+'</span>'
+           :'<span class="fl"></span><span class="nm ph">'+escapeHtml(phPretty(ph))+'</span>')+
+        (sc!=null?'<span class="sc">'+sc+'</span>':'')+'</div>';
     }
+    var feed=fbFeedNums(am);
+    var cls='fb-m'+(live?' live':'')+((hn===FOLLOW||an===FOLLOW)?' me':'');
+    return '<div class="'+cls+'" data-num="'+am.MatchNumber+'"'+(feed.length?' data-feeders="'+feed.join(',')+'"':'')+'>'+
+      '<div class="fb-when">'+when+'</div>'+side(hn,am.PlaceHolderA,hs,hW)+'<div class="fb-vs">v</div>'+side(an,am.PlaceHolderB,as2,aW)+'</div>';
+  }
+  function fbDrawLines(){
+    var inner=document.getElementById('fbInner');if(!inner)return;
+    var svg=inner.querySelector('.fb-lines');if(!svg)return;
+    var ir=inner.getBoundingClientRect(),W=inner.scrollWidth,H=inner.scrollHeight;
+    svg.setAttribute('width',W);svg.setAttribute('height',H);svg.setAttribute('viewBox','0 0 '+W+' '+H);
+    var boxes=inner.querySelectorAll('.fb-m[data-num]'),byNum={},i;
+    for(i=0;i<boxes.length;i++)byNum[boxes[i].getAttribute('data-num')]=boxes[i];
+    function pt(elm,right){var r=elm.getBoundingClientRect();return {x:(right?r.right:r.left)-ir.left,y:r.top-ir.top+r.height/2};}
+    var d='';
+    for(i=0;i<boxes.length;i++){var b=boxes[i],fd=b.getAttribute('data-feeders');if(!fd)continue;
+      var t=pt(b,false),mx=t.x-15,fs=fd.split(',');
+      for(var k=0;k<fs.length;k++){var fb=byNum[fs[k]];if(!fb)continue;var s=pt(fb,true);
+        d+='M'+s.x.toFixed(1)+' '+s.y.toFixed(1)+'H'+mx.toFixed(1)+'V'+t.y.toFixed(1)+'H'+t.x.toFixed(1);}
+    }
+    svg.innerHTML=d?'<path d="'+d+'"/>':'';
+  }
+  function renderFanBracket(){
+    var host=document.getElementById('fanBracket');if(!host)return;
+    if(!calCache){host.innerHTML='<div class="fb-empty">Bracket loads with the FIFA feed&hellip;</div>';return;}
+    var rs=calCache.Results||[],SK={'Round of 32':'r32','Round of 16':'r16','Quarter-final':'qf','Semi-final':'sf','Final':'fin','Play-off for third place':'third'};
+    var byNum={},cols={r32:[],r16:[],qf:[],sf:[],fin:[],third:[]},i;
+    for(i=0;i<rs.length;i++){var am=rs[i],sn=(am.StageName&&am.StageName[0]&&am.StageName[0].Description)||'',k=SK[sn];if(!k)continue;byNum[am.MatchNumber]=am;cols[k].push(am);}
+    if(!cols.fin.length&&!cols.r32.length){host.innerHTML='<div class="fb-empty">The knockout bracket appears here as soon as FIFA confirm it.</div>';return;}
+    // tree order: DFS from the Final down to the Round-of-32 leaves
+    var leaf=[],seen={};
+    function dfs(num){var m=byNum[num];if(!m)return;var f=fbFeedNums(m);if(f.length){for(var j=0;j<f.length;j++)dfs(f[j]);}else if(!seen[num]){seen[num]=1;leaf.push(num);}}
+    if(cols.fin.length)dfs(cols.fin[0].MatchNumber);
+    var r32d=cols.r32.slice().sort(function(x,y){return x.Date<y.Date?-1:1;});
+    for(i=0;i<r32d.length;i++){var nn=r32d[i].MatchNumber;if(!seen[nn]){seen[nn]=1;leaf.push(nn);}}
+    var leafIdx={};for(i=0;i<leaf.length;i++)leafIdx[leaf[i]]=i;
+    var slot={};
+    function getSlot(num){if(slot[num]!=null)return slot[num];var m=byNum[num];if(!m)return 0;var f=fbFeedNums(m);if(f.length){var s=0;for(var j=0;j<f.length;j++)s+=getSlot(f[j]);slot[num]=s/f.length;}else slot[num]=(leafIdx[num]!=null?leafIdx[num]:0);return slot[num];}
+    var order=[['r32','Round of 32'],['r16','Round of 16'],['qf','Quarter-finals'],['sf','Semi-finals'],['fin','Final']];
+    var html='<div class="fb-inner" id="fbInner"><svg class="fb-lines"></svg>';
+    for(var c=0;c<order.length;c++){var key=order[c][0],arr=cols[key];if(!arr.length)continue;
+      arr.sort(function(x,y){return getSlot(x.MatchNumber)-getSlot(y.MatchNumber);});
+      html+='<div class="fb-colwrap"><div class="fb-col-h">'+order[c][1]+'</div><div class="fb-col '+key+'">';
+      for(i=0;i<arr.length;i++)html+=fbMatchBox(arr[i],key);
+      html+='</div></div>';
+    }
+    html+='</div>';
+    if(cols.third.length)html+='<div class="fb-third"><div class="fb-col-h">Third-Place Play-off</div>'+fbMatchBox(cols.third[0],'third')+'</div>';
+    host.innerHTML=html;
+    setTimeout(fbDrawLines,30);
+  }
+
+  var tabScroll={1:0,2:0,3:0};
+  function setTab(n){
+    var was=document.body.classList.contains('tab2')?2:(document.body.classList.contains('tab3')?3:1);
+    if(was!==n)tabScroll[was]=window.pageYOffset||0;
+    document.body.classList.remove('tab2');document.body.classList.remove('tab3');
+    if(n===2)document.body.classList.add('tab2');else if(n===3)document.body.classList.add('tab3');
+    var ts=document.getElementById('tabSched'),tt=document.getElementById('tabStats'),tb=document.getElementById('tabBracket');
+    ts.classList.toggle('on',n===1);tt.classList.toggle('on',n===2);tb.classList.toggle('on',n===3);
+    ts.setAttribute('aria-pressed',n===1?'true':'false');tt.setAttribute('aria-pressed',n===2?'true':'false');tb.setAttribute('aria-pressed',n===3?'true':'false');
+    save('wc26_tab',String(n));
+    if(n===2){
+      renderTablesView();renderBracket();renderPlayerStats(null,0);
+      ensurePstats(function(warn,finCount){renderPlayerStats(warn,finCount);renderBracket();});
+    }else if(n===3){renderFanBracket();}
     if(was!==n)setTimeout(function(){window.scrollTo({top:tabScroll[n]||0});},0);
   }
 
@@ -2779,7 +2901,7 @@
   document.getElementById('fabFav').addEventListener('click',function(){var el=document.querySelector('.match.fav')||document.querySelector('.match.poss');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});});
   document.getElementById('fabTop').addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'});});
   document.getElementById('fabLive').addEventListener('click',function(){
-    if(document.body.classList.contains('tab2'))document.getElementById('tabSched').click();
+    if(document.body.classList.contains('tab2')||document.body.classList.contains('tab3'))document.getElementById('tabSched').click();
     var n=this.getAttribute('data-n'),el=n&&document.querySelector('.match[data-n="'+n+'"]');
     if(el)el.scrollIntoView({behavior:'smooth',block:'center'});});
 
@@ -2828,6 +2950,8 @@
   // View tabs
   document.getElementById('tabSched').addEventListener('click',function(){setTab(1);});
   document.getElementById('tabStats').addEventListener('click',function(){setTab(2);});
+  document.getElementById('tabBracket').addEventListener('click',function(){setTab(3);});
+  window.addEventListener('resize',function(){if(document.body.classList.contains('tab3'))fbDrawLines();});
 
   // ── INIT ──
   applyTheme(load('wc26_theme')==='light'?'light':'dark');
@@ -2860,7 +2984,7 @@
   refresh();
   startPolling();
   if(firstVisit)openPicker();
-  if(load('wc26_tab')==='2')setTab(2);
+  var _savedTab=load('wc26_tab');if(_savedTab==='2')setTab(2);else if(_savedTab==='3')setTab(3);
   setInterval(function(){tickHero();updateFreshPill();},1000);
   setInterval(liveTick,60000);
 
