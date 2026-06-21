@@ -2754,6 +2754,7 @@
   }
   // ── Fan Zone flowing bracket (tab 3) ──
   function fbFeedNums(am){var r=[],a=/^W(\d+)$/.exec(am.PlaceHolderA||''),b=/^W(\d+)$/.exec(am.PlaceHolderB||'');if(a)r.push(a[1]);if(b)r.push(b[1]);return r;}
+  function fbVenue(am){var s=am.Stadium&&am.Stadium.Name&&am.Stadium.Name[0]&&am.Stadium.Name[0].Description;return s?String(s).replace(/\s+Stadium$/i,''):'';}
   function fbMatchBox(am,key){
     var hn=(am.Home&&am.Home.TeamName)?mapTeam(am.Home.TeamName[0].Description):null;
     var an=(am.Away&&am.Away.TeamName)?mapTeam(am.Away.TeamName[0].Description):null;
@@ -2769,10 +2770,11 @@
            :'<span class="fl"></span><span class="nm ph">'+escapeHtml(phPretty(ph))+'</span>')+
         (sc!=null?'<span class="sc">'+sc+'</span>':'')+'</div>';
     }
-    var feed=fbFeedNums(am);
+    var feed=fbFeedNums(am),venue=fbVenue(am);
     var cls='fb-m'+(live?' live':'')+((hn===FOLLOW||an===FOLLOW)?' me':'');
     return '<div class="'+cls+'" data-num="'+am.MatchNumber+'"'+(feed.length?' data-feeders="'+feed.join(',')+'"':'')+'>'+
-      '<div class="fb-when">'+when+'</div>'+side(hn,am.PlaceHolderA,hs,hW)+'<div class="fb-vs">v</div>'+side(an,am.PlaceHolderB,as2,aW)+'</div>';
+      '<div class="fb-when">'+when+'</div>'+side(hn,am.PlaceHolderA,hs,hW)+'<div class="fb-vs">v</div>'+side(an,am.PlaceHolderB,as2,aW)+
+      '<div class="fb-venue">'+(venue?'<span class="pin">&#128205;</span>'+escapeHtml(venue):'')+'</div></div>';
   }
   function fbDrawLines(){
     var inner=document.getElementById('fbInner');if(!inner||!inner.querySelector('.fb-m'))return;
