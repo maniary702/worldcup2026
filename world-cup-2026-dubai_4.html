@@ -287,6 +287,7 @@
   .fb-m{height:86px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:9px;padding:5px 7px;margin:4px 0;box-shadow:0 2px 6px rgba(0,0,0,.28);overflow:hidden}
   .fb-venue{font-size:8.5px;font-weight:700;color:#a79edf;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px;letter-spacing:.2px}
   .fb-venue .pin{margin-right:1px;opacity:.85}
+  .fb-plus1{font-size:7px;font-weight:800;color:#ffd24a;margin-left:2px;position:relative;top:-3px}
   .fb-when{font-size:8.5px;font-weight:800;letter-spacing:.2px;color:#bcb4ee;text-align:center;margin-bottom:3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .fb-row{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;line-height:1.25}
   .fb-row .fl{width:17px;flex:0 0 auto;text-align:center}
@@ -853,7 +854,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 21 Jun 2026 v15.1 (Fan Zone bracket: + stadium location per tie)';
+  var BUILD_TAG='Build 21 Jun 2026 v15.2 (bracket: AM kick-offs shown under previous night +1)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -2757,6 +2758,7 @@
   // ── Fan Zone flowing bracket (tab 3) ──
   function fbFeedNums(am){var r=[],a=/^W(\d+)$/.exec(am.PlaceHolderA||''),b=/^W(\d+)$/.exec(am.PlaceHolderB||'');if(a)r.push(a[1]);if(b)r.push(b[1]);return r;}
   function fbVenue(am){var s=am.Stadium&&am.Stadium.Name&&am.Stadium.Name[0]&&am.Stadium.Name[0].Description;return s?String(s).replace(/\s+Stadium$/i,''):'';}
+  function fbPrevKey(key){var p=key.split('-'),d=new Date(Date.UTC(+p[0],+p[1]-1,+p[2]));d.setUTCDate(d.getUTCDate()-1);var m=d.getUTCMonth()+1,da=d.getUTCDate();return d.getUTCFullYear()+'-'+(m<10?'0':'')+m+'-'+(da<10?'0':'')+da;}
   function fbMatchBox(am,key){
     var hn=(am.Home&&am.Home.TeamName)?mapTeam(am.Home.TeamName[0].Description):null;
     var an=(am.Away&&am.Away.TeamName)?mapTeam(am.Away.TeamName[0].Description):null;
@@ -2764,8 +2766,12 @@
     var done=am.MatchStatus===0,live=am.MatchStatus===3,hp=am.HomeTeamPenaltyScore,ap=am.AwayTeamPenaltyScore;
     var hW=done&&hs!=null&&as2!=null&&hs>as2,aW=done&&hs!=null&&as2!=null&&as2>hs;
     if(done&&hs===as2&&hp!=null&&ap!=null&&(hp>0||ap>0)){hW=hp>ap;aW=ap>hp;}
-    var o=am.Date?partsInZone(new Date(am.Date),TZ()):null;
-    var when=o?(escapeHtml(fmtShort(dayKey(o)))+' &middot; '+escapeHtml(fmtClock(o))):'TBD';
+    var o=am.Date?partsInZone(new Date(am.Date),TZ()):null,when='TBD';
+    if(o){var dk=dayKey(o),p1='';
+      // airline-style: a wee-hours kick-off (before 6am local) is really the PREVIOUS evening's
+      // game, so label it under that day with a "+1" note (e.g. 1am Tue shows as Mon ... +1).
+      if(hourOf(o)<6){dk=fbPrevKey(dk);p1='<span class="fb-plus1">+1</span>';}
+      when=escapeHtml(fmtShort(dk))+' &middot; '+escapeHtml(fmtClock(o))+p1;}
     function side(nm,ph,sc,w){
       return '<div class="fb-row'+(w?' w':'')+'">'+
         (nm?'<span class="fl">'+(F[nm]||'')+'</span><span class="nm">'+escapeHtml(nm)+'</span>'
