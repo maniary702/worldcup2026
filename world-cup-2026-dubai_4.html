@@ -350,6 +350,9 @@
   .md-tab{flex:1;padding:10px;border-radius:11px;border:1px solid var(--line2);background:var(--card2);color:var(--mut);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;font-family:inherit}
   .md-tab.on{border-color:var(--pitch);color:var(--txt);background:linear-gradient(135deg,rgba(22,217,106,.12),transparent 70%),var(--card)}
   .ts-h{display:flex;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);margin-bottom:10px}
+  .af-mid{font-size:10px;font-weight:800;color:#f6c945;text-transform:none;letter-spacing:0;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;padding:0 6px}
+  .af-mid .tag{display:inline-block;font-size:9.5px;padding:1px 6px;border-radius:6px;background:var(--card2);color:var(--mut);font-weight:800}
+  .af-mid .tag.live{background:var(--live);color:#fff}
   .ts-row{margin-bottom:11px}
   .ts-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
   .ts-top .v{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:14px;color:var(--low);min-width:26px}
@@ -854,7 +857,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 21 Jun 2026 v15.4 (brackets now follow the timezone selector)';
+  var BUILD_TAG='Build 22 Jun 2026 v16 (premium live match stats via API-Football: possession, SoT, xG)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -935,7 +938,7 @@
   var FIFA_LIVE=FIFA_API+'live/football/now?language=en';
 
   // Final scores baked in at build time, so played games show even if the feed is down
-  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1],13:[0,0],14:[1,1],15:[1,1],16:[2,2],17:[3,1],18:[1,4],19:[3,0],20:[3,1],21:[1,1],22:[4,2],23:[1,0],24:[1,3],25:[1,1],26:[4,1],27:[6,0],28:[1,0],29:[2,0],30:[0,1],31:[3,0],32:[0,1],33:[5,1],34:[2,1],35:[0,0],36:[0,4]};
+  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1],13:[0,0],14:[1,1],15:[1,1],16:[2,2],17:[3,1],18:[1,4],19:[3,0],20:[3,1],21:[1,1],22:[4,2],23:[1,0],24:[1,3],25:[1,1],26:[4,1],27:[6,0],28:[1,0],29:[2,0],30:[0,1],31:[3,0],32:[0,1],33:[5,1],34:[2,1],35:[0,0],36:[0,4],37:[4,0]};
   function applySeed(){
     for(var n in SEED){
       if(!scores[n])scores[n]={ga:SEED[n][0],gb:SEED[n][1],status:'FT',source:'api',minute:null};
@@ -1338,6 +1341,7 @@
     var active=shouldPoll()||!!liveMatch();
     updateProgress();tickHero();updateFreshPill();updateLiveFab();
     if(!active){idleTicks++;if(idleTicks%5)return;}else idleTicks=0;
+    if(active)afFetch();
     paintChipCounts();render();updateFabCode();renderActiveView();
   }
 
@@ -1952,14 +1956,14 @@
         document.getElementById('mdEvents').innerHTML='';
         document.getElementById('mdLineupPane').innerHTML='<div class="st-load">Loading…</div>';
       }
-      loadFull();
+      loadFull();afFetch();
       // load per-player WC stats so the line-up can show each player's shots on target
       ensurePstats(function(){if(mdMatch===mm&&document.getElementById('mdOverlay').classList.contains('open'))loadFull();});
       // refresh until full time: catches line-ups publishing pre-match AND live score/events
       if(st.k!=='ft')mdTimer=setInterval(function(){
         if(mdMatch!==mm||!document.getElementById('mdOverlay').classList.contains('open')){clearInterval(mdTimer);mdTimer=null;return;}
         var stNow=mdUpdateHeader(mm);
-        loadFull();
+        loadFull();afFetch();
         if(stNow.k==='ft'){clearInterval(mdTimer);mdTimer=null;}
       },60000);
     }else mdLiveEl.style.display='none';
@@ -2044,7 +2048,40 @@
       matchFullCache[key]={at:Date.now(),data:data,wasLive:live};cb(data);
     }).catch(function(e){cb(null);});
   }
+  // ── API-Football premium live data (lineups + in-game stats), baked server-side into
+  // afstats.json and fetched SAME-ORIGIN here (no API key in the page). ──
+  var AFSTATS={},mdLastData=null;
+  function afCanon(s){s=(s||'').toLowerCase()
+      .replace(/ç/g,'c').replace(/ü/g,'u').replace(/[éèê]/g,'e').replace(/[íî]/g,'i').replace(/[áàâãä]/g,'a').replace(/[óôõ]/g,'o').replace(/ñ/g,'n').replace(/[^a-z]/g,'');
+    var A={capeverdeislands:'capeverde',capeverde:'capeverde',congodr:'drcongo',drcongo:'drcongo',czechia:'czech',czechrepublic:'czech',turkiye:'turkey',turkey:'turkey'};
+    return A[s]||s;}
+  function afEntry(hN,aN){return AFSTATS[[afCanon(hN),afCanon(aN)].sort().join('__')]||null;}
+  function afFor(hN,aN){var e=afEntry(hN,aN);if(!e||!e.stats)return null;var sh=afCanon(hN)===e.h;
+    return {st:e.st,min:e.min,home:sh?e.stats.home:e.stats.away,away:sh?e.stats.away:e.stats.home};}
+  function afKeys(o){for(var k in o)if(o.hasOwnProperty(k))return true;return false;}
+  function afFetch(){try{var x=new XMLHttpRequest();x.open('GET','afstats.json?cb='+Date.now(),true);
+    x.onreadystatechange=function(){if(x.readyState!==4)return;
+      if(x.status>=200&&x.status<300){try{var j=JSON.parse(x.responseText);AFSTATS=j.m||{};}catch(e){}}
+      if(mdLastData&&document.getElementById('mdOverlay').classList.contains('open'))document.getElementById('mdTeamStats').innerHTML=renderTeamStats(mdLastData);
+    };x.send();}catch(e){}}
+  function renderAfStats(d,af){
+    var H=af.home,A=af.away;
+    function n(x){var v=parseFloat(x);return isNaN(v)?0:v;}
+    var rows=[['Possession %','poss'],['Shots','sh'],['Shots on target','sot'],['Expected goals (xG)','xg'],
+      ['Corners','cor'],['Fouls','fouls'],['Offsides','off'],['Saves','saves'],['Pass accuracy %','passp']];
+    var liveTag=(af.st==='1H'||af.st==='2H'||af.st==='HT'||af.st==='ET'||af.st==='BT'||af.st==='P')?
+      '<span class="tag live">'+escapeHtml(af.min?af.min+"'":'Live')+'</span>':'<span class="tag">FT</span>';
+    var h='<div class="ts-h"><span>'+(F[d.hN]||'')+' '+escapeHtml(d.hN)+'</span><span class="af-mid">&#9889; Premium '+liveTag+'</span><span>'+escapeHtml(d.aN)+' '+(F[d.aN]||'')+'</span></div>';
+    for(var i=0;i<rows.length;i++){var k=rows[i][1],hv=H[k],av=A[k];if(hv==null&&av==null)continue;
+      var hn=n(hv),an=n(av),tot=hn+an,hp=tot?Math.round(hn/tot*100):50;
+      h+='<div class="ts-row"><div class="ts-top"><span class="v'+(hn>an?' lead':'')+'">'+escapeHtml(hv==null?'-':String(hv))+'</span><span class="lab">'+rows[i][0]+'</span><span class="v a'+(an>hn?' lead':'')+'">'+escapeHtml(av==null?'-':String(av))+'</span></div>'
+        +'<div class="ts-bar"><i class="bh" style="width:'+hp+'%"></i><i class="ba" style="width:'+(100-hp)+'%"></i></div></div>';}
+    h+='<div class="st-note" style="margin:8px 0 0">Live in-game stats via API-Football &mdash; possession, shots on target, xG &amp; more.</div>';
+    return h;
+  }
   function renderTeamStats(d){
+    var af=afFor(d.hN,d.aN);
+    if(af&&af.home&&af.away&&(afKeys(af.home)||afKeys(af.away)))return renderAfStats(d,af);
     var rows=[['Shots','sh'],['Corners','co'],['Fouls','fo'],['Yellow cards','y'],['Red cards','r'],['Subs','su']];
     var h='<div class="ts-h"><span>'+(F[d.hN]||'')+' '+escapeHtml(d.hN)+'</span><span>'+escapeHtml(d.aN)+' '+(F[d.aN]||'')+'</span></div>';
     for(var i=0;i<rows.length;i++){var hv=d.st.h[rows[i][1]],av=d.st.a[rows[i][1]],tot=hv+av,hp=tot?Math.round(hv/tot*100):50;
@@ -2094,6 +2131,7 @@
   }
   function renderMatchFull(d){
     if(!d){document.getElementById('mdLive').style.display='none';return;}
+    mdLastData=d;
     document.getElementById('mdLive').style.display='';
     // keep the headline score live straight from the match feed (most authoritative)
     if(d.hs!=null&&d.as!=null){
@@ -2998,6 +3036,7 @@
   updateProgress();
   refresh();
   startPolling();
+  afFetch();
   if(firstVisit)openPicker();
   var _savedTab=load('wc26_tab');if(_savedTab==='2')setTab(2);else if(_savedTab==='3')setTab(3);
   setInterval(function(){tickHero();updateFreshPill();},1000);
