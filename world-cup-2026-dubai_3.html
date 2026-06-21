@@ -258,6 +258,16 @@
   .lu-on{background:rgba(22,217,106,.14);color:var(--pitch);border:1px solid rgba(22,217,106,.45)}
   .lu-bn{background:transparent;color:var(--low);border:1px solid var(--line2)}
   .lu-note{font-size:11px;color:var(--pitch);font-weight:700;margin:0 0 10px;text-align:center}
+  /* premium (API-Football) betting blocks */
+  .af-sec{background:linear-gradient(150deg,rgba(246,201,69,.08),transparent 62%),var(--card2);border-color:var(--ko-border)}
+  .af-sec h4{color:#e9c45a}
+  .afg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:2px 0 4px}
+  @media(max-width:460px){.afg{grid-template-columns:repeat(3,1fr)}}
+  .afg-c{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px 6px;text-align:center}
+  .afg-v{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:17px;color:var(--txt)}
+  .afg-l{font-size:9.5px;font-weight:700;letter-spacing:.02em;color:var(--mut);margin-top:2px;line-height:1.15}
+  .af-games{margin-top:8px}
+  .af-sc{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--low);font-size:11px;margin-left:4px}
   /* ── tab 2: tables & tournament stats ── */
   .viewtabs{display:flex;gap:8px;margin-bottom:12px}
   .vtab{flex:1;padding:11px;border-radius:14px;border:1px solid var(--line2);background:var(--card);color:var(--mut);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:.12s}
@@ -858,7 +868,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 22 Jun 2026 v17 (API-Football: premium live stats + confirmed line-ups & coaches)';
+  var BUILD_TAG='Build 22 Jun 2026 v18 (Betting page: real API-Football form — shots on target, xG, possession; 1-min live refresh)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1701,7 +1711,7 @@
     return win;
   }
 
-  var stViewTeam=null;
+  var stViewTeam=null,stStatsWarn=null;
   function avg1(t,n){return (Math.round(t/n*10)/10).toFixed(1);}
   function stRows(g,kind){
     var h='';
@@ -1869,6 +1879,7 @@
     return h;
   }
   function renderStats(warn){
+    stStatsWarn=warn;
     var team=stViewTeam,body=document.getElementById('stBody');
     var g=teamWindow(team),n=g.length,c=0,y=0,r=0,tcSum=0,tcN=0;
     for(var i=0;i<n;i++){c+=g[i].c;y+=g[i].y;r+=g[i].r;if(g[i].tc!=null){tcSum+=g[i].tc;tcN++;}}
@@ -1888,6 +1899,7 @@
     }
     html+='<div class="st-sec"><h4>Penalty takers</h4>'+penListHtml(team,true)+'</div>';
     html+=suspensionHtml(team);
+    html+=afFormBlock(team);
     if(n)html+='<div class="st-sec"><h4>Form - last '+n+(n===1?' game':' games')+' <span style="font-weight:600;letter-spacing:0;text-transform:none">(most recent first)</span></h4>'+formRowsHtml(g)+'</div>';
     if(!n){
       html+='<div class="st-sec"><h4>Corners &amp; cards</h4><div class="st-empty">No covered games for this team yet. Averages appear right after their first match.</div></div>';
@@ -1901,8 +1913,8 @@
           +'<div class="st-big"><span class="rc"></span>'+avg1(r,n)+'<small>reds per game</small></div>'
           +stRows(g,'yr')+'</div>';
     }
-    html+='<div class="st-sec"><h4>Shots on target <span style="font-weight:600;letter-spacing:0;text-transform:none">(World Cup games, est.)</span></h4>'+sotRowsHtml(team)
-      +'<div class="st-note" style="margin:6px 0 0">Estimated from FIFA’s shot map for World Cup matches - close to FotMob but not the official line.</div></div>';
+    if(!afHasForm(team))html+='<div class="st-sec"><h4>Shots on target <span style="font-weight:600;letter-spacing:0;text-transform:none">(World Cup games, est.)</span></h4>'+sotRowsHtml(team)
+      +'<div class="st-note" style="margin:6px 0 0">Estimated from FIFA’s shot map - shown until API-Football has a measured game for this team.</div></div>';
     body.innerHTML=html;
   }
   function buildStatsSelect(){
@@ -2080,10 +2092,66 @@
       var t=0,c=Math.min(4,a.length);for(var i=0;i<c;i++)t+=a[i].sot;if(t>0)m[nm]=t;}
     return m;
   }
+  // ── Real per-team form from API-Football finished WC games — powers the betting page with
+  //    genuine numbers (shots on target, xG, possession, …) instead of FIFA shot-map estimates. ──
+  var AF_LABELS={poss:'Possession',sh:'Shots',sot:'Shots on target',xg:'Expected goals (xG)',
+    cor:'Corners',fouls:'Fouls',off:'Offsides',saves:'Saves',passp:'Pass accuracy'};
+  function afNum(v){if(v==null||v==='')return null;var f=parseFloat(v);return isNaN(f)?null:f;}
+  // last <=N completed WC games for a team, newest first, with that team's own side of the stats
+  function afTeamWindow(team,N){
+    var key=afCanon(team),rows=[],k;
+    for(k in AFSTATS){if(!AFSTATS.hasOwnProperty(k))continue;var e=AFSTATS[k];
+      if(!e||!e.stats||!e.final)continue;
+      var isH=(e.h===key),isA=(e.a===key);if(!isH&&!isA)continue;
+      rows.push({d:e.date||'',me:isH?e.stats.home:e.stats.away,
+        opp:isH?e.aN:e.hN,gf:isH?e.hg:e.ag,ga:isH?e.ag:e.hg});}
+    rows.sort(function(x,y){return x.d<y.d?1:(x.d>y.d?-1:0);});
+    return rows.slice(0,N||6);
+  }
+  function afWinAvg(rows,k){var t=0,c=0,i;for(i=0;i<rows.length;i++){var v=afNum(rows[i].me[k]);if(v!=null){t+=v;c++;}}return c?(t/c):null;}
+  function afFmt(v,k){if(v==null)return '-';if(k==='xg')return (Math.round(v*100)/100).toFixed(2);
+    if(k==='poss'||k==='passp')return Math.round(v)+'%';return (Math.round(v*10)/10).toFixed(1);}
+  function afHasForm(team){return !!(F[team]&&afTeamWindow(team,6).length);}
+  // single-team premium block (team view)
+  function afFormBlock(team){
+    var rows=afTeamWindow(team,6);if(!rows.length)return '';
+    var order=['sot','xg','poss','sh','saves','fouls','off','passp'],i;
+    var h='<div class="st-sec af-sec"><h4>&#9889; Live stats &mdash; last '+rows.length+(rows.length===1?' game':' games')+' <span style="font-weight:600;letter-spacing:0;text-transform:none">(API-Football)</span></h4>';
+    h+='<div class="afg">';
+    for(i=0;i<order.length;i++){var k=order[i],a=afWinAvg(rows,k);if(a==null)continue;
+      h+='<div class="afg-c"><div class="afg-v">'+afFmt(a,k)+'</div><div class="afg-l">'+AF_LABELS[k]+'</div></div>';}
+    h+='</div><div class="af-games">';
+    for(i=0;i<rows.length;i++){var r=rows[i],s=afNum(r.me.sot),x=afNum(r.me.xg);
+      h+='<div class="st-row"><span>v <b>'+escapeHtml(r.opp)+'</b>'+(r.gf!=null?' <span class="af-sc">'+r.gf+'-'+r.ga+'</span>':'')+'</span><span class="num">'+(s!=null?s+' on target':'')+(x!=null?(s!=null?' &middot; ':'')+'xG '+afFmt(x,'xg'):'')+'</span></div>';}
+    h+='</div><div class="st-note" style="margin:6px 0 0">Real in-game numbers from API-Football&rsquo;s World Cup feed &mdash; shots on target are measured, not estimated.</div></div>';
+    return h;
+  }
+  // head-to-head premium comparison (match view) — reuses the in-game stat-bar UI on AVERAGES
+  function afBarsH2H(ta,tb){
+    var ra=afTeamWindow(ta,6),rb=afTeamWindow(tb,6);
+    if(!ra.length&&!rb.length)return '';
+    var order=['sot','xg','poss','sh','fouls','off','passp'],i;
+    var h='<div class="st-sec af-sec"><h4>&#9889; Live form &mdash; API-Football <span style="font-weight:600;letter-spacing:0;text-transform:none">(average per game)</span></h4>';
+    h+='<div class="ts-h"><span>'+(F[ta]||'')+' '+escapeHtml(ta)+'</span><span class="af-mid">&#9889; Premium</span><span>'+escapeHtml(tb)+' '+(F[tb]||'')+'</span></div>';
+    for(i=0;i<order.length;i++){var k=order[i],av=afWinAvg(ra,k),bv=afWinAvg(rb,k);
+      if(av==null&&bv==null)continue;
+      var an=(av==null?0:av),bn=(bv==null?0:bv),tot=an+bn,ap=tot?Math.round(an/tot*100):50;
+      h+='<div class="ts-row"><div class="ts-top"><span class="v'+(an>bn?' lead':'')+'">'+afFmt(av,k)+'</span><span class="lab">'+AF_LABELS[k]+'</span><span class="v a'+(bn>an?' lead':'')+'">'+afFmt(bv,k)+'</span></div>'
+        +'<div class="ts-bar"><i class="bh" style="width:'+ap+'%"></i><i class="ba" style="width:'+(100-ap)+'%"></i></div></div>';}
+    h+='<div class="st-note" style="margin:8px 0 0">Real shots on target, xG &amp; possession from API-Football&rsquo;s World Cup feed (last '+ra.length+'/'+rb.length+' games) &mdash; not FIFA estimates.</div></div>';
+    return h;
+  }
+  function afLiveRerenderStats(){
+    var ov=document.getElementById('stOverlay');
+    if(!ov||!ov.classList.contains('open'))return;
+    if(stMatch)renderMatchStats(stStatsWarn);
+    else if(stViewTeam)renderStats(stStatsWarn);
+  }
   function afFetch(){try{var x=new XMLHttpRequest();x.open('GET','afstats.json?cb='+Date.now(),true);
     x.onreadystatechange=function(){if(x.readyState!==4)return;
       if(x.status>=200&&x.status<300){try{var j=JSON.parse(x.responseText);AFSTATS=j.m||{};}catch(e){}}
       if(mdLastData&&document.getElementById('mdOverlay').classList.contains('open')){var _ts=document.getElementById('mdTeamStats');if(_ts)_ts.innerHTML=renderTeamStats(mdLastData);}
+      afLiveRerenderStats();
     };x.send();}catch(e){}}
   function renderAfStats(d,af){
     var H=af.home,A=af.away;
@@ -2194,6 +2262,7 @@
     document.getElementById('stMatchTitle').style.display='none';
     buildStatsSelect();
     openOverlay('stOverlay');
+    afFetch(); // pull the latest API-Football form so the premium block is current
     renderStats(null); // instant, from whatever is cached - feeds top it up below
     var w1=null;
     ensureStats(function(warn){w1=warn;if(!stMatch)renderStats(warn);});
@@ -2220,6 +2289,7 @@
     t.style.display='';
     t.innerHTML=(F[mm.a]||'')+' '+escapeHtml(mm.a)+'<span class="vsx">v</span>'+(F[mm.b]||'')+' '+escapeHtml(mm.b);
     openOverlay('stOverlay');
+    afFetch(); // pull the latest API-Football form so the premium comparison is current
     renderMatchStats(null); // instant, from cache
     var w1=null;
     function luPull(){
@@ -2351,6 +2421,7 @@
     return '<div class="colhead">'+(F[team]||'')+' '+escapeHtml(F[team]?team:'TBD')+'</div>';
   }
   function renderMatchStats(warn){
+    stStatsWarn=warn;
     var A=h2hCol(stMatch.a),B=h2hCol(stMatch.b);
     var html='';
     if(warn)html+='<div class="st-warn">'+escapeHtml(warn)+'</div>';
@@ -2411,14 +2482,15 @@
     html+='<div class="st-sec"><h4>Form - last 4 games <span style="font-weight:600;letter-spacing:0;text-transform:none">(most recent first)</span></h4><div class="h2h">'+
       '<div class="col">'+h2hHead(stMatch.a)+formColHtml(stMatch.a)+'</div>'+
       '<div class="col">'+h2hHead(stMatch.b)+formColHtml(stMatch.b)+'</div></div></div>';
+    html+=afBarsH2H(stMatch.a,stMatch.b);
     html+='<div class="st-sec"><h4>Corners - last 4 games <span style="font-weight:600;letter-spacing:0;text-transform:none">(team / match total)</span></h4><div class="h2h">'+
       '<div class="col">'+h2hHead(stMatch.a)+corCol(A)+'</div>'+
       '<div class="col">'+h2hHead(stMatch.b)+corCol(B)+'</div></div>'+
       (anyPre?'<div class="st-note" style="margin:6px 0 0">* pre-tournament friendly - included to fill the last-4 window.</div>':'')+'</div>';
-    html+='<div class="st-sec"><h4>Shots on target <span style="font-weight:600;letter-spacing:0;text-transform:none">(World Cup games, est.)</span></h4><div class="h2h">'+
+    if(!afHasForm(stMatch.a)&&!afHasForm(stMatch.b))html+='<div class="st-sec"><h4>Shots on target <span style="font-weight:600;letter-spacing:0;text-transform:none">(World Cup games, est.)</span></h4><div class="h2h">'+
       '<div class="col">'+h2hHead(stMatch.a)+sotColHtml(stMatch.a)+'</div>'+
       '<div class="col">'+h2hHead(stMatch.b)+sotColHtml(stMatch.b)+'</div></div>'+
-      '<div class="st-note" style="margin:6px 0 0">Estimated from FIFA’s World Cup shot map - close to FotMob, not the official line.</div></div>';
+      '<div class="st-note" style="margin:6px 0 0">Estimated from FIFA’s shot map - shown until API-Football has measured games for these teams.</div></div>';
     html+='<div class="st-sec"><h4>Cards - last 4 games <span style="font-weight:600;letter-spacing:0;text-transform:none">(Y = yellows, R = reds per game)</span></h4><div class="h2h">'+
       '<div class="col">'+h2hHead(stMatch.a)+crdCol(A)+'</div>'+
       '<div class="col">'+h2hHead(stMatch.b)+crdCol(B)+'</div></div>'+
