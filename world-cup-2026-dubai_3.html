@@ -382,6 +382,7 @@
   .lu-p .ppos{font-size:10px;color:var(--low);font-weight:700;letter-spacing:.04em}
   .lu-sot{display:inline-block;margin-left:6px;padding:0 5px;border-radius:5px;font-size:9.5px;font-weight:800;letter-spacing:.03em;background:linear-gradient(135deg,var(--gold-tint),transparent 70%);color:var(--gold-ink);border:1px solid var(--ko-border);vertical-align:1px}
   .lu-subs-h{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--low);margin:8px 0 4px}
+  .lu-coach{font-size:11.5px;font-weight:700;color:var(--mut);margin-top:8px;padding-top:7px;border-top:1px dashed var(--line)}
   .lu-p.sub .pnm{color:var(--mut);font-weight:500}
   .card-go{color:var(--low);font-size:22px;line-height:1;font-weight:400;padding:0 2px}
   .fav .card-go{color:var(--fav-ink)}
@@ -857,7 +858,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 22 Jun 2026 v16 (premium live match stats via API-Football: possession, SoT, xG)';
+  var BUILD_TAG='Build 22 Jun 2026 v17 (API-Football: premium live stats + confirmed line-ups & coaches)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
