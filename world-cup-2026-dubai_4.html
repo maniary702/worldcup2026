@@ -2167,7 +2167,7 @@
       btts:afPct(rows,function(r){return r.gf>0&&r.ga>0;}),
       xgf:afAvgBy(rows,function(r){return meN(r,'xg');}), xga:afAvgBy(rows,function(r){return osN(r,'xg');}),
       corF:afAvgBy(rows,function(r){return meN(r,'cor');}), corA:afAvgBy(rows,function(r){return osN(r,'cor');}),
-      cards:afAvgBy(rows,function(r){return (afNum(r.me.yc)||0)+(afNum(r.me.rc)||0);})};
+      cards:afAvgBy(rows,function(r){var y=afNum(r.me.yc),rc=afNum(r.me.rc);return (y==null&&rc==null)?null:((y||0)+(rc||0));})};
   }
   // referee yellows+reds per game from the baked FIFA-competition history (for the bookings line)
   function refCardsAvg(mm){
@@ -2198,13 +2198,13 @@
     function mid(x,y){if(x==null&&y==null)return null;if(x==null)return y;if(y==null)return x;return (x+y)/2;}
     var pA=mid(MA.xgf,MB.xga),pB=mid(MB.xgf,MA.xga);
     if(pA==null)pA=mid(MA.gf,MB.ga);if(pB==null)pB=mid(MB.gf,MA.ga);
-    var tot=(pA!=null&&pB!=null)?(pA+pB):null;
+    var tot=(pA!=null&&pB!=null)?(pA+pB):null,totR=(tot!=null?(Math.round(tot*10)/10):null);
     var ov=mid(MA.ov25,MB.ov25),btts=mid(MA.btts,MB.btts);
     var corners=mid((MA.corF!=null&&MA.corA!=null)?(MA.corF+MA.corA):null,(MB.corF!=null&&MB.corA!=null)?(MB.corF+MB.corA):null);
     var teamCards=(MA.cards!=null&&MB.cards!=null)?(MA.cards+MB.cards):null;
     var ref=refCardsAvg(mm);
     var h='<div class="st-sec af-sec"><h4>&#127919; Match markets <span style="font-weight:600;letter-spacing:0;text-transform:none">(projection from form &amp; xG)</span></h4>';
-    if(tot!=null)h+='<div class="mk-proj">'+(F[a]||'')+' '+escapeHtml(a)+' <b>'+pA.toFixed(1)+'</b> &ndash; <b>'+pB.toFixed(1)+'</b> '+escapeHtml(b)+' '+(F[b]||'')+'<span class="mk-tot">projected total '+tot.toFixed(1)+' goals '+mkLean('Over 2.5','Under 2.5',tot>=2.5)+'</span></div>';
+    if(tot!=null)h+='<div class="mk-proj">'+(F[a]||'')+' '+escapeHtml(a)+' <b>'+pA.toFixed(1)+'</b> &ndash; <b>'+pB.toFixed(1)+'</b> '+escapeHtml(b)+' '+(F[b]||'')+'<span class="mk-tot">projected total '+totR.toFixed(1)+' goals '+mkLean('Over 2.5','Under 2.5',totR>=2.5)+'</span></div>';
     if(ov!=null)h+=mkRow('Over 2.5 goals',Math.round(ov)+'%',mkLean('Over','Under',ov>=50));
     if(btts!=null)h+=mkRow('Both teams to score',Math.round(btts)+'%',mkLean('Yes','No',btts>=50));
     if(corners!=null)h+=mkRow('Projected corners',corners.toFixed(1),'');
