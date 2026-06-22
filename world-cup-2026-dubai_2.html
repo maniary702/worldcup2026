@@ -2305,7 +2305,7 @@
     var e=ODDS[[afCanon(a),afCanon(b)].sort().join('__')];if(!e)return null;
     var aH=(e.h===afCanon(a));
     return {odds:aH?e.odds:af3flip(e.odds),imp:aH?e.imp:af3flip(e.imp),
-      model:aH?e.model:af3flip(e.model),edge:aH?e.edge:af3flip(e.edge)};
+      blend:aH?e.blend:af3flip(e.blend),edge:aH?e.edge:af3flip(e.edge)};
   }
   function afOddsBlock(mm){
     var O=afOddsEntry(mm.a,mm.b);if(!O||!O.odds)return '';
@@ -2313,15 +2313,15 @@
     function ec(x){if(x==null)return '<td>-</td>';var s=(x>=0?'+':'')+Math.round(x*100)+'%';
       return '<td class="oe '+(x>=0.03?'val':(x<=-0.03?'neg':''))+'">'+s+'</td>';}
     var rows=[['home',(F[mm.a]||'')+' '+escapeHtml(mm.a)],['draw','Draw'],['away',(F[mm.b]||'')+' '+escapeHtml(mm.b)]],i,k;
-    var h='<div class="st-sec af-sec"><h4>&#128200; Market odds &amp; model edge</h4>';
-    h+='<table class="odds-tbl"><tr><th>Outcome</th><th>Odds</th><th>Market</th><th>Model</th><th>Edge</th></tr>';
+    var h='<div class="st-sec af-sec"><h4>&#128200; Market odds &amp; bot edge</h4>';
+    h+='<table class="odds-tbl"><tr><th>Outcome</th><th>Odds</th><th>Market</th><th>Bot</th><th>Edge</th></tr>';
     for(i=0;i<rows.length;i++){k=rows[i][0];
-      h+='<tr><td class="ol">'+rows[i][1]+'</td><td>'+(O.odds[k]!=null?O.odds[k].toFixed(2):'-')+'</td><td>'+pc(O.imp?O.imp[k]:null)+'</td><td>'+(O.model?pc(O.model[k]):'-')+'</td>'+ec(O.edge?O.edge[k]:null)+'</tr>';}
+      h+='<tr><td class="ol">'+rows[i][1]+'</td><td>'+(O.odds[k]!=null?O.odds[k].toFixed(2):'-')+'</td><td>'+pc(O.imp?O.imp[k]:null)+'</td><td>'+(O.blend?pc(O.blend[k]):'-')+'</td>'+ec(O.edge?O.edge[k]:null)+'</tr>';}
     h+='</table>';
     if(O.edge){var be=null,bk=null;for(k in O.edge){if(!O.edge.hasOwnProperty(k))continue;if(be==null||O.edge[k]>be){be=O.edge[k];bk=k;}}
-      if(be!=null&&be>=0.05){var lbl=bk==='home'?escapeHtml(mm.a):(bk==='away'?escapeHtml(mm.b):'the draw');
-        h+='<div class="odds-val">&#9889; Model sees value on <b>'+lbl+'</b> &mdash; +'+Math.round(be*100)+'% vs the market price</div>';}}
-    h+='<div class="st-note" style="margin:6px 0 0">Best bookmaker prices (the-odds-api). Market = de-vigged implied %. Model = the predictor&rsquo;s pre-tournament 1X2; edge = model &minus; market. A guide &mdash; the live bot also blends 60% market before it stakes.</div></div>';
+      if(be!=null&&be>=0.06){var lbl=bk==='home'?escapeHtml(mm.a):(bk==='away'?escapeHtml(mm.b):'the draw');
+        h+='<div class="odds-val">&#9889; The bot leans <b>'+lbl+'</b> &mdash; +'+Math.round(be*100)+'% over the market price</div>';}}
+    h+='<div class="st-note" style="margin:6px 0 0">Best bookmaker prices (the-odds-api). Market = de-vigged implied %. Bot = the predictor&rsquo;s own probability (60% market + 40% model) &mdash; the number it actually stakes; edge = Bot &minus; market. A guide, not a tip &mdash; always check team news.</div></div>';
     return h;
   }
   function afLiveRerenderStats(){
