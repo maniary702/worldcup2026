@@ -279,6 +279,32 @@
   .mk-lean{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:6px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;vertical-align:1px}
   .mk-lean.up{background:rgba(22,217,106,.16);color:var(--pitch);border:1px solid rgba(22,217,106,.42)}
   .mk-lean.dn{background:rgba(255,170,60,.14);color:#e0a23c;border:1px solid rgba(255,170,60,.42)}
+  /* goal-timing mirrored bar chart */
+  .gt-chart{display:flex;gap:5px;margin:6px 0 4px}
+  .gt-col{flex:1;min-width:0;text-align:center}
+  .gt-up,.gt-dn{height:30px;display:flex;flex-direction:column;align-items:center}
+  .gt-up{justify-content:flex-end}
+  .gt-up i,.gt-dn i{display:block;width:64%;border-radius:3px;min-height:0}
+  .gt-up i{background:var(--pitch)}
+  .gt-dn i{background:var(--fav)}
+  .gt-up b,.gt-dn b{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:800;color:var(--txt);line-height:1.3}
+  .gt-mid{height:1px;background:var(--line2);margin:1px 0}
+  .gt-l{font-size:8.5px;color:var(--low);font-weight:700;margin-top:3px;white-space:nowrap}
+  .gt-key{font-size:10.5px;color:var(--mut);text-align:center;margin-top:2px}
+  .gt-dot{display:inline-block;width:9px;height:9px;border-radius:2px;vertical-align:-1px;margin:0 4px 0 9px}
+  .gt-dot.sc{background:var(--pitch)}.gt-dot.co{background:var(--fav)}
+  .gt-sum{font-size:12.5px;color:var(--mut);line-height:1.7}
+  .gt-sum b{color:var(--txt);font-family:'JetBrains Mono',monospace}
+  /* market odds + model edge */
+  .odds-tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin:2px 0}
+  .odds-tbl th{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);text-align:right;padding:3px 4px;border-bottom:1px solid var(--line)}
+  .odds-tbl th:first-child{text-align:left}
+  .odds-tbl td{text-align:right;padding:5px 4px;border-bottom:1px dashed var(--line);font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--txt);white-space:nowrap}
+  .odds-tbl td.ol{text-align:left;font-family:'Barlow',sans-serif;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+  .odds-tbl td.oe.val{color:var(--pitch)}
+  .odds-tbl td.oe.neg{color:var(--low)}
+  .odds-val{margin-top:8px;font-size:12.5px;font-weight:700;color:var(--pitch);background:rgba(22,217,106,.10);border:1px solid rgba(22,217,106,.32);border-radius:8px;padding:6px 9px;text-align:center}
+  .odds-val b{color:var(--txt)}
   /* ── tab 2: tables & tournament stats ── */
   .viewtabs{display:flex;gap:8px;margin-bottom:12px}
   .vtab{flex:1;padding:11px;border-radius:14px;border:1px solid var(--line2);background:var(--card);color:var(--mut);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:.12s}
@@ -879,7 +905,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 22 Jun 2026 v19 (Betting markets: goals O/U + BTTS + xG projection + corner/card lines, all from real API-Football data)';
+  var BUILD_TAG='Build 22 Jun 2026 v20 (In-play goal-timing buckets + live bookmaker 1X2 odds & model edge)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1912,6 +1938,7 @@
     html+=suspensionHtml(team);
     html+=afFormBlock(team);
     html+=afMarketsBlock(team);
+    html+=afGoalTimingBlock(team);
     if(n)html+='<div class="st-sec"><h4>Form - last '+n+(n===1?' game':' games')+' <span style="font-weight:600;letter-spacing:0;text-transform:none">(most recent first)</span></h4>'+formRowsHtml(g)+'</div>';
     if(!n){
       html+='<div class="st-sec"><h4>Corners &amp; cards</h4><div class="st-empty">No covered games for this team yet. Averages appear right after their first match.</div></div>';
@@ -2075,7 +2102,7 @@
   }
   // ── API-Football premium live data (lineups + in-game stats), baked server-side into
   // afstats.json and fetched SAME-ORIGIN here (no API key in the page). ──
-  var AFSTATS={},mdLastData=null;
+  var AFSTATS={},ODDS={},mdLastData=null;
   function afCanon(s){s=(s||'').toLowerCase()
       .replace(/ç/g,'c').replace(/ü/g,'u').replace(/[éèê]/g,'e').replace(/[íî]/g,'i').replace(/[áàâãä]/g,'a').replace(/[óôõ]/g,'o').replace(/ñ/g,'n').replace(/[^a-z]/g,'');
     var A={capeverdeislands:'capeverde',capeverde:'capeverde',congodr:'drcongo',drcongo:'drcongo',czechia:'czech',czechrepublic:'czech',turkiye:'turkey',turkey:'turkey'};
@@ -2212,6 +2239,91 @@
     h+='<div class="st-note" style="margin:6px 0 0">Blends each team&rsquo;s attack with the other&rsquo;s defence over their last '+MA.n+'/'+MB.n+' games (xG where available). A guide, not a guarantee &mdash; check team news before staking.</div></div>';
     return h;
   }
+  // ── Goal-timing profile (in-play): WHEN a team scores & concedes, in 15-min buckets, over the
+  //    SAME rolling window. Reads the goal events already in afstats.json (window rule unchanged). ──
+  function afTeamEntries(team,N){
+    var key=afCanon(team),rows=[],k;
+    for(k in AFSTATS){if(!AFSTATS.hasOwnProperty(k))continue;var e=AFSTATS[k];
+      if(!e||!e.final||!e.events)continue;
+      var isH=(e.h===key),isA=(e.a===key);if(!isH&&!isA)continue;
+      rows.push({d:e.date||'',e:e,isH:isH});}
+    rows.sort(function(x,y){return x.d<y.d?1:(x.d>y.d?-1:0);});
+    return rows.slice(0,N||6);
+  }
+  var GT_LABS=['0-15','16-30','31-45','46-60','61-75','76-90'];
+  function afGoalTiming(team){
+    var ents=afTeamEntries(team,6),sc=[0,0,0,0,0,0],co=[0,0,0,0,0,0],gf=0,ga=0,i,j;
+    for(i=0;i<ents.length;i++){var e=ents[i].e,isH=ents[i].isH,ev=e.events||[];
+      for(j=0;j<ev.length;j++){var x=ev[j];                 // [min, side 'h'/'a', type, detail, player]
+        if(x[2]!=='Goal'||x[3]==='Missed Penalty')continue;  // VAR-disallowed goals are 'Var', not 'Goal'
+        var mn=x[0];if(mn==null)continue;
+        var side=x[1];if(x[3]==='Own Goal')side=(side==='h'?'a':'h'); // OG credited to the other team
+        var b=Math.floor((mn-1)/15);if(b<0)b=0;if(b>5)b=5;   // 90+ stoppage folds into 76-90
+        if((side==='h')===isH){sc[b]++;gf++;}else{co[b]++;ga++;}
+      }}
+    return {n:ents.length,sc:sc,co:co,gf:gf,ga:ga};
+  }
+  function afGTPeak(arr){var pi=-1,p=0,i;for(i=0;i<6;i++)if(arr[i]>p){p=arr[i];pi=i;}return p>0?GT_LABS[pi]:null;}
+  // full mirrored bar chart (team view): scored up (green), conceded down (red), 6 time buckets
+  function afGoalTimingBlock(team){
+    var T=afGoalTiming(team);if(!T.n||(T.gf+T.ga)===0)return '';
+    var mx=1,i;for(i=0;i<6;i++){if(T.sc[i]>mx)mx=T.sc[i];if(T.co[i]>mx)mx=T.co[i];}
+    var h='<div class="st-sec af-sec"><h4>&#9201; Goal timing &mdash; last '+T.n+(T.n===1?' game':' games')+' <span style="font-weight:600;letter-spacing:0;text-transform:none">(when goals happen)</span></h4><div class="gt-chart">';
+    for(i=0;i<6;i++){var su=T.sc[i],cu=T.co[i];
+      h+='<div class="gt-col"><div class="gt-up">'+(su?'<b>'+su+'</b>':'')+'<i style="height:'+Math.round(su/mx*100)+'%"></i></div>'
+        +'<div class="gt-mid"></div>'
+        +'<div class="gt-dn"><i style="height:'+Math.round(cu/mx*100)+'%"></i>'+(cu?'<b>'+cu+'</b>':'')+'</div>'
+        +'<div class="gt-l">'+GT_LABS[i]+'</div></div>';}
+    h+='</div><div class="gt-key"><span class="gt-dot sc"></span>scored<span class="gt-dot co"></span>conceded</div>';
+    var ps=afGTPeak(T.sc),pc=afGTPeak(T.co),notes=[];
+    if(ps)notes.push('scores most <b>'+ps+"'</b>");if(pc)notes.push('concedes most <b>'+pc+"'</b>");
+    h+='<div class="st-note" style="margin:6px 0 0">'+(notes.length?escapeHtml(team)+' '+notes.join(' &middot; ')+'. ':'')+'Real goal minutes from API-Football events.</div></div>';
+    return h;
+  }
+  // compact head-to-head summary (match view): each side's most dangerous / vulnerable window
+  function afGoalTimingH2H(a,b){
+    var TA=afGoalTiming(a),TB=afGoalTiming(b);
+    var hasA=TA.n&&(TA.gf+TA.ga)>0,hasB=TB.n&&(TB.gf+TB.ga)>0;
+    if(!hasA&&!hasB)return '';
+    function col(T,has){if(!has)return '<div class="st-empty">after 1st game</div>';
+      var ps=afGTPeak(T.sc),pc=afGTPeak(T.co);
+      return '<div class="gt-sum"><div>&#9917; scores most <b>'+(ps?ps+"'":'-')+'</b></div><div>&#128737;&#65039; concedes most <b>'+(pc?pc+"'":'-')+'</b></div></div>';}
+    return '<div class="st-sec af-sec"><h4>&#9201; Goal timing <span style="font-weight:600;letter-spacing:0;text-transform:none">(in-play windows)</span></h4><div class="h2h">'
+      +'<div class="col">'+h2hHead(a)+col(TA,hasA)+'</div>'
+      +'<div class="col">'+h2hHead(b)+col(TB,hasB)+'</div></div>'
+      +'<div class="st-note" style="margin:6px 0 0">When each side scores &amp; concedes most over their last '+(TA.n||TB.n)+' games &mdash; from real goal minutes.</div></div>';
+  }
+  // ── Live bookmaker 1X2 odds + the predictor model's edge (keyless odds.json, baked server-side
+  //    from the predictor's own the-odds-api pull + model probs — no key, no new API calls). ──
+  function oddsFetch(){try{var x=new XMLHttpRequest();x.open('GET','odds.json?cb='+Date.now(),true);
+    x.onreadystatechange=function(){if(x.readyState!==4)return;
+      if(x.status>=200&&x.status<300){try{var j=JSON.parse(x.responseText);ODDS=j.f||{};}catch(e){}}
+      afLiveRerenderStats();
+    };x.send();}catch(e){}}
+  function af3flip(o){return o?{home:o.away,draw:o.draw,away:o.home}:null;}
+  function afOddsEntry(a,b){
+    var e=ODDS[[afCanon(a),afCanon(b)].sort().join('__')];if(!e)return null;
+    var aH=(e.h===afCanon(a));
+    return {odds:aH?e.odds:af3flip(e.odds),imp:aH?e.imp:af3flip(e.imp),
+      model:aH?e.model:af3flip(e.model),edge:aH?e.edge:af3flip(e.edge)};
+  }
+  function afOddsBlock(mm){
+    var O=afOddsEntry(mm.a,mm.b);if(!O||!O.odds)return '';
+    function pc(x){return x==null?'-':Math.round(x*100)+'%';}
+    function ec(x){if(x==null)return '<td>-</td>';var s=(x>=0?'+':'')+Math.round(x*100)+'%';
+      return '<td class="oe '+(x>=0.03?'val':(x<=-0.03?'neg':''))+'">'+s+'</td>';}
+    var rows=[['home',(F[mm.a]||'')+' '+escapeHtml(mm.a)],['draw','Draw'],['away',(F[mm.b]||'')+' '+escapeHtml(mm.b)]],i,k;
+    var h='<div class="st-sec af-sec"><h4>&#128200; Market odds &amp; model edge</h4>';
+    h+='<table class="odds-tbl"><tr><th>Outcome</th><th>Odds</th><th>Market</th><th>Model</th><th>Edge</th></tr>';
+    for(i=0;i<rows.length;i++){k=rows[i][0];
+      h+='<tr><td class="ol">'+rows[i][1]+'</td><td>'+(O.odds[k]!=null?O.odds[k].toFixed(2):'-')+'</td><td>'+pc(O.imp?O.imp[k]:null)+'</td><td>'+(O.model?pc(O.model[k]):'-')+'</td>'+ec(O.edge?O.edge[k]:null)+'</tr>';}
+    h+='</table>';
+    if(O.edge){var be=null,bk=null;for(k in O.edge){if(!O.edge.hasOwnProperty(k))continue;if(be==null||O.edge[k]>be){be=O.edge[k];bk=k;}}
+      if(be!=null&&be>=0.05){var lbl=bk==='home'?escapeHtml(mm.a):(bk==='away'?escapeHtml(mm.b):'the draw');
+        h+='<div class="odds-val">&#9889; Model sees value on <b>'+lbl+'</b> &mdash; +'+Math.round(be*100)+'% vs the market price</div>';}}
+    h+='<div class="st-note" style="margin:6px 0 0">Best bookmaker prices (the-odds-api). Market = de-vigged implied %. Model = the predictor&rsquo;s pre-tournament 1X2; edge = model &minus; market. A guide &mdash; the live bot also blends 60% market before it stakes.</div></div>';
+    return h;
+  }
   function afLiveRerenderStats(){
     var ov=document.getElementById('stOverlay');
     if(!ov||!ov.classList.contains('open'))return;
@@ -2334,6 +2446,7 @@
     buildStatsSelect();
     openOverlay('stOverlay');
     afFetch(); // pull the latest API-Football form so the premium block is current
+    oddsFetch();
     renderStats(null); // instant, from whatever is cached - feeds top it up below
     var w1=null;
     ensureStats(function(warn){w1=warn;if(!stMatch)renderStats(warn);});
@@ -2361,6 +2474,7 @@
     t.innerHTML=(F[mm.a]||'')+' '+escapeHtml(mm.a)+'<span class="vsx">v</span>'+(F[mm.b]||'')+' '+escapeHtml(mm.b);
     openOverlay('stOverlay');
     afFetch(); // pull the latest API-Football form so the premium comparison is current
+    oddsFetch();
     renderMatchStats(null); // instant, from cache
     var w1=null;
     function luPull(){
@@ -2555,6 +2669,8 @@
       '<div class="col">'+h2hHead(stMatch.b)+formColHtml(stMatch.b)+'</div></div></div>';
     html+=afBarsH2H(stMatch.a,stMatch.b);
     html+=afMatchMarkets(stMatch.a,stMatch.b,stMatch);
+    html+=afOddsBlock(stMatch);
+    html+=afGoalTimingH2H(stMatch.a,stMatch.b);
     html+='<div class="st-sec"><h4>Corners - last 4 games <span style="font-weight:600;letter-spacing:0;text-transform:none">(team / match total)</span></h4><div class="h2h">'+
       '<div class="col">'+h2hHead(stMatch.a)+corCol(A)+'</div>'+
       '<div class="col">'+h2hHead(stMatch.b)+corCol(B)+'</div></div>'+
@@ -3211,6 +3327,7 @@
   refresh();
   startPolling();
   afFetch();
+  oddsFetch();
   if(firstVisit)openPicker();
   var _savedTab=load('wc26_tab');if(_savedTab==='2')setTab(2);else if(_savedTab==='3')setTab(3);
   setInterval(function(){tickHero();updateFreshPill();},1000);
