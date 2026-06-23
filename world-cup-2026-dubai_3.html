@@ -377,6 +377,16 @@
   .gt tr.q td{box-shadow:inset 3px 0 0 var(--pitch)}
   .gt tr.q3 td{box-shadow:inset 3px 0 0 var(--gold)}
   .gt tr.meRow td{background:var(--fav-tint)}
+  /* team stats — tournament totals / per-game averages */
+  .tts-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;flex-wrap:wrap}
+  .tts-toggle{display:inline-flex;background:var(--card);border:1px solid var(--line2);border-radius:10px;padding:2px;gap:2px}
+  .tts-t{background:transparent;border:0;border-radius:8px;padding:6px 12px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);cursor:pointer}
+  .tts-t.on{background:linear-gradient(135deg,rgba(22,217,106,.16),transparent 70%),var(--card2);color:var(--txt);box-shadow:inset 0 0 0 1px var(--pitch)}
+  .tts-hint{font-size:10.5px;color:var(--low);font-weight:600}
+  .tts-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px}
+  table.gt.tts th{cursor:pointer;white-space:nowrap}
+  table.gt.tts th.s{color:var(--txt);text-decoration:underline;text-underline-offset:3px}
+  table.gt.tts td{white-space:nowrap}
   .lb-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px dashed var(--line);font-size:13px;color:var(--txt)}
   .lb-rank{flex:0 0 18px;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:11px;color:var(--low)}
   .lb-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
@@ -634,6 +644,7 @@
   <div class="tv-jump">
     <button class="chip" data-j="tvSecGroups">Groups</button>
     <button class="chip" data-j="tvSecThirds">3rd place</button>
+    <button class="chip" data-j="tvSecTeam">Team stats</button>
     <button class="chip" data-j="tvSecBracket">Bracket</button>
     <button class="chip" data-j="tvSecPlayers">Players</button>
   </div>
@@ -648,6 +659,9 @@
   <h2 class="tv-h" id="tvSecThirds">Best Third-Placed Teams</h2>
   <div class="tv-note">Eight of the twelve group-third teams reach the Round of 32. Ranked by points, then goal difference, then goals scored.</div>
   <div class="tv-card" id="tvThirdsCard"><div id="tvThirds"></div></div>
+  <h2 class="tv-h" id="tvSecTeam">Team Stats &mdash; This Tournament</h2>
+  <div class="tv-note">Totals and per-game averages from the games played so far, straight from the official match feed: goals scored, shots on target, fouls, cards and corners. Tap a heading to rank by it.</div>
+  <div id="tvTeamStats"></div>
   <h2 class="tv-h" id="tvSecBracket">Knockout Bracket</h2>
   <div class="tv-note">Fills in automatically as groups finish. Swipe sideways through the rounds.</div>
   <div class="brkt" id="tvBracket"></div>
@@ -928,7 +942,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 23 Jun 2026 v22 (Share button in the header + tap-a-tie bracket group standings)';
+  var BUILD_TAG='Build 23 Jun 2026 v23 (Team Stats section: tournament totals & per-game averages — goals, SoT, fouls, cards, corners)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1396,7 +1410,7 @@
   function renderActiveView(){
     if(document.body.classList.contains('tab2')){
       var br=document.getElementById('tvBracket'),sl=br?br.scrollLeft:0;
-      renderTablesView();renderBracket();
+      renderTablesView();renderTvTeamStats();renderBracket();
       var nb=document.getElementById('tvBracket');if(nb)nb.scrollLeft=sl;
     }else if(document.body.classList.contains('tab3')){
       var fb=document.getElementById('fanBracket'),fx=fb?fb.scrollLeft:0;
@@ -2358,6 +2372,7 @@
       if(x.status>=200&&x.status<300){try{var j=JSON.parse(x.responseText);AFSTATS=j.m||{};}catch(e){}}
       if(mdLastData&&document.getElementById('mdOverlay').classList.contains('open')){var _ts=document.getElementById('mdTeamStats');if(_ts)_ts.innerHTML=renderTeamStats(mdLastData);}
       afLiveRerenderStats();
+      if(document.body.classList.contains('tab2'))renderTvTeamStats();
     };x.send();}catch(e){}}
   function renderAfStats(d,af){
     var H=af.home,A=af.away;
@@ -3026,6 +3041,68 @@
     h+='</table>';
     el.innerHTML=h;
   }
+  // ── Per-team tournament totals & per-game averages (real AF match stats) ──
+  // sot/fouls/cor are present on every finished side, so they average over all games (n).
+  // Card data is missing on some sides (yc null => no card data, rc null => 0 reds), so yc/rc
+  // total + average ONLY over games that actually report cards (cn) — no phantom-zero deflation.
+  var tvTeamMode='tot',tvTeamSort='goals';
+  function ttsAdd(agg,nameByCanon,afName,st,gf){
+    if(!afName)return;
+    var dn=nameByCanon[afCanon(afName)]||afName;
+    var a=agg[dn]||(agg[dn]={team:dn,n:0,cn:0,goals:0,sot:0,fouls:0,cor:0,yc:0,rc:0});
+    a.n++;
+    a.goals+=(afNum(gf)||0);
+    a.sot+=(afNum(st.sot)||0);a.fouls+=(afNum(st.fouls)||0);a.cor+=(afNum(st.cor)||0);
+    var yc=afNum(st.yc);
+    if(yc!=null){a.cn++;a.yc+=yc;a.rc+=(afNum(st.rc)||0);}
+  }
+  function teamTournamentStats(){
+    var nameByCanon={},letters=['A','B','C','D','E','F','G','H','I','J','K','L'],li,ti;
+    for(li=0;li<letters.length;li++){var gg=GROUPS[letters[li]];for(ti=0;ti<gg.length;ti++)nameByCanon[afCanon(gg[ti])]=gg[ti];}
+    var agg={},k;
+    for(k in AFSTATS){if(!AFSTATS.hasOwnProperty(k))continue;var e=AFSTATS[k];
+      if(!e||!e.stats||!e.final)continue;
+      ttsAdd(agg,nameByCanon,e.hN,e.stats.home,e.hg);
+      ttsAdd(agg,nameByCanon,e.aN,e.stats.away,e.ag);
+    }
+    var arr=[],t;for(t in agg)if(agg.hasOwnProperty(t))arr.push(agg[t]);
+    return arr;
+  }
+  function ttsDen(a,k){return (k==='yc'||k==='rc')?a.cn:a.n;}
+  function ttsSortVal(a,k){
+    if(k==='team')return a.team;
+    if(tvTeamMode==='avg'){var den=ttsDen(a,k);return den?a[k]/den:0;}
+    return a[k];
+  }
+  function ttsCell(a,k){
+    if(tvTeamMode!=='avg')return String(a[k]);
+    var den=ttsDen(a,k);if(!den)return '-';
+    return (Math.round(a[k]/den*10)/10).toFixed(1);
+  }
+  function renderTvTeamStats(){
+    var el=document.getElementById('tvTeamStats');if(!el)return;
+    var arr=teamTournamentStats();
+    if(!arr.length){el.innerHTML='<div class="tv-empty">Appears once teams have played and the match stats come in.</div>';return;}
+    arr.sort(function(x,y){
+      if(tvTeamSort==='team')return x.team<y.team?-1:(x.team>y.team?1:0);
+      var d=ttsSortVal(y,tvTeamSort)-ttsSortVal(x,tvTeamSort);
+      return d||(y.goals-x.goals)||(x.team<y.team?-1:1);
+    });
+    var avg=(tvTeamMode==='avg'),cols=[['goals','Goals'],['sot','SoT'],['fouls','Fouls'],['yc','Y'],['rc','R'],['cor','Cor']],i,c;
+    var h='<div class="tts-bar"><div class="tts-toggle">'
+      +'<button type="button" class="tts-t'+(!avg?' on':'')+'" data-mode="tot">Totals</button>'
+      +'<button type="button" class="tts-t'+(avg?' on':'')+'" data-mode="avg">Per game</button></div>'
+      +'<span class="tts-hint">tap a heading to sort</span></div>';
+    h+='<div class="tts-wrap"><table class="gt tts"><tr><th class="tn'+(tvTeamSort==='team'?' s':'')+'" data-sort="team">Team</th><th>P</th>';
+    for(c=0;c<cols.length;c++)h+='<th'+(tvTeamSort===cols[c][0]?' class="s"':'')+' data-sort="'+cols[c][0]+'">'+cols[c][1]+'</th>';
+    h+='</tr>';
+    for(i=0;i<arr.length;i++){var a=arr[i];
+      h+='<tr'+(a.team===FOLLOW?' class="meRow"':'')+'><td class="tn">'+(F[a.team]||'')+' '+escapeHtml(a.team)+'</td><td>'+a.n+'</td>';
+      for(c=0;c<cols.length;c++){var k=cols[c][0];h+='<td'+(tvTeamSort===k?' class="pts"':'')+'>'+ttsCell(a,k)+'</td>';}
+      h+='</tr>';}
+    h+='</table></div>';
+    el.innerHTML=h;
+  }
   function renderPlayerStats(warn,finCount){
     var agg={},stars=[],k,id,covered=0;
     for(k in pstats){var ms2=pstats[k];covered++;
@@ -3238,7 +3315,7 @@
     ts.setAttribute('aria-pressed',n===1?'true':'false');tt.setAttribute('aria-pressed',n===2?'true':'false');tb.setAttribute('aria-pressed',n===3?'true':'false');
     save('wc26_tab',String(n));
     if(n===2){
-      renderTablesView();renderBracket();renderPlayerStats(null,0);
+      renderTablesView();renderTvTeamStats();renderBracket();renderPlayerStats(null,0);
       ensurePstats(function(warn,finCount){renderPlayerStats(warn,finCount);renderBracket();});
     }else if(n===3){renderFanBracket();}
     if(was!==n)setTimeout(function(){window.scrollTo({top:tabScroll[n]||0});},0);
@@ -3345,6 +3422,17 @@
   document.getElementById('fanBracket').addEventListener('click',function(e){
     var n=e.target;
     while(n&&n!==this){if(n.getAttribute&&n.getAttribute('data-num')){openGroupsForMatch(n.getAttribute('data-num'));return;}n=n.parentNode;}
+  });
+  // Team-stats table: Totals/Per-game toggle + tap-a-heading sorting
+  document.getElementById('tvTeamStats').addEventListener('click',function(e){
+    var t=e.target;
+    while(t&&t!==this){
+      if(t.getAttribute){
+        var md=t.getAttribute('data-mode');if(md){tvTeamMode=md;renderTvTeamStats();return;}
+        var so=t.getAttribute('data-sort');if(so){tvTeamSort=so;renderTvTeamStats();return;}
+      }
+      t=t.parentNode;
+    }
   });
 
   // Match detail modal
