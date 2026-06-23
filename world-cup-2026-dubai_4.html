@@ -387,6 +387,15 @@
   table.gt.tts th{cursor:pointer;white-space:nowrap}
   table.gt.tts th.s{color:var(--txt);text-decoration:underline;text-underline-offset:3px}
   table.gt.tts td{white-space:nowrap}
+  .tts-team{cursor:pointer}
+  @media(hover:hover){.tts-team:hover{color:var(--pitch)}}
+  /* player-stats modal */
+  .pl-sel{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+  .pl-tb{background:var(--card2);border:1px solid var(--line2);border-radius:10px;padding:7px 11px;font-family:'Barlow',sans-serif;font-weight:700;font-size:12.5px;color:var(--mut);cursor:pointer;white-space:nowrap}
+  .pl-tb.on{border-color:var(--pitch);color:var(--txt);background:linear-gradient(135deg,rgba(22,217,106,.12),transparent 70%),var(--card)}
+  .pl-pos{font-size:9px;font-weight:800;color:var(--low);border:1px solid var(--line2);border-radius:4px;padding:0 3px;margin-left:4px;vertical-align:1px}
+  .pl-tbl td.tn,.pl-tbl th.tn{position:sticky;left:0;background:var(--card);max-width:138px}
+  .pl-tbl th.tn{z-index:2}
   .lb-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px dashed var(--line);font-size:13px;color:var(--txt)}
   .lb-rank{flex:0 0 18px;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:11px;color:var(--low)}
   .lb-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
@@ -734,6 +743,7 @@
       <div id="mdLineupPane" style="display:none"></div>
     </div>
     <button class="md-action md-bet" id="mdBet">&#128202; Betting stats &rsaquo;</button>
+    <button class="md-action" id="mdPlayers">&#128101; Player stats &rsaquo;</button>
     <button class="md-action" id="mdCal">&#128197; Add to calendar</button>
     <button class="sm-cancel" id="mdClose" style="width:100%;margin-top:6px">Close</button>
   </div>
@@ -761,6 +771,18 @@
     <div class="st-note">Live group tables &mdash; the two (or more) groups whose teams feed into this knockout tie. The line under 2nd place is the qualification cut; gold edge = 3rd, chasing the eight best-third spots.</div>
     <div class="sm-btns">
       <button class="sm-cancel" id="grpClose" style="flex:1">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="smodal-overlay" id="plOverlay">
+  <div class="smodal" role="dialog" aria-modal="true">
+    <h3>Player Stats</h3>
+    <div class="sm-stage" id="plStage">Per-player tournament stats</div>
+    <div class="statsbody" id="plBody"></div>
+    <div class="st-note">Per-player totals and per-game averages (per appearance) from the official match feed: goals, shots, shots on target, fouls committed &amp; won, cards, plus tackles, interceptions, duels won, saves and average rating. Tap a heading to sort.</div>
+    <div class="sm-btns">
+      <button class="sm-cancel" id="plClose" style="flex:1">Close</button>
     </div>
   </div>
 </div>
@@ -942,7 +964,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 23 Jun 2026 v23 (Team Stats section: tournament totals & per-game averages — goals, SoT, fouls, cards, corners)';
+  var BUILD_TAG='Build 23 Jun 2026 v24 (Per-player stats: per-team totals & per-game averages + match-modal Player stats button; Team Stats adds fouls won & cards conceded)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -962,7 +984,7 @@
     }catch(e){}
   };
   // ── modal hygiene: one overlay at a time, Escape closes, body scroll locked, focus moved ──
-  var OVERLAYS=['pkOverlay','mdOverlay','stOverlay','grpOverlay'];
+  var OVERLAYS=['pkOverlay','mdOverlay','stOverlay','grpOverlay','plOverlay'];
   var lastFocus=null;
   function syncModalState(){
     var open=false;
@@ -2011,6 +2033,7 @@
     document.getElementById('mdWhen').textContent=fmtDayFull(dayKey(o))+' · '+fmtClock(o);
     document.getElementById('mdTz').textContent='Your time ('+escapeHtml(cityOf(TZ()))+') · '+escapeHtml(mm.v);
     document.getElementById('mdBet').style.display=(realA||realB)?'':'none';
+    document.getElementById('mdPlayers').style.display=(realA||realB)?'':'none';
     // scorers, when we have this match's player data cached
     var scEl2=document.getElementById('mdScorers'),scHtml='';
     if(sc&&sc.ga!=null){
@@ -3096,16 +3119,96 @@
     var h='<div class="tts-bar"><div class="tts-toggle">'
       +'<button type="button" class="tts-t'+(!avg?' on':'')+'" data-mode="tot">Totals</button>'
       +'<button type="button" class="tts-t'+(avg?' on':'')+'" data-mode="avg">Per game</button></div>'
-      +'<span class="tts-hint">tap a heading to sort</span></div>';
+      +'<span class="tts-hint">&#128100; tap a team for players &middot; tap a heading to sort</span></div>';
     h+='<div class="tts-wrap"><table class="gt tts"><tr><th class="tn'+(tvTeamSort==='team'?' s':'')+'" data-sort="team">Team</th><th>P</th>';
     for(c=0;c<cols.length;c++)h+='<th'+(tvTeamSort===cols[c][0]?' class="s"':'')+' data-sort="'+cols[c][0]+'">'+cols[c][1]+'</th>';
     h+='</tr>';
     for(i=0;i<arr.length;i++){var a=arr[i];
-      h+='<tr'+(a.team===FOLLOW?' class="meRow"':'')+'><td class="tn">'+(F[a.team]||'')+' '+escapeHtml(a.team)+'</td><td>'+a.n+'</td>';
+      h+='<tr'+(a.team===FOLLOW?' class="meRow"':'')+'><td class="tn tts-team" data-team="'+escapeHtml(a.team)+'">'+(F[a.team]||'')+' '+escapeHtml(a.team)+'</td><td>'+a.n+'</td>';
       for(c=0;c<cols.length;c++){var k=cols[c][0];h+='<td'+(tvTeamSort===k?' class="pts"':'')+'>'+ttsCell(a,k)+'</td>';}
       h+='</tr>';}
     h+='</table></div>';
     el.innerHTML=h;
+  }
+  // ── Per-player stats (lazy-loaded afplayers.json): per-team totals + per-game averages ──
+  var AFPLAYERS={},plLoaded=false,plTeams=[],plSel=null,plMode='tot',plSort='g';
+  function playersFetch(cb){
+    if(plLoaded){if(cb)cb();return;}
+    try{var x=new XMLHttpRequest();x.open('GET','afplayers.json?cb='+Date.now(),true);
+      x.onreadystatechange=function(){if(x.readyState!==4)return;
+        if(x.status>=200&&x.status<300){try{var j=JSON.parse(x.responseText);AFPLAYERS=j.m||{};plLoaded=true;}catch(e){}}
+        if(cb)cb();
+      };x.send();}catch(e){if(cb)cb();}
+  }
+  // aggregate a team's players across every game they featured in (row idx: 0 name,1 num,2 pos,3 min,
+  // 4 g,5 a,6 sh,7 sot,8 fc,9 fw,10 yc,11 rc,12 tk,13 int,14 dw,15 sv,16 rt)
+  function playerTeamAgg(teamName){
+    var key=afCanon(teamName),out={},k;
+    for(k in AFPLAYERS){if(!AFPLAYERS.hasOwnProperty(k))continue;var e=AFPLAYERS[k];if(!e)continue;
+      var rows=(e.h===key)?e.home:((e.a===key)?e.away:null);if(!rows)continue;
+      for(var i=0;i<rows.length;i++){var r=rows[i],nm=r[0];if(!nm)continue;
+        var p=out[nm]||(out[nm]={name:nm,num:r[1],pos:r[2],team:teamName,ap:0,min:0,g:0,a:0,sh:0,sot:0,fc:0,fw:0,yc:0,rc:0,tk:0,intc:0,dw:0,sv:0,rtSum:0,rtN:0});
+        p.ap++;if(r[1]!=null)p.num=r[1];if(r[2])p.pos=r[2];
+        p.min+=r[3]||0;p.g+=r[4]||0;p.a+=r[5]||0;p.sh+=r[6]||0;p.sot+=r[7]||0;p.fc+=r[8]||0;p.fw+=r[9]||0;p.yc+=r[10]||0;p.rc+=r[11]||0;p.tk+=r[12]||0;p.intc+=r[13]||0;p.dw+=r[14]||0;p.sv+=r[15]||0;
+        if(r[16]!=null){p.rtSum+=r[16];p.rtN++;}
+      }
+    }
+    var arr=[],n;for(n in out)if(out.hasOwnProperty(n))arr.push(out[n]);
+    return arr;
+  }
+  var PL_COLS=[['min','Min'],['g','G'],['a','A'],['sh','Sh'],['sot','SoT'],['fc','FC'],['fw','FW'],['yc','Y'],['rc','R'],['tk','Tkl'],['intc','Int'],['dw','DuW'],['sv','Sv'],['rt','Rtg']];
+  function plVal(p,k){
+    if(k==='rt')return p.rtN?(p.rtSum/p.rtN):0;
+    return (plMode==='avg')?(p.ap?p[k]/p.ap:0):p[k];
+  }
+  function plCell(p,k){
+    if(k==='rt')return p.rtN?(Math.round(p.rtSum/p.rtN*100)/100).toFixed(2):'-';
+    if(plMode!=='avg')return String(p[k]);
+    return p.ap?(Math.round(p[k]/p.ap*10)/10).toFixed(1):'-';
+  }
+  function openPlayerStats(a,b){
+    plTeams=[];if(a&&F[a])plTeams.push(a);if(b&&F[b]&&b!==a)plTeams.push(b);
+    if(!plTeams.length)return;
+    plSel=plTeams[0];plMode='tot';plSort='g';
+    document.getElementById('plStage').textContent=plTeams.join('  ·  ');
+    document.getElementById('plBody').innerHTML='<div class="st-load">Loading player stats…</div>';
+    openOverlay('plOverlay');
+    playersFetch(function(){if(document.getElementById('plOverlay').classList.contains('open'))renderPlayerStatsModal();});
+  }
+  function renderPlayerStatsModal(){
+    var body=document.getElementById('plBody');if(!body)return;
+    if(!plLoaded){body.innerHTML='<div class="st-empty" style="padding:14px 0">Couldn’t load player stats — please try again.</div>';return;}
+    var roster,t;
+    if(plSel==='__both__'){roster=[];for(t=0;t<plTeams.length;t++)roster=roster.concat(playerTeamAgg(plTeams[t]));}
+    else roster=playerTeamAgg(plSel);
+    var h='';
+    if(plTeams.length>1){
+      h+='<div class="pl-sel">';
+      for(var s=0;s<plTeams.length;s++)h+='<button type="button" class="pl-tb'+(plSel===plTeams[s]?' on':'')+'" data-pl-team="'+escapeHtml(plTeams[s])+'">'+(F[plTeams[s]]||'')+' '+escapeHtml(plTeams[s])+'</button>';
+      h+='<button type="button" class="pl-tb'+(plSel==='__both__'?' on':'')+'" data-pl-team="__both__">Both</button></div>';
+    }
+    h+='<div class="tts-bar"><div class="tts-toggle">'
+      +'<button type="button" class="tts-t'+(plMode==='tot'?' on':'')+'" data-pl-mode="tot">Totals</button>'
+      +'<button type="button" class="tts-t'+(plMode==='avg'?' on':'')+'" data-pl-mode="avg">Per game</button></div>'
+      +'<span class="tts-hint">tap a heading to sort</span></div>';
+    if(!roster.length){body.innerHTML=h+'<div class="st-empty" style="padding:14px 0">No player data yet for '+escapeHtml(plSel==='__both__'?plTeams.join(' & '):plSel)+' — appears once they&rsquo;ve played.</div>';return;}
+    roster.sort(function(x,y){
+      if(plSort==='name')return x.name<y.name?-1:1;
+      var d=plVal(y,plSort)-plVal(x,plSort);
+      return d||(y.g-x.g)||(y.min-x.min)||(x.name<y.name?-1:1);
+    });
+    h+='<div class="tts-wrap"><table class="gt tts pl-tbl"><tr><th class="tn'+(plSort==='name'?' s':'')+'" data-pl-sort="name">Player</th><th>Ap</th>';
+    for(var c=0;c<PL_COLS.length;c++)h+='<th'+(plSort===PL_COLS[c][0]?' class="s"':'')+' data-pl-sort="'+PL_COLS[c][0]+'">'+PL_COLS[c][1]+'</th>';
+    h+='</tr>';
+    for(var i=0;i<roster.length;i++){var p=roster[i];
+      var fl=(plSel==='__both__')?((F[p.team]||'')+' '):'';
+      var nm=fl+escapeHtml(p.name)+(p.pos?' <span class="pl-pos">'+escapeHtml(p.pos)+'</span>':'');
+      h+='<tr><td class="tn">'+nm+'</td><td>'+p.ap+'</td>';
+      for(c=0;c<PL_COLS.length;c++){var k=PL_COLS[c][0];h+='<td'+(plSort===k?' class="pts"':'')+'>'+plCell(p,k)+'</td>';}
+      h+='</tr>';
+    }
+    h+='</table></div>';
+    body.innerHTML=h;
   }
   function renderPlayerStats(warn,finCount){
     var agg={},stars=[],k,id,covered=0;
@@ -3416,7 +3519,8 @@
   // Escape closes whichever overlay is open
   document.addEventListener('keydown',function(e){
     if(e.key!=='Escape')return;
-    if(document.getElementById('stOverlay').classList.contains('open'))closeStats();
+    if(document.getElementById('plOverlay').classList.contains('open'))closeOverlay('plOverlay');
+    else if(document.getElementById('stOverlay').classList.contains('open'))closeStats();
     else if(document.getElementById('mdOverlay').classList.contains('open'))closeMatchDetail();
     else if(document.getElementById('grpOverlay').classList.contains('open'))closeOverlay('grpOverlay');
   });
@@ -3427,22 +3531,38 @@
     var n=e.target;
     while(n&&n!==this){if(n.getAttribute&&n.getAttribute('data-num')){openGroupsForMatch(n.getAttribute('data-num'));return;}n=n.parentNode;}
   });
-  // Team-stats table: Totals/Per-game toggle + tap-a-heading sorting
+  // Team-stats table: tap a team for its players · Totals/Per-game toggle · tap-a-heading sort
   document.getElementById('tvTeamStats').addEventListener('click',function(e){
     var t=e.target;
     while(t&&t!==this){
       if(t.getAttribute){
+        var tm=t.getAttribute('data-team');if(tm){openPlayerStats(tm,null);return;}
         var md=t.getAttribute('data-mode');if(md){tvTeamMode=md;renderTvTeamStats();return;}
         var so=t.getAttribute('data-sort');if(so){tvTeamSort=so;renderTvTeamStats();return;}
       }
       t=t.parentNode;
     }
   });
+  // Player-stats modal: team selector · Totals/Per-game toggle · tap-a-heading sort
+  document.getElementById('plBody').addEventListener('click',function(e){
+    var t=e.target;
+    while(t&&t!==this){
+      if(t.getAttribute){
+        var tm=t.getAttribute('data-pl-team');if(tm){plSel=tm;renderPlayerStatsModal();return;}
+        var md=t.getAttribute('data-pl-mode');if(md){plMode=md;renderPlayerStatsModal();return;}
+        var so=t.getAttribute('data-pl-sort');if(so){plSort=so;renderPlayerStatsModal();return;}
+      }
+      t=t.parentNode;
+    }
+  });
+  document.getElementById('plClose').addEventListener('click',function(){closeOverlay('plOverlay');});
+  document.getElementById('plOverlay').addEventListener('click',function(e){if(e.target===this)closeOverlay('plOverlay');});
 
   // Match detail modal
   document.getElementById('mdClose').addEventListener('click',closeMatchDetail);
   document.getElementById('mdOverlay').addEventListener('click',function(e){if(e.target===this)closeMatchDetail();});
   document.getElementById('mdBet').addEventListener('click',function(){if(mdMatch){var n=mdMatch.n;closeMatchDetail();openMatchStats(n);}});
+  document.getElementById('mdPlayers').addEventListener('click',function(){if(mdMatch){var a=mdMatch.a,b=mdMatch.b;closeMatchDetail();openPlayerStats(a,b);}});
   document.getElementById('mdCal').addEventListener('click',function(){if(mdMatch)dlIcs(mdMatch);});
   document.getElementById('mdTabStats').addEventListener('click',function(){mdSetTab('stats');});
   document.getElementById('mdTabLineup').addEventListener('click',function(){mdSetTab('lineup');});
