@@ -660,7 +660,7 @@
   <div class="tv-note">Eight of the twelve group-third teams reach the Round of 32. Ranked by points, then goal difference, then goals scored.</div>
   <div class="tv-card" id="tvThirdsCard"><div id="tvThirds"></div></div>
   <h2 class="tv-h" id="tvSecTeam">Team Stats &mdash; This Tournament</h2>
-  <div class="tv-note">Totals and per-game averages from the games played so far, straight from the official match feed: goals scored, shots on target, fouls, cards and corners. Tap a heading to rank by it.</div>
+  <div class="tv-note">Totals and per-game averages from the games played so far, straight from the official match feed: goals scored, shots on target, fouls, cards (Y/R) and corners. Tap a heading to rank by it. A &ldquo;&ndash;&rdquo; in the card columns means the feed hasn&rsquo;t published cards for that team&rsquo;s games.</div>
   <div id="tvTeamStats"></div>
   <h2 class="tv-h" id="tvSecBracket">Knockout Bracket</h2>
   <div class="tv-note">Fills in automatically as groups finish. Swipe sideways through the rounds.</div>
@@ -3043,7 +3043,7 @@
   }
   // ── Per-team tournament totals & per-game averages (real AF match stats) ──
   // sot/fouls/cor are present on every finished side, so they average over all games (n).
-  // Card data is missing on some sides (yc null => no card data, rc null => 0 reds), so yc/rc
+  // Card data is missing on some sides (yc null means no card data, rc null means 0 reds), so yc/rc
   // total + average ONLY over games that actually report cards (cn) — no phantom-zero deflation.
   var tvTeamMode='tot',tvTeamSort='goals';
   function ttsAdd(agg,nameByCanon,afName,st,gf){
@@ -3075,9 +3075,10 @@
     return a[k];
   }
   function ttsCell(a,k){
+    var den=ttsDen(a,k);
+    if((k==='yc'||k==='rc')&&!den)return '-';   // this team's games carry no card data in the feed
     if(tvTeamMode!=='avg')return String(a[k]);
-    var den=ttsDen(a,k);if(!den)return '-';
-    return (Math.round(a[k]/den*10)/10).toFixed(1);
+    return den?(Math.round(a[k]/den*10)/10).toFixed(1):'-';
   }
   function renderTvTeamStats(){
     var el=document.getElementById('tvTeamStats');if(!el)return;
