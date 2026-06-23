@@ -65,6 +65,11 @@
   .wordmark .l2{display:block;font-size:44px}
   .wordmark .l2 .six{color:var(--pitch)}
   .hostpill{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--low);font-weight:600;text-align:right;line-height:1.7;white-space:nowrap}
+  .brand .share{align-self:center;flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:var(--pitch);color:#fff;border:0;border-radius:20px;padding:7px 13px;font-family:'Barlow',sans-serif;font-weight:800;font-size:12px;letter-spacing:.02em;cursor:pointer;white-space:nowrap;transition:transform .12s,filter .12s;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+  .brand .share:hover{filter:brightness(1.07)}
+  .brand .share:active{transform:scale(.95)}
+  .brand .share svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  @media(max-width:430px){.brand .share span{display:none}.brand .share{padding:8px}}
   .hostpill b{color:var(--mut);font-weight:700}
 
   .controls{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
@@ -540,6 +545,10 @@
       <span class="l1">FIFA World Cup</span>
       <span class="l2">20<span class="six">26</span></span>
     </div>
+    <button class="share" id="shareBtn" type="button" aria-label="Share this page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><line x1="8.3" y1="13.3" x2="15.7" y2="17.7"/><line x1="15.7" y1="6.3" x2="8.3" y2="10.7"/></svg>
+      <span>Share</span>
+    </button>
     <div class="hostpill"><b>USA &middot; CAN &middot; MEX</b><br>Jun 11 &ndash; Jul 19<br>Kick-off in your time</div>
   </div>
 
@@ -919,7 +928,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 23 Jun 2026 v21 (Bracket: tap a knockout tie to see the group standings feeding it)';
+  var BUILD_TAG='Build 23 Jun 2026 v22 (Share button in the header + tap-a-tie bracket group standings)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -3293,6 +3302,12 @@
 
   document.getElementById('followSelect').addEventListener('change',function(){var v=this.value;if(v===''||F[v])setFollow(v);});
   document.getElementById('tzSelect').addEventListener('change',function(){var v=this.value;if(v==='device'||validTz[v]){TZSEL=v;save('wc26_tz',TZSEL);refresh();}});
+  document.getElementById('shareBtn').addEventListener('click',function(){
+    var url=location.href.split('#')[0];
+    if(navigator.share){navigator.share({title:'World Cup 2026 - Your Time',text:'Every World Cup 2026 kick-off in your local time - live scores, tables, bracket and stats',url:url}).catch(function(){});}
+    else if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(function(){showToast('Link copied - paste it anywhere');},function(){showToast('Copy this link: '+url);});}
+    else{showToast('Copy this link: '+url);}
+  });
   document.getElementById('themeBtn').addEventListener('click',function(){
     var isLight=document.documentElement.getAttribute('data-theme')==='light';var next=isLight?'dark':'light';applyTheme(next);save('wc26_theme',next);
   });
