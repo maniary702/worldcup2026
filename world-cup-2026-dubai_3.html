@@ -660,7 +660,7 @@
   <div class="tv-note">Eight of the twelve group-third teams reach the Round of 32. Ranked by points, then goal difference, then goals scored.</div>
   <div class="tv-card" id="tvThirdsCard"><div id="tvThirds"></div></div>
   <h2 class="tv-h" id="tvSecTeam">Team Stats &mdash; This Tournament</h2>
-  <div class="tv-note">Totals and per-game averages from the games played so far, straight from the official match feed: goals scored, shots on target, fouls, cards (Y/R) and corners. Tap a heading to rank by it. A &ldquo;&ndash;&rdquo; in the card columns means the feed hasn&rsquo;t published cards for that team&rsquo;s games.</div>
+  <div class="tv-note">Totals and per-game averages from the games played so far, straight from the official match feed. <b>Fouls</b> = committed, <b>F.won</b> = fouls drawn from opponents; <b>Y/R</b> = this team&rsquo;s cards, <b>Y-opp/R-opp</b> = cards shown to the opposing teams. Tap a heading to rank by it. A &ldquo;&ndash;&rdquo; in a card column means the feed hasn&rsquo;t published cards for those games.</div>
   <div id="tvTeamStats"></div>
   <h2 class="tv-h" id="tvSecBracket">Knockout Bracket</h2>
   <div class="tv-note">Fills in automatically as groups finish. Swipe sideways through the rounds.</div>
@@ -3046,15 +3046,18 @@
   // Card data is missing on some sides (yc null means no card data, rc null means 0 reds), so yc/rc
   // total + average ONLY over games that actually report cards (cn) — no phantom-zero deflation.
   var tvTeamMode='tot',tvTeamSort='goals';
-  function ttsAdd(agg,nameByCanon,afName,st,gf){
+  function ttsAdd(agg,nameByCanon,afName,st,oppSt,gf){
     if(!afName)return;
     var dn=nameByCanon[afCanon(afName)]||afName;
-    var a=agg[dn]||(agg[dn]={team:dn,n:0,cn:0,goals:0,sot:0,fouls:0,cor:0,yc:0,rc:0});
+    var a=agg[dn]||(agg[dn]={team:dn,n:0,cn:0,ocn:0,goals:0,sot:0,fouls:0,cor:0,yc:0,rc:0,fw:0,yca:0,rca:0});
     a.n++;
     a.goals+=(afNum(gf)||0);
     a.sot+=(afNum(st.sot)||0);a.fouls+=(afNum(st.fouls)||0);a.cor+=(afNum(st.cor)||0);
+    a.fw+=(afNum(oppSt.fouls)||0);                 // fouls won = the opponent's fouls committed
     var yc=afNum(st.yc);
     if(yc!=null){a.cn++;a.yc+=yc;a.rc+=(afNum(st.rc)||0);}
+    var oyc=afNum(oppSt.yc);                        // cards conceded = cards the opponent was shown
+    if(oyc!=null){a.ocn++;a.yca+=oyc;a.rca+=(afNum(oppSt.rc)||0);}
   }
   function teamTournamentStats(){
     var nameByCanon={},letters=['A','B','C','D','E','F','G','H','I','J','K','L'],li,ti;
@@ -3062,13 +3065,13 @@
     var agg={},k;
     for(k in AFSTATS){if(!AFSTATS.hasOwnProperty(k))continue;var e=AFSTATS[k];
       if(!e||!e.stats||!e.final)continue;
-      ttsAdd(agg,nameByCanon,e.hN,e.stats.home,e.hg);
-      ttsAdd(agg,nameByCanon,e.aN,e.stats.away,e.ag);
+      ttsAdd(agg,nameByCanon,e.hN,e.stats.home,e.stats.away,e.hg);
+      ttsAdd(agg,nameByCanon,e.aN,e.stats.away,e.stats.home,e.ag);
     }
     var arr=[],t;for(t in agg)if(agg.hasOwnProperty(t))arr.push(agg[t]);
     return arr;
   }
-  function ttsDen(a,k){return (k==='yc'||k==='rc')?a.cn:a.n;}
+  function ttsDen(a,k){if(k==='yc'||k==='rc')return a.cn;if(k==='yca'||k==='rca')return a.ocn;return a.n;}
   function ttsSortVal(a,k){
     if(k==='team')return a.team;
     if(tvTeamMode==='avg'){var den=ttsDen(a,k);return den?a[k]/den:0;}
@@ -3076,7 +3079,7 @@
   }
   function ttsCell(a,k){
     var den=ttsDen(a,k);
-    if((k==='yc'||k==='rc')&&!den)return '-';   // this team's games carry no card data in the feed
+    if((k==='yc'||k==='rc'||k==='yca'||k==='rca')&&!den)return '-';   // no card data for those games
     if(tvTeamMode!=='avg')return String(a[k]);
     return den?(Math.round(a[k]/den*10)/10).toFixed(1):'-';
   }
@@ -3089,7 +3092,7 @@
       var d=ttsSortVal(y,tvTeamSort)-ttsSortVal(x,tvTeamSort);
       return d||(y.goals-x.goals)||(x.team<y.team?-1:1);
     });
-    var avg=(tvTeamMode==='avg'),cols=[['goals','Goals'],['sot','SoT'],['fouls','Fouls'],['yc','Y'],['rc','R'],['cor','Cor']],i,c;
+    var avg=(tvTeamMode==='avg'),cols=[['goals','Goals'],['sot','SoT'],['fouls','Fouls'],['fw','F.won'],['yc','Y'],['rc','R'],['yca','Y-opp'],['rca','R-opp'],['cor','Cor']],i,c;
     var h='<div class="tts-bar"><div class="tts-toggle">'
       +'<button type="button" class="tts-t'+(!avg?' on':'')+'" data-mode="tot">Totals</button>'
       +'<button type="button" class="tts-t'+(avg?' on':'')+'" data-mode="avg">Per game</button></div>'
