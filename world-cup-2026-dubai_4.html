@@ -388,7 +388,8 @@
   table.gt.tts th.s{color:var(--txt);text-decoration:underline;text-underline-offset:3px}
   table.gt.tts td{white-space:nowrap}
   .tts-team{cursor:pointer}
-  @media(hover:hover){.tts-team:hover{color:var(--pitch)}}
+  @media(hover:hover){.tts-team:hover .tn{color:var(--pitch)}}
+  .tts-go{color:var(--pitch);font-weight:800;font-size:11px;margin-left:4px;opacity:.85;white-space:nowrap}
   /* player-stats modal */
   .pl-sel{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
   .pl-tb{background:var(--card2);border:1px solid var(--line2);border-radius:10px;padding:7px 11px;font-family:'Barlow',sans-serif;font-weight:700;font-size:12.5px;color:var(--mut);cursor:pointer;white-space:nowrap}
@@ -964,7 +965,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 23 Jun 2026 v24 (Per-player stats: per-team totals & per-game averages + match-modal Player stats button; Team Stats adds fouls won & cards conceded)';
+  var BUILD_TAG='Build 24 Jun 2026 v25 (Team Stats: + Assists column & whole-row tap-for-players)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1045,7 +1046,7 @@
   var FIFA_LIVE=FIFA_API+'live/football/now?language=en';
 
   // Final scores baked in at build time, so played games show even if the feed is down
-  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1],13:[0,0],14:[1,1],15:[1,1],16:[2,2],17:[3,1],18:[1,4],19:[3,0],20:[3,1],21:[1,1],22:[4,2],23:[1,0],24:[1,3],25:[1,1],26:[4,1],27:[6,0],28:[1,0],29:[2,0],30:[0,1],31:[3,0],32:[0,1],33:[5,1],34:[2,1],35:[0,0],36:[0,4],37:[4,0],38:[0,0],39:[2,2],40:[1,3],41:[2,0],42:[3,0],43:[3,2],44:[1,2]};
+  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1],13:[0,0],14:[1,1],15:[1,1],16:[2,2],17:[3,1],18:[1,4],19:[3,0],20:[3,1],21:[1,1],22:[4,2],23:[1,0],24:[1,3],25:[1,1],26:[4,1],27:[6,0],28:[1,0],29:[2,0],30:[0,1],31:[3,0],32:[0,1],33:[5,1],34:[2,1],35:[0,0],36:[0,4],37:[4,0],38:[0,0],39:[2,2],40:[1,3],41:[2,0],42:[3,0],43:[3,2],44:[1,2],45:[5,0],46:[0,0],47:[0,1],48:[1,0]};
   function applySeed(){
     for(var n in SEED){
       if(!scores[n])scores[n]={ga:SEED[n][0],gb:SEED[n][1],status:'FT',source:'api',minute:null};
@@ -1432,7 +1433,7 @@
   function renderActiveView(){
     if(document.body.classList.contains('tab2')){
       var br=document.getElementById('tvBracket'),sl=br?br.scrollLeft:0;
-      renderTablesView();renderTvTeamStats();renderBracket();
+      renderTablesView();renderTvTeamStats();playersFetch(function(){renderTvTeamStats();});renderBracket();
       var nb=document.getElementById('tvBracket');if(nb)nb.scrollLeft=sl;
     }else if(document.body.classList.contains('tab3')){
       var fb=document.getElementById('fanBracket'),fx=fb?fb.scrollLeft:0;
@@ -3072,7 +3073,7 @@
   function ttsAdd(agg,nameByCanon,afName,st,oppSt,gf){
     if(!afName)return;
     var dn=nameByCanon[afCanon(afName)]||afName;
-    var a=agg[dn]||(agg[dn]={team:dn,n:0,cn:0,ocn:0,goals:0,sot:0,fouls:0,cor:0,yc:0,rc:0,fw:0,yca:0,rca:0});
+    var a=agg[dn]||(agg[dn]={team:dn,n:0,cn:0,ocn:0,goals:0,ast:0,sot:0,fouls:0,cor:0,yc:0,rc:0,fw:0,yca:0,rca:0});
     a.n++;
     a.goals+=(afNum(gf)||0);
     a.sot+=(afNum(st.sot)||0);a.fouls+=(afNum(st.fouls)||0);a.cor+=(afNum(st.cor)||0);
@@ -3082,6 +3083,13 @@
     var oyc=afNum(oppSt.yc);                        // cards conceded = cards the opponent was shown
     if(oyc!=null){a.ocn++;a.yca+=oyc;a.rca+=(afNum(oppSt.rc)||0);}
   }
+  // assists aren't a team stat in the feed — sum them from the per-player data (afplayers, index 5)
+  function ttsAddAssists(agg,nameByCanon,afName,rows){
+    if(!afName||!rows)return;
+    var dn=nameByCanon[afCanon(afName)]||afName,a=agg[dn];if(!a)return;
+    var s=0,i;for(i=0;i<rows.length;i++)s+=(rows[i][5]||0);
+    a.ast+=s;
+  }
   function teamTournamentStats(){
     var nameByCanon={},letters=['A','B','C','D','E','F','G','H','I','J','K','L'],li,ti;
     for(li=0;li<letters.length;li++){var gg=GROUPS[letters[li]];for(ti=0;ti<gg.length;ti++)nameByCanon[afCanon(gg[ti])]=gg[ti];}
@@ -3090,6 +3098,12 @@
       if(!e||!e.stats||!e.final)continue;
       ttsAdd(agg,nameByCanon,e.hN,e.stats.home,e.stats.away,e.hg);
       ttsAdd(agg,nameByCanon,e.aN,e.stats.away,e.stats.home,e.ag);
+    }
+    if(plLoaded){   // assists come from the per-player file, which the Tables tab lazy-loads
+      for(k in AFPLAYERS){if(!AFPLAYERS.hasOwnProperty(k))continue;var pe=AFPLAYERS[k];if(!pe)continue;
+        ttsAddAssists(agg,nameByCanon,pe.hN,pe.home);
+        ttsAddAssists(agg,nameByCanon,pe.aN,pe.away);
+      }
     }
     var arr=[],t;for(t in agg)if(agg.hasOwnProperty(t))arr.push(agg[t]);
     return arr;
@@ -3101,6 +3115,7 @@
     return a[k];
   }
   function ttsCell(a,k){
+    if(k==='ast'&&!plLoaded)return '…';                          // assists still loading
     var den=ttsDen(a,k);
     if((k==='yc'||k==='rc'||k==='yca'||k==='rca')&&!den)return '-';   // no card data for those games
     if(tvTeamMode!=='avg')return String(a[k]);
@@ -3115,7 +3130,7 @@
       var d=ttsSortVal(y,tvTeamSort)-ttsSortVal(x,tvTeamSort);
       return d||(y.goals-x.goals)||(x.team<y.team?-1:1);
     });
-    var avg=(tvTeamMode==='avg'),cols=[['goals','Goals'],['sot','SoT'],['fouls','Fouls'],['fw','F.won'],['yc','Y'],['rc','R'],['yca','Y-opp'],['rca','R-opp'],['cor','Cor']],i,c;
+    var avg=(tvTeamMode==='avg'),cols=[['goals','Goals'],['ast','Ast'],['sot','SoT'],['fouls','Fouls'],['fw','F.won'],['yc','Y'],['rc','R'],['yca','Y-opp'],['rca','R-opp'],['cor','Cor']],i,c;
     var h='<div class="tts-bar"><div class="tts-toggle">'
       +'<button type="button" class="tts-t'+(!avg?' on':'')+'" data-mode="tot">Totals</button>'
       +'<button type="button" class="tts-t'+(avg?' on':'')+'" data-mode="avg">Per game</button></div>'
@@ -3124,7 +3139,7 @@
     for(c=0;c<cols.length;c++)h+='<th'+(tvTeamSort===cols[c][0]?' class="s"':'')+' data-sort="'+cols[c][0]+'">'+cols[c][1]+'</th>';
     h+='</tr>';
     for(i=0;i<arr.length;i++){var a=arr[i];
-      h+='<tr'+(a.team===FOLLOW?' class="meRow"':'')+'><td class="tn tts-team" data-team="'+escapeHtml(a.team)+'">'+(F[a.team]||'')+' '+escapeHtml(a.team)+'</td><td>'+a.n+'</td>';
+      h+='<tr class="tts-team'+(a.team===FOLLOW?' meRow':'')+'" data-team="'+escapeHtml(a.team)+'"><td class="tn">'+(F[a.team]||'')+' '+escapeHtml(a.team)+' <span class="tts-go">&#128100;&rsaquo;</span></td><td>'+a.n+'</td>';
       for(c=0;c<cols.length;c++){var k=cols[c][0];h+='<td'+(tvTeamSort===k?' class="pts"':'')+'>'+ttsCell(a,k)+'</td>';}
       h+='</tr>';}
     h+='</table></div>';
@@ -3422,7 +3437,7 @@
     ts.setAttribute('aria-pressed',n===1?'true':'false');tt.setAttribute('aria-pressed',n===2?'true':'false');tb.setAttribute('aria-pressed',n===3?'true':'false');
     save('wc26_tab',String(n));
     if(n===2){
-      renderTablesView();renderTvTeamStats();renderBracket();renderPlayerStats(null,0);
+      renderTablesView();renderTvTeamStats();playersFetch(function(){renderTvTeamStats();});renderBracket();renderPlayerStats(null,0);
       ensurePstats(function(warn,finCount){renderPlayerStats(warn,finCount);renderBracket();});
     }else if(n===3){renderFanBracket();}
     if(was!==n)setTimeout(function(){window.scrollTo({top:tabScroll[n]||0});},0);
