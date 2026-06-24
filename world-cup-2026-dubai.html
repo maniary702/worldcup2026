@@ -1205,10 +1205,17 @@
         var m=list[mi].m,o=list[mi].o,st=statusOf(m),cls=firstPaint?['match','rev']:['match'];
         var sc=scoreOf(m);
         var hasScore=sc&&sc.ga!==undefined&&sc.gb!==undefined;
+        // Live by the clock but the FIFA feed hasn't delivered a score yet (it
+        // can lag a minute or two behind kickoff). Without this, two games that
+        // kick off together render inconsistently - one shows a score, the other
+        // a bare "v" beside a red LIVE badge. Fall back to a 0-0 placeholder so
+        // every live card shows a score; the next poll overwrites it once the
+        // feed catches up.
+        var liveNoScore=!hasScore&&st.k==='lv';
         if(isFav(m))cls.push('fav');
         if(!isGroup(m))cls.push('ko');
         if(favPoss(m))cls.push('poss');
-        if(hasScore)cls.push('scored');
+        if(hasScore||liveNoScore)cls.push('scored');
         if(st.k==='ft')cls.push('played');
         if(st.k==='lv')cls.push('live');
         var aMe=isFav(m)&&m.a===FOLLOW,bMe=isFav(m)&&m.b===FOLLOW;
@@ -1225,6 +1232,10 @@
           teamsHtml='<span'+(ac.length?' class="'+ac.join(' ')+'"':'')+'>'+escapeHtml(m.a)+'</span>'+
             '<span class="sc">'+sc.ga+' - '+sc.gb+'</span>'+
             '<span'+(bc.length?' class="'+bc.join(' ')+'"':'')+'>'+escapeHtml(m.b)+'</span>';
+        }else if(liveNoScore){
+          teamsHtml='<span'+(aMe?' class="me"':'')+'>'+escapeHtml(m.a)+'</span>'+
+            '<span class="sc">0 - 0</span>'+
+            '<span'+(bMe?' class="me"':'')+'>'+escapeHtml(m.b)+'</span>';
         }else{
           teamsHtml='<span'+(aMe?' class="me"':'')+'>'+escapeHtml(m.a)+'</span><span class="vs">v</span><span'+(bMe?' class="me"':'')+'>'+escapeHtml(m.b)+'</span>';
         }
@@ -1233,7 +1244,7 @@
         var venueHtml;
         if(hasScore&&st.k==='ft'){
           venueHtml='<span class="ft-tag">FT</span> · '+escapeHtml(m.v);
-        }else if(hasScore&&st.k==='lv'){
+        }else if((hasScore||liveNoScore)&&st.k==='lv'){
           venueHtml='<span class="ft-tag">'+st.t+'</span> · '+escapeHtml(m.v);
         }else{
           venueHtml=escapeHtml(m.v);
@@ -1318,13 +1329,17 @@
     var isLive=st.k==='lv';
     var hasScore=sc&&sc.ga!==undefined&&sc.gb!==undefined;
 
-    if(isLive&&hasScore){
-      // Show live score in hero
+    if(isLive){
+      // Show live score in hero. If the feed hasn't delivered one yet (it lags a
+      // minute or two behind kickoff) fall back to a 0-0 placeholder so the hero
+      // never shows a bare "v" beside a Live badge; the poll fills in the real
+      // score shortly.
       hero.classList.add('live');
       badge=st.t;
       document.getElementById('heroBadge').innerHTML='<span class="blip"></span> '+escapeHtml(badge);
+      var hga=hasScore?sc.ga:0,hgb=hasScore?sc.gb:0;
       line='<span class="flag">'+(F[m.a]||'')+'</span> '+escapeHtml(m.a)+
-        ' <span class="hero-sc">'+sc.ga+' - '+sc.gb+'</span> '+
+        ' <span class="hero-sc">'+hga+' - '+hgb+'</span> '+
         '<span class="flag">'+(F[m.b]||'')+'</span> '+escapeHtml(m.b);
       document.getElementById('heroLine').innerHTML=line;
       document.getElementById('heroWhen').textContent=fmtShort(key)+' · '+fmtClock(o)+' · '+m.v;
