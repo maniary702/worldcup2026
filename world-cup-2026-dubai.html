@@ -111,6 +111,19 @@
   .cseg{background:var(--seg);border:1px solid var(--line);border-radius:12px;padding:8px 0 6px;text-align:center;flex:1}
   .cseg .num{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:26px;line-height:1;letter-spacing:-1px;color:var(--txt)}
   .cseg .lab{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--low);margin-top:5px;font-weight:700}
+  #liveExtra{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+  #liveExtra:empty{display:none}
+  .livex{border-radius:16px;position:relative;overflow:hidden;border:1px solid var(--live);
+    background:linear-gradient(135deg,var(--live-tint),transparent 65%),var(--card);padding:12px 14px;cursor:pointer}
+  .livex:active{transform:scale(.99)}
+  .livex .lx-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .livex .badge{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#fff;
+    border:1px solid var(--live);background:var(--live);padding:3px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}
+  .livex .blip{width:7px;height:7px;border-radius:50%;background:#fff;display:inline-block;animation:blink 1s steps(2) infinite}
+  .livex .lx-line{font-family:'Barlow Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:22px;line-height:1;letter-spacing:.5px;color:var(--txt)}
+  .livex .lx-line .flag{font-size:18px;vertical-align:-2px}
+  .livex .lx-sc{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:27px;color:var(--live);margin:0 7px;letter-spacing:-1px;vertical-align:-2px;animation:scorePulse 2s ease-in-out infinite}
+  .livex .lx-when{font-size:11px;color:var(--mut);margin-top:5px}
 
   .progwrap{margin-top:14px}
   .progbar{height:5px;border-radius:999px;background:var(--line);overflow:hidden}
@@ -626,6 +639,7 @@
       <div class="cseg"><div class="num" id="cS">00</div><div class="lab">Sec</div></div>
     </div>
   </div>
+  <div id="liveExtra"></div>
 
   </header>
 
@@ -965,7 +979,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 24 Jun 2026 v25 (Team Stats: + Assists column & whole-row tap-for-players)';
+  var BUILD_TAG='Build 25 Jun 2026 v26 (all simultaneous live games shown at top, not just one)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1046,7 +1060,7 @@
   var FIFA_LIVE=FIFA_API+'live/football/now?language=en';
 
   // Final scores baked in at build time, so played games show even if the feed is down
-  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1],13:[0,0],14:[1,1],15:[1,1],16:[2,2],17:[3,1],18:[1,4],19:[3,0],20:[3,1],21:[1,1],22:[4,2],23:[1,0],24:[1,3],25:[1,1],26:[4,1],27:[6,0],28:[1,0],29:[2,0],30:[0,1],31:[3,0],32:[0,1],33:[5,1],34:[2,1],35:[0,0],36:[0,4],37:[4,0],38:[0,0],39:[2,2],40:[1,3],41:[2,0],42:[3,0],43:[3,2],44:[1,2],45:[5,0],46:[0,0],47:[0,1],48:[1,0]};
+  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1],13:[0,0],14:[1,1],15:[1,1],16:[2,2],17:[3,1],18:[1,4],19:[3,0],20:[3,1],21:[1,1],22:[4,2],23:[1,0],24:[1,3],25:[1,1],26:[4,1],27:[6,0],28:[1,0],29:[2,0],30:[0,1],31:[3,0],32:[0,1],33:[5,1],34:[2,1],35:[0,0],36:[0,4],37:[4,0],38:[0,0],39:[2,2],40:[1,3],41:[2,0],42:[3,0],43:[3,2],44:[1,2],45:[5,0],46:[0,0],47:[0,1],48:[1,0],49:[2,1],50:[3,1],51:[4,2],52:[0,3],53:[1,0],54:[0,3]};
   function applySeed(){
     for(var n in SEED){
       if(!scores[n])scores[n]={ga:SEED[n][0],gb:SEED[n][1],status:'FT',source:'api',minute:null};
@@ -1205,17 +1219,10 @@
         var m=list[mi].m,o=list[mi].o,st=statusOf(m),cls=firstPaint?['match','rev']:['match'];
         var sc=scoreOf(m);
         var hasScore=sc&&sc.ga!==undefined&&sc.gb!==undefined;
-        // Live by the clock but the FIFA feed hasn't delivered a score yet (it
-        // can lag a minute or two behind kickoff). Without this, two games that
-        // kick off together render inconsistently - one shows a score, the other
-        // a bare "v" beside a red LIVE badge. Fall back to a 0-0 placeholder so
-        // every live card shows a score; the next poll overwrites it once the
-        // feed catches up.
-        var liveNoScore=!hasScore&&st.k==='lv';
         if(isFav(m))cls.push('fav');
         if(!isGroup(m))cls.push('ko');
         if(favPoss(m))cls.push('poss');
-        if(hasScore||liveNoScore)cls.push('scored');
+        if(hasScore)cls.push('scored');
         if(st.k==='ft')cls.push('played');
         if(st.k==='lv')cls.push('live');
         var aMe=isFav(m)&&m.a===FOLLOW,bMe=isFav(m)&&m.b===FOLLOW;
@@ -1232,10 +1239,6 @@
           teamsHtml='<span'+(ac.length?' class="'+ac.join(' ')+'"':'')+'>'+escapeHtml(m.a)+'</span>'+
             '<span class="sc">'+sc.ga+' - '+sc.gb+'</span>'+
             '<span'+(bc.length?' class="'+bc.join(' ')+'"':'')+'>'+escapeHtml(m.b)+'</span>';
-        }else if(liveNoScore){
-          teamsHtml='<span'+(aMe?' class="me"':'')+'>'+escapeHtml(m.a)+'</span>'+
-            '<span class="sc">0 - 0</span>'+
-            '<span'+(bMe?' class="me"':'')+'>'+escapeHtml(m.b)+'</span>';
         }else{
           teamsHtml='<span'+(aMe?' class="me"':'')+'>'+escapeHtml(m.a)+'</span><span class="vs">v</span><span'+(bMe?' class="me"':'')+'>'+escapeHtml(m.b)+'</span>';
         }
@@ -1244,7 +1247,7 @@
         var venueHtml;
         if(hasScore&&st.k==='ft'){
           venueHtml='<span class="ft-tag">FT</span> · '+escapeHtml(m.v);
-        }else if((hasScore||liveNoScore)&&st.k==='lv'){
+        }else if(hasScore&&st.k==='lv'){
           venueHtml='<span class="ft-tag">'+st.t+'</span> · '+escapeHtml(m.v);
         }else{
           venueHtml=escapeHtml(m.v);
@@ -1304,15 +1307,40 @@
   function nextFav(){var now=Date.now();for(var i=0;i<matches.length;i++){if((isFav(matches[i])||favPoss(matches[i]))&&kickoffUTC(matches[i]).getTime()+LIVE_WIN>now)return matches[i];}return null;}
   function nextAny(){var now=Date.now();for(var i=0;i<matches.length;i++){if(kickoffUTC(matches[i]).getTime()+LIVE_WIN>now)return matches[i];}return null;}
 
+  // One compact live-score card for an additional in-play game (used when 2+ are live at once,
+  // e.g. the final round of group games which all kick off simultaneously).
+  function liveCardHtml(m){
+    var o=bits(m),key=dayKey(o),sc=scoreOf(m),st=statusOf(m);
+    var scTxt=(sc&&sc.ga!==undefined&&sc.gb!==undefined)?(sc.ga+' - '+sc.gb):'0 - 0';
+    return '<div class="livex" data-n="'+m.n+'" role="button" tabindex="0" aria-label="'+escapeHtml(m.a+' versus '+m.b+', live - open match details')+'">'+
+      '<div class="lx-top"><span class="badge"><span class="blip"></span> '+escapeHtml(st.t||'Live')+'</span></div>'+
+      '<div class="lx-line"><span class="flag">'+(F[m.a]||'')+'</span> '+escapeHtml(m.a)+
+        ' <span class="lx-sc">'+scTxt+'</span> '+
+        '<span class="flag">'+(F[m.b]||'')+'</span> '+escapeHtml(m.b)+'</div>'+
+      '<div class="lx-when">'+escapeHtml(fmtShort(key)+' · '+fmtClock(o)+' · '+m.v)+'</div>'+
+    '</div>';
+  }
+  // Render every live game EXCEPT the one already shown in the hero, so simultaneous games all show.
+  function renderLiveExtra(liveList,primary){
+    var box=document.getElementById('liveExtra');if(!box)return;
+    var html='',i;
+    for(i=0;i<liveList.length;i++){if(liveList[i]===primary)continue;html+=liveCardHtml(liveList[i]);}
+    box.innerHTML=html;
+  }
+
   // ── HERO (score-aware) ──
   function tickHero(){
     // priority: live game of the followed team > any live game > next followed > next overall
     var hero=document.getElementById('hero'),m=null,fallback=false,lvFav=null,lvAny=null;
+    var liveList=[];
     for(var li2=0;li2<matches.length;li2++){
       if(statusOf(matches[li2]).k!=='lv')continue;
-      if(isFav(matches[li2])){lvFav=matches[li2];break;}
+      liveList.push(matches[li2]);
+      if(isFav(matches[li2])&&!lvFav)lvFav=matches[li2];
       if(!lvAny)lvAny=matches[li2];
     }
+    // 2+ simultaneous live games (final group round): hero shows one, these show the rest.
+    renderLiveExtra(liveList,lvFav||lvAny);
     m=lvFav||lvAny||nextFav();
     if(lvAny&&!lvFav&&!FOLLOW)fallback=true;
     if(!m){m=nextAny();fallback=true;}
@@ -1329,17 +1357,13 @@
     var isLive=st.k==='lv';
     var hasScore=sc&&sc.ga!==undefined&&sc.gb!==undefined;
 
-    if(isLive){
-      // Show live score in hero. If the feed hasn't delivered one yet (it lags a
-      // minute or two behind kickoff) fall back to a 0-0 placeholder so the hero
-      // never shows a bare "v" beside a Live badge; the poll fills in the real
-      // score shortly.
+    if(isLive&&hasScore){
+      // Show live score in hero
       hero.classList.add('live');
       badge=st.t;
       document.getElementById('heroBadge').innerHTML='<span class="blip"></span> '+escapeHtml(badge);
-      var hga=hasScore?sc.ga:0,hgb=hasScore?sc.gb:0;
       line='<span class="flag">'+(F[m.a]||'')+'</span> '+escapeHtml(m.a)+
-        ' <span class="hero-sc">'+hga+' - '+hgb+'</span> '+
+        ' <span class="hero-sc">'+sc.ga+' - '+sc.gb+'</span> '+
         '<span class="flag">'+(F[m.b]||'')+'</span> '+escapeHtml(m.b);
       document.getElementById('heroLine').innerHTML=line;
       document.getElementById('heroWhen').textContent=fmtShort(key)+' · '+fmtClock(o)+' · '+m.v;
@@ -3531,6 +3555,16 @@
     if(document.body.classList.contains('tab2')||document.body.classList.contains('tab3'))document.getElementById('tabSched').click();
     var n=this.getAttribute('data-n'),el=n&&document.querySelector('.match[data-n="'+n+'"]');
     if(el)el.scrollIntoView({behavior:'smooth',block:'center'});});
+  // tapping an extra live card opens that match's detail modal (same as a schedule row)
+  document.getElementById('liveExtra').addEventListener('click',function(e){
+    var c=e.target;while(c&&c!==this&&!(c.classList&&c.classList.contains('livex')))c=c.parentNode;
+    if(c&&c!==this&&c.getAttribute('data-n'))openMatchDetail(parseInt(c.getAttribute('data-n'),10));
+  });
+  document.getElementById('liveExtra').addEventListener('keydown',function(e){
+    if(e.key!=='Enter'&&e.key!==' ')return;var c=e.target;
+    if(!(c.classList&&c.classList.contains('livex')))return;
+    if(c.getAttribute('data-n')){e.preventDefault();openMatchDetail(parseInt(c.getAttribute('data-n'),10));}
+  });
 
   // Score modal events
 
