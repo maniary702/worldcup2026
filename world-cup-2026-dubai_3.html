@@ -95,6 +95,8 @@
   .hero{margin-top:14px;border-radius:18px;position:relative;overflow:hidden;border:1px solid var(--fav);
     background:linear-gradient(135deg, var(--fav-tint), transparent 62%), var(--card);padding:16px 16px 15px}
   .hero.live{border-color:var(--live);background:linear-gradient(135deg,var(--live-tint),transparent 65%),var(--card)}
+  .hero.tapable{cursor:pointer}
+  @media(hover:hover){.hero.tapable:hover{border-color:var(--live)}}
   .hero .htop{display:flex;align-items:center;gap:8px;margin-bottom:10px}
   .hero .badge{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-ink);
     border:1px solid var(--gold);padding:3px 8px;border-radius:999px}
@@ -979,7 +981,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 25 Jun 2026 v26.1 (simultaneous live games render as uniform cards)';
+  var BUILD_TAG='Build 25 Jun 2026 v26.2 (hero is tappable too — every live game opens stats)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1356,7 +1358,12 @@
       document.getElementById('heroLine').textContent='Thanks for following along';
       document.getElementById('heroWhen').textContent='—';
       document.getElementById('cD').textContent='00';document.getElementById('cH').textContent='00';
-      document.getElementById('cM').textContent='00';document.getElementById('cS').textContent='00';return;}
+      document.getElementById('cM').textContent='00';document.getElementById('cS').textContent='00';
+      hero.removeAttribute('data-n');hero.classList.remove('tapable');hero.removeAttribute('role');hero.removeAttribute('tabindex');return;}
+
+    // make the single hero open that match's stats on tap (live game OR next match), like a card
+    if(F[m.a]&&F[m.b]){hero.setAttribute('data-n',m.n);hero.classList.add('tapable');hero.setAttribute('role','button');hero.setAttribute('tabindex','0');}
+    else{hero.removeAttribute('data-n');hero.classList.remove('tapable');hero.removeAttribute('role');hero.removeAttribute('tabindex');}
 
     var o=bits(m),key=dayKey(o),badge,line;
     var sc=scoreOf(m);
@@ -3571,6 +3578,13 @@
     if(e.key!=='Enter'&&e.key!==' ')return;var c=e.target;
     if(!(c.classList&&c.classList.contains('livex')))return;
     if(c.getAttribute('data-n')){e.preventDefault();openMatchDetail(parseInt(c.getAttribute('data-n'),10));}
+  });
+  // the single hero opens its match's stats on tap when it represents a real game (live or next up)
+  document.getElementById('hero').addEventListener('click',function(){
+    var n=this.getAttribute('data-n'); if(n)openMatchDetail(parseInt(n,10));
+  });
+  document.getElementById('hero').addEventListener('keydown',function(e){
+    if((e.key==='Enter'||e.key===' ')&&this.getAttribute('data-n')){e.preventDefault();openMatchDetail(parseInt(this.getAttribute('data-n'),10));}
   });
 
   // Score modal events
