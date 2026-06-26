@@ -113,17 +113,17 @@
   .cseg .lab{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--low);margin-top:5px;font-weight:700}
   #liveExtra{display:flex;flex-direction:column;gap:10px;margin-top:10px}
   #liveExtra:empty{display:none}
-  .livex{border-radius:16px;position:relative;overflow:hidden;border:1px solid var(--live);
-    background:linear-gradient(135deg,var(--live-tint),transparent 65%),var(--card);padding:12px 14px;cursor:pointer}
+  .livex{border-radius:18px;position:relative;overflow:hidden;border:1px solid var(--live);
+    background:linear-gradient(135deg,var(--live-tint),transparent 65%),var(--card);padding:14px 16px;cursor:pointer}
   .livex:active{transform:scale(.99)}
-  .livex .lx-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
-  .livex .badge{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#fff;
+  .livex .lx-top{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .livex .badge{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#fff;
     border:1px solid var(--live);background:var(--live);padding:3px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}
   .livex .blip{width:7px;height:7px;border-radius:50%;background:#fff;display:inline-block;animation:blink 1s steps(2) infinite}
-  .livex .lx-line{font-family:'Barlow Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:22px;line-height:1;letter-spacing:.5px;color:var(--txt)}
-  .livex .lx-line .flag{font-size:18px;vertical-align:-2px}
-  .livex .lx-sc{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:27px;color:var(--live);margin:0 7px;letter-spacing:-1px;vertical-align:-2px;animation:scorePulse 2s ease-in-out infinite}
-  .livex .lx-when{font-size:11px;color:var(--mut);margin-top:5px}
+  .livex .lx-line{font-family:'Barlow Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:25px;line-height:1.04;letter-spacing:.5px;color:var(--txt)}
+  .livex .lx-line .flag{font-size:20px;vertical-align:-2px}
+  .livex .lx-sc{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:31px;color:var(--live);margin:0 8px;letter-spacing:-1px;vertical-align:-2px;animation:scorePulse 2s ease-in-out infinite}
+  .livex .lx-when{font-size:12px;color:var(--mut);margin-top:6px}
 
   .progwrap{margin-top:14px}
   .progbar{height:5px;border-radius:999px;background:var(--line);overflow:hidden}
@@ -330,11 +330,11 @@
   .vtab:active{transform:scale(.97)}
   #tablesView{display:none}
   body.tab2 #tablesView{display:block}
-  body.tab2 .hero,body.tab2 .stickynav,body.tab2 #sch,body.tab2 .fab.fav{display:none}
+  body.tab2 .hero,body.tab2 #liveExtra,body.tab2 .stickynav,body.tab2 #sch,body.tab2 .fab.fav{display:none}
   /* ===== Fan Zone bracket (tab 3) ===== */
   #bracketView{display:none}
   body.tab3 #bracketView{display:block}
-  body.tab3 .hero,body.tab3 .stickynav,body.tab3 #sch,body.tab3 .fab.fav{display:none}
+  body.tab3 .hero,body.tab3 #liveExtra,body.tab3 .stickynav,body.tab3 #sch,body.tab3 .fab.fav{display:none}
   #bracketView{background:linear-gradient(160deg,#241a63,#171034);border-radius:16px;margin:4px 0 24px;padding:16px 10px 20px;color:#fff;overflow:hidden}
   .fb-head{text-align:center;margin-bottom:12px;padding:0 6px}
   .fb-title{font-size:19px;font-weight:900;margin:0 0 5px;letter-spacing:.4px}
@@ -979,7 +979,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 25 Jun 2026 v26 (all simultaneous live games shown at top, not just one)';
+  var BUILD_TAG='Build 25 Jun 2026 v26.1 (simultaneous live games render as uniform cards)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1339,7 +1339,14 @@
       if(isFav(matches[li2])&&!lvFav)lvFav=matches[li2];
       if(!lvAny)lvAny=matches[li2];
     }
-    // 2+ simultaneous live games (final group round): hero shows one, these show the rest.
+    // 2+ simultaneous live games (final group round): drop the big single hero and render EVERY
+    // live game as one uniform card, so the boxes match instead of one big + one small.
+    if(liveList.length>=2){
+      hero.style.display='none';
+      renderLiveExtra(liveList,null);
+      return;
+    }
+    hero.style.display='';
     renderLiveExtra(liveList,lvFav||lvAny);
     m=lvFav||lvAny||nextFav();
     if(lvAny&&!lvFav&&!FOLLOW)fallback=true;
