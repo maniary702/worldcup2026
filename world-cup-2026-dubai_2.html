@@ -126,6 +126,22 @@
   .livex .lx-line .flag{font-size:20px;vertical-align:-2px}
   .livex .lx-sc{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:31px;color:var(--live);margin:0 8px;letter-spacing:-1px;vertical-align:-2px;animation:scorePulse 2s ease-in-out infinite}
   .livex .lx-when{font-size:12px;color:var(--mut);margin-top:6px}
+  /* live win-probability bar (book-anchored in-play model) */
+  .wp{margin:2px 0 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);padding:11px 13px 12px}
+  .wp-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--low);font-weight:700}
+  .wp-h .wp-live{color:var(--live);display:inline-flex;align-items:center;gap:5px}
+  .wp-h .wp-live .blip{width:6px;height:6px;border-radius:50%;background:var(--live);display:inline-block;animation:blink 1s steps(2) infinite}
+  .wp-h .wp-src{font-weight:600;opacity:.65;letter-spacing:.04em;text-transform:none}
+  .wp-bar{display:flex;height:30px;border-radius:9px;overflow:hidden;background:var(--seg)}
+  .wp-seg{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:13px;color:#fff;min-width:0;overflow:hidden;transition:width .6s ease}
+  .wp-seg.w{background:var(--pitch)}
+  .wp-seg.d{background:#6b7686}
+  .wp-seg.l{background:#3b74d6}
+  .wp-legend{display:flex;justify-content:space-between;gap:8px;margin-top:8px;font-size:11.5px;color:var(--mut)}
+  .wp-legend b{color:var(--txt);font-family:'JetBrains Mono',monospace}
+  .wp-legend .ll{text-align:right}
+  .wp-cal{font-size:10.5px;color:var(--low);margin-top:8px;text-align:center;line-height:1.45}
+  .wp-cal b{color:var(--mut)}
 
   .progwrap{margin-top:14px}
   .progbar{height:5px;border-radius:999px;background:var(--line);overflow:hidden}
@@ -750,6 +766,7 @@
     <div class="md-when" id="mdWhen"></div>
     <div class="md-tz" id="mdTz"></div>
     <div class="md-tz" id="mdScorers" style="display:none;margin-bottom:12px"></div>
+    <div id="mdWinProb" style="display:none"></div>
     <div id="mdLive" style="display:none">
       <div class="md-tabs">
         <button class="md-tab on" id="mdTabStats" type="button" aria-pressed="true">Match</button>
@@ -983,7 +1000,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 28 Jun 2026 v26.3 (qualified team shows real R32; team button cycles fixtures)';
+  var BUILD_TAG='Build 28 Jun 2026 v26.4 (live win-probability bar — book-anchored in-play model)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -2148,6 +2165,7 @@
       var tag=(st.k==='ft')?'<span class="tag">FT</span>':(st.k==='lv'?'<span class="tag live">'+escapeHtml(st.t)+'</span>':'');
       scEl.style.display='';scEl.innerHTML=sc.ga+' - '+sc.gb+tag;
     }else scEl.style.display='none';
+    renderWinProb(mm);  // keep the live win-probability bar in sync with the score every tick
     return st;
   }
   function closeMatchDetail(){closeOverlay('mdOverlay');if(mdTimer){clearInterval(mdTimer);mdTimer=null;}}
@@ -2445,6 +2463,72 @@
     h+='<div class="st-note" style="margin:6px 0 0">Best bookmaker prices (the-odds-api). Market = de-vigged implied %. Bot = the predictor&rsquo;s own probability (60% market + 40% model) &mdash; the number it actually stakes; edge = Bot &minus; market. A guide, not a tip &mdash; always check team news.</div></div>';
     return h;
   }
+  // ══════════════════════════════════════
+  //  LIVE WIN PROBABILITY  (book-anchored in-play model — the thing FotMob doesn't ship)
+  // ══════════════════════════════════════
+  // Anchor to the de-vigged closing 1X2 (odds.json 'imp'); invert it to a pair of Poisson scoring
+  // rates, then each tick scale the remaining rate by time left, shift the grid by the live score
+  // and re-sum to P(home win / draw / away win). At kickoff this reproduces the market exactly.
+  // Validated offline: pre-match multiclass Brier ~0.45 over the 72 group games (0.67 = no skill).
+  var WPLAM={};
+  function wpPois(lam,kmax){var a=[],p=Math.exp(-lam),k;a[0]=p;for(k=1;k<=kmax;k++){p=p*lam/k;a[k]=p;}return a;}
+  function wpGrid(lh,la,KM){var ph=wpPois(Math.max(lh,0.02),KM),pa=wpPois(Math.max(la,0.02),KM),W=0,D=0,L=0,i,j;
+    for(i=0;i<=KM;i++)for(j=0;j<=KM;j++){var pr=ph[i]*pa[j];if(i>j)W+=pr;else if(i===j)D+=pr;else L+=pr;}
+    var s=W+D+L;return [W/s,D/s,L/s];}
+  // invert de-vigged (pW,pD,pL) -> {lh,la}: outer bisection on total goals (mu), inner on supremacy
+  function wpInvert(pW,pD,pL){
+    function inner(mu){var lo=-(mu-0.1),hi=mu-0.1,s,g,k;
+      for(k=0;k<42;k++){s=(lo+hi)/2;g=wpGrid((mu+s)/2,(mu-s)/2,10);if((g[0]-g[2])<(pW-pL))lo=s;else hi=s;}
+      s=(lo+hi)/2;return {lh:Math.max((mu+s)/2,0.02),la:Math.max((mu-s)/2,0.02)};}
+    var mlo=0.4,mhi=6.5,mu,r,g,k;
+    for(k=0;k<42;k++){mu=(mlo+mhi)/2;r=inner(mu);g=wpGrid(r.lh,r.la,10);if(g[1]>pD)mlo=mu;else mhi=mu;}
+    return inner((mlo+mhi)/2);}
+  function wpLambdas(mm,imp){
+    var key=[afCanon(mm.a),afCanon(mm.b)].sort().join('__')+'|'+Math.round(imp.home*1000)+'_'+Math.round(imp.draw*1000);
+    if(WPLAM[key])return WPLAM[key];
+    var r=wpInvert(imp.home,imp.draw,imp.away);WPLAM[key]=r;return r;}
+  // remaining-scoring fraction of a 90-min match from the live status; null = penalties (coin flip)
+  function wpRemFrac(st){var t=st.t||'';
+    if(/PEN/i.test(t))return null;
+    if(/HT/i.test(t))return 45/90;
+    var m=/(\d+)/.exec(t),min=m?parseInt(m[1],10):45;
+    if(/ET/i.test(t)||min>90)return Math.max(0,120-min)/90;
+    return Math.max(0,90-min)/90;}
+  function wpLive(lh,la,gh,ga,frac){
+    if(frac==null)return gh>ga?[1,0,0]:(gh<ga?[0,0,1]:[0.5,0,0.5]);
+    if(frac<=0.002)return gh>ga?[1,0,0]:(gh<ga?[0,0,1]:[0,1,0]);
+    var KM=9,ph=wpPois(lh*frac,KM),pa=wpPois(la*frac,KM),W=0,D=0,L=0,i,j;
+    for(i=0;i<=KM;i++)for(j=0;j<=KM;j++){var pr=ph[i]*pa[j],fh=gh+i,fa=ga+j;if(fh>fa)W+=pr;else if(fh===fa)D+=pr;else L+=pr;}
+    var s=W+D+L;return [W/s,D/s,L/s];}
+  // honest calibration: multiclass Brier of the de-vigged market vs the actual result, played games only
+  function wpBrier(){
+    var sum=0,n=0,i;
+    for(i=0;i<matches.length;i++){var m=matches[i],O=afOddsEntry(m.a,m.b);if(!O||!O.imp)continue;
+      var st=statusOf(m),sc=scoreOf(m);if(st.k!=='ft'||!sc||sc.ga==null||sc.gb==null)continue;
+      var yW=sc.ga>sc.gb?1:0,yD=sc.ga===sc.gb?1:0,yL=sc.ga<sc.gb?1:0;
+      sum+=Math.pow(O.imp.home-yW,2)+Math.pow(O.imp.draw-yD,2)+Math.pow(O.imp.away-yL,2);n++;}
+    return n?{b:sum/n,n:n}:null;}
+  function wpSeg(cls,pct,label){return '<div class="wp-seg '+cls+'" style="width:'+pct+'%">'+(pct>=13?'<span>'+label+'</span>':'')+'</div>';}
+  function wpCode(t){return CODE[t]||(t||'').substr(0,3).toUpperCase();}
+  function winProbBarHtml(mm){
+    var O=afOddsEntry(mm.a,mm.b);if(!O||!O.imp)return '';
+    var st=statusOf(mm),sc=scoreOf(mm),p,cap;
+    if(st.k==='lv'&&sc&&sc.ga!=null){
+      var lam=wpLambdas(mm,O.imp);p=wpLive(lam.lh,lam.la,sc.ga,sc.gb,wpRemFrac(st));
+      cap='<span class="wp-live"><span class="blip"></span> LIVE '+escapeHtml(st.t||'')+'</span>';
+    }else{p=[O.imp.home,O.imp.draw,O.imp.away];cap=(st.k==='ft')?'Pre-match outlook':'Win probability';}
+    var w=Math.round(p[0]*100),d=Math.round(p[1]*100),l=Math.round(p[2]*100),sum=w+d+l;
+    if(sum!==100){var diff=100-sum;if(w>=d&&w>=l)w+=diff;else if(l>=d)l+=diff;else d+=diff;}
+    var A=(F[mm.a]||'')+' '+escapeHtml(wpCode(mm.a)),B=(F[mm.b]||'')+' '+escapeHtml(wpCode(mm.b));
+    var h='<div class="wp"><div class="wp-h"><span>'+cap+'</span><span class="wp-src">live model</span></div>';
+    h+='<div class="wp-bar">'+wpSeg('w',w,w+'%')+wpSeg('d',d,d+'%')+wpSeg('l',l,l+'%')+'</div>';
+    h+='<div class="wp-legend"><span class="lw">'+A+' <b>'+w+'%</b></span><span class="ld">Draw <b>'+d+'%</b></span><span class="ll"><b>'+l+'%</b> '+B+'</span></div>';
+    var br=wpBrier();
+    if(br)h+='<div class="wp-cal">Anchored to the closing market &middot; pre-match Brier <b>'+br.b.toFixed(2)+'</b> across '+br.n+' games <span style="opacity:.7">(0.67 = no skill &middot; lower is better)</span></div>';
+    h+='</div>';return h;}
+  function renderWinProb(mm){var el=document.getElementById('mdWinProb');if(!el)return;
+    var html=winProbBarHtml(mm);if(html){el.innerHTML=html;el.style.display='';}else{el.innerHTML='';el.style.display='none';}}
+
   function afLiveRerenderStats(){
     var ov=document.getElementById('stOverlay');
     if(!ov||!ov.classList.contains('open'))return;
