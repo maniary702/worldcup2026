@@ -2480,7 +2480,7 @@
     function inner(mu){var lo=-(mu-0.1),hi=mu-0.1,s,g,k;
       for(k=0;k<42;k++){s=(lo+hi)/2;g=wpGrid((mu+s)/2,(mu-s)/2,10);if((g[0]-g[2])<(pW-pL))lo=s;else hi=s;}
       s=(lo+hi)/2;return {lh:Math.max((mu+s)/2,0.02),la:Math.max((mu-s)/2,0.02)};}
-    var mlo=0.4,mhi=6.5,mu,r,g,k;
+    var mlo=0.4,mhi=4.2,mu,r,g,k;  // cap total expected goals: an unreachable (very low) market draw must not inflate the scoring rates
     for(k=0;k<42;k++){mu=(mlo+mhi)/2;r=inner(mu);g=wpGrid(r.lh,r.la,10);if(g[1]>pD)mlo=mu;else mhi=mu;}
     return inner((mlo+mhi)/2);}
   function wpLambdas(mm,imp){
@@ -2491,8 +2491,10 @@
   function wpRemFrac(st){var t=st.t||'';
     if(/PEN/i.test(t))return null;
     if(/HT/i.test(t))return 45/90;
-    var m=/(\d+)/.exec(t),min=m?parseInt(m[1],10):45;
-    if(/ET/i.test(t)||min>90)return Math.max(0,120-min)/90;
+    var m=/(\d+)/.exec(t);
+    if(/ET/i.test(t)){var emin=m?parseInt(m[1],10):90;return Math.max(0,120-emin)/90;} // bare 'ET' = start of extra time (90')
+    var min=m?parseInt(m[1],10):45;
+    if(min>90)return Math.max(0,120-min)/90;
     return Math.max(0,90-min)/90;}
   function wpLive(lh,la,gh,ga,frac){
     if(frac==null)return gh>ga?[1,0,0]:(gh<ga?[0,0,1]:[0.5,0,0.5]);
@@ -2510,21 +2512,26 @@
     return n?{b:sum/n,n:n}:null;}
   function wpSeg(cls,pct,label){return '<div class="wp-seg '+cls+'" style="width:'+pct+'%">'+(pct>=13?'<span>'+label+'</span>':'')+'</div>';}
   function wpCode(t){return CODE[t]||(t||'').substr(0,3).toUpperCase();}
+  function wpFin(x){return typeof x==='number'&&isFinite(x);}
   function winProbBarHtml(mm){
-    var O=afOddsEntry(mm.a,mm.b);if(!O||!O.imp)return '';
-    var st=statusOf(mm),sc=scoreOf(mm),p,cap;
-    if(st.k==='lv'&&sc&&sc.ga!=null){
+    var O=afOddsEntry(mm.a,mm.b);
+    if(!O||!O.imp||!wpFin(O.imp.home)||!wpFin(O.imp.draw)||!wpFin(O.imp.away))return ''; // hide on missing/malformed odds
+    var st=statusOf(mm),sc=scoreOf(mm),live=(st.k==='lv'&&sc&&sc.ga!=null&&sc.gb!=null),p,cap;
+    if(live){
       var lam=wpLambdas(mm,O.imp);p=wpLive(lam.lh,lam.la,sc.ga,sc.gb,wpRemFrac(st));
       cap='<span class="wp-live"><span class="blip"></span> LIVE '+escapeHtml(st.t||'')+'</span>';
     }else{p=[O.imp.home,O.imp.draw,O.imp.away];cap=(st.k==='ft')?'Pre-match outlook':'Win probability';}
     var w=Math.round(p[0]*100),d=Math.round(p[1]*100),l=Math.round(p[2]*100),sum=w+d+l;
     if(sum!==100){var diff=100-sum;if(w>=d&&w>=l)w+=diff;else if(l>=d)l+=diff;else d+=diff;}
     var A=(F[mm.a]||'')+' '+escapeHtml(wpCode(mm.a)),B=(F[mm.b]||'')+' '+escapeHtml(wpCode(mm.b));
-    var h='<div class="wp"><div class="wp-h"><span>'+cap+'</span><span class="wp-src">live model</span></div>';
+    var h='<div class="wp"><div class="wp-h"><span>'+cap+'</span><span class="wp-src">'+(live?'live model':'de-vigged market')+'</span></div>';
     h+='<div class="wp-bar">'+wpSeg('w',w,w+'%')+wpSeg('d',d,d+'%')+wpSeg('l',l,l+'%')+'</div>';
     h+='<div class="wp-legend"><span class="lw">'+A+' <b>'+w+'%</b></span><span class="ld">Draw <b>'+d+'%</b></span><span class="ll"><b>'+l+'%</b> '+B+'</span></div>';
     var br=wpBrier();
-    if(br)h+='<div class="wp-cal">Anchored to the closing market &middot; pre-match Brier <b>'+br.b.toFixed(2)+'</b> across '+br.n+' games <span style="opacity:.7">(0.67 = no skill &middot; lower is better)</span></div>';
+    if(br){
+      if(live)h+='<div class="wp-cal">Anchored to the closing market (pre-match Brier <b>'+br.b.toFixed(2)+'</b>, '+br.n+' games) &middot; <span style="opacity:.75">live swings are model-projected, not separately back-tested</span></div>';
+      else h+='<div class="wp-cal">Anchored to the closing market &middot; pre-match Brier <b>'+br.b.toFixed(2)+'</b> across '+br.n+' games <span style="opacity:.7">(0.67 = no skill &middot; lower is better)</span></div>';
+    }
     h+='</div>';return h;}
   function renderWinProb(mm){var el=document.getElementById('mdWinProb');if(!el)return;
     var html=winProbBarHtml(mm);if(html){el.innerHTML=html;el.style.display='';}else{el.innerHTML='';el.style.display='none';}}
