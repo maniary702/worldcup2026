@@ -174,6 +174,8 @@
     box-shadow:0 0 0 1px var(--fav-tint),0 10px 30px -16px var(--fav)}
   .match.ko{border-color:var(--ko-border);background:linear-gradient(102deg,var(--gold-tint),var(--card) 60%)}
   .match.poss{border-style:dashed;border-color:var(--gold)}
+  @keyframes jflash{0%{box-shadow:0 0 0 0 var(--gold)}35%{box-shadow:0 0 0 3px var(--gold),0 0 26px -4px var(--gold)}100%{box-shadow:0 0 0 0 transparent}}
+  .match.jflash{animation:jflash .9s ease}
   .match.played{opacity:.78;background:transparent}
   .match.played .teams,.match.played .sc{color:var(--mut)}
   .match.played .teams .winner{color:var(--txt)}
@@ -981,7 +983,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 25 Jun 2026 v26.2 (hero is tappable too — every live game opens stats)';
+  var BUILD_TAG='Build 28 Jun 2026 v26.3 (qualified team shows real R32; team button cycles fixtures)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1111,7 +1113,11 @@
   function flagsFor(m){return (F[m.a]||'')+' '+(F[m.b]||'');}
 
   function isFav(m){return m.a===FOLLOW||m.b===FOLLOW;}
-  function favPoss(m){return !!m.ep&&!!FOLLOW&&GROUPS.L.indexOf(FOLLOW)>=0;}
+  // "Possible R32" applies ONLY while the slot is still a placeholder. Once the bracket is set and
+  // healKnockouts fills real teams, F[m.a]&&F[m.b] are true -> it's a CONFIRMED fixture, shown via
+  // isFav (the real "Next <team> match"), not the speculative "if they qualify" hero. Without this,
+  // a qualified team's real R32 stayed stuck on "IF ENGLAND QUALIFY".
+  function favPoss(m){return !!m.ep&&!!FOLLOW&&GROUPS.L.indexOf(FOLLOW)>=0&&!(F[m.a]&&F[m.b]);}
   function isGroup(m){return m.s.indexOf('GROUP')===0;}
   function isMarquee(m){return !!m.big||!!marqueeSet[m.n];}
   function isEvening(o){var h=hourOf(o);return h>=17||h<1;}
@@ -1444,6 +1450,7 @@
   function setFollow(team){
     FOLLOW=(team&&F[team])?team:'';
     save('wc26_follow',FOLLOW||'__none__');
+    favJumpIdx=-1;  // restart the team-fixture cycle (ENG button) when the followed team changes
     // never strand the schedule on an empty followed-team filter
     if(!FOLLOW&&current==='fav'){
       current='all';
@@ -3563,7 +3570,18 @@
   document.getElementById('themeBtn').addEventListener('click',function(){
     var isLight=document.documentElement.getAttribute('data-theme')==='light';var next=isLight?'dark':'light';applyTheme(next);save('wc26_theme',next);
   });
-  document.getElementById('fabFav').addEventListener('click',function(){var el=document.querySelector('.match.fav')||document.querySelector('.match.poss');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});});
+  // ENG button: each tap walks to the NEXT fixture of the followed team (first game -> next -> next
+  // -> ... -> wraps), instead of always jumping to the same first match.
+  var favJumpIdx=-1;
+  document.getElementById('fabFav').addEventListener('click',function(){
+    if(document.body.classList.contains('tab2')||document.body.classList.contains('tab3'))document.getElementById('tabSched').click();
+    var els=document.querySelectorAll('.match.fav, .match.poss');
+    if(!els.length)return;
+    favJumpIdx=(favJumpIdx+1)%els.length;
+    var el=els[favJumpIdx];
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    el.classList.add('jflash');setTimeout(function(){el.classList.remove('jflash');},900);
+  });
   document.getElementById('fabTop').addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'});});
   document.getElementById('fabLive').addEventListener('click',function(){
     if(document.body.classList.contains('tab2')||document.body.classList.contains('tab3'))document.getElementById('tabSched').click();
