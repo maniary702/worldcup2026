@@ -1000,7 +1000,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 28 Jun 2026 v26.4 (live win-probability bar — book-anchored in-play model)';
+  var BUILD_TAG='Build 30 Jun 2026 v26.5 (next-round fixtures fill each side as feeders finish)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1601,13 +1601,18 @@
     for(i=0;i<rs.length;i++)byNum[rs[i].MatchNumber]=rs[i];
     for(i=0;i<matches.length;i++){var mm=matches[i];
       var mnum=/M(\d+)/.exec(mm.s);if(!mnum)continue;            // only knockout rows carry M## in the label
-      var am=byNum[+mnum[1]];if(!am||!am.Home||!am.Away||!am.Home.TeamName||!am.Away.TeamName)continue;
-      var ha=mapTeam(am.Home.TeamName[0].Description),aa=mapTeam(am.Away.TeamName[0].Description);
-      if(!F[ha]||!F[aa])continue;                                // only heal to teams we can render
-      if(mm.a!==ha||mm.b!==aa){
-        mm.a=ha;mm.b=aa;
-        var dd=new Date(new Date(am.Date).getTime()+4*3600000); // FIFA UTC -> Dubai wall-clock string
-        mm.d=dd.getUTCFullYear()+'-'+pad(dd.getUTCMonth()+1)+'-'+pad(dd.getUTCDate())+'T'+pad(dd.getUTCHours())+':'+pad(dd.getUTCMinutes());
+      var am=byNum[+mnum[1]];if(!am)continue;
+      // Resolve EACH SIDE independently: as soon as FIFA names one feeder's winner, fill that side of
+      // the next-round fixture even while the other side is still TBD. FIFA reveals sides one at a
+      // time, and this also captures shootout winners we can't infer from a drawn score.
+      var ha=(am.Home&&am.Home.TeamName&&am.Home.TeamName[0])?mapTeam(am.Home.TeamName[0].Description):null;
+      var aa=(am.Away&&am.Away.TeamName&&am.Away.TeamName[0])?mapTeam(am.Away.TeamName[0].Description):null;
+      var hit=false;
+      if(ha&&F[ha]&&mm.a!==ha){mm.a=ha;hit=true;}                // fill the home side if named + renderable
+      if(aa&&F[aa]&&mm.b!==aa){mm.b=aa;hit=true;}                // fill the away side independently
+      if(hit){
+        if(am.Date){var dd=new Date(new Date(am.Date).getTime()+4*3600000); // FIFA UTC -> Dubai wall-clock
+          mm.d=dd.getUTCFullYear()+'-'+pad(dd.getUTCMonth()+1)+'-'+pad(dd.getUTCDate())+'T'+pad(dd.getUTCHours())+':'+pad(dd.getUTCMinutes());}
         changed=true;
       }
     }
