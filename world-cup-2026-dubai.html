@@ -1068,9 +1068,13 @@
   function saveScoresLS(){save('wc26_scores',JSON.stringify(scores));}
   function scoreOf(m){return scores[m.n]||null;}
   function setScore(n,ga,gb,status,source,minute){
-    var prev=scores[n];
-    scores[n]={ga:parseInt(ga,10),gb:parseInt(gb,10),status:status||'FT',source:source||'api',minute:minute||null};
+    // dirty-check: skip the localStorage write AND report "no change" so pollers only re-render
+    // when something actually moved (a full refresh() per poll was the old behaviour)
+    var prev=scores[n],nga=parseInt(ga,10),ngb=parseInt(gb,10),nst=status||'FT',nmin=minute||null;
+    if(prev&&prev.ga===nga&&prev.gb===ngb&&prev.status===nst&&prev.minute===nmin)return false;
+    scores[n]={ga:nga,gb:ngb,status:nst,source:source||'api',minute:nmin};
     saveScoresLS();
+    return true;
   }
 
   // ══════════════════════════════════════
@@ -1100,17 +1104,29 @@
   function mapTeam(name){return API_MAP[name]||name;}
 
   // ── TIME CORE ──
-  function partsInZone(dateUTC, tz){
-    try{
-      var f=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hourCycle:'h23',weekday:'short',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-      var o={};f.formatToParts(dateUTC).forEach(function(x){o[x.type]=x.value;});return o;
-    }catch(e){
-      var f2=new Intl.DateTimeFormat('en-GB',{hourCycle:'h23',weekday:'short',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-      var o2={};f2.formatToParts(dateUTC).forEach(function(x){o2[x.type]=x.value;});return o2;
+  // Intl.DateTimeFormat construction is expensive; memoize one formatter per zone (formatters are
+  // stateless/reusable). Every render path funnels through here, so this dominates render CPU.
+  var ZFMT={};
+  function zoneFmt(tz){
+    var f=ZFMT[tz];
+    if(!f){
+      try{f=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hourCycle:'h23',weekday:'short',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}
+      catch(e){f=new Intl.DateTimeFormat('en-GB',{hourCycle:'h23',weekday:'short',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}
+      ZFMT[tz]=f;
     }
+    return f;
   }
-  function kickoffUTC(m){var p=m.d.split('T'),dp=p[0].split('-'),tp=p[1].split(':');
-    return new Date(Date.UTC(+dp[0],+dp[1]-1,+dp[2],+tp[0]-4,+tp[1]));}
+  function partsInZone(dateUTC, tz){
+    var o={};zoneFmt(tz).formatToParts(dateUTC).forEach(function(x){o[x.type]=x.value;});return o;
+  }
+  // memoized per row on the m.d string (healKnockouts is the only m.d writer, so the compare
+  // invalidates exactly when a fixture is healed); saves ~200-300 Date allocations/sec on the 1s tick
+  function kickoffUTC(m){
+    if(m._koD===m.d)return m._ko;
+    var p=m.d.split('T'),dp=p[0].split('-'),tp=p[1].split(':');
+    m._koD=m.d;m._ko=new Date(Date.UTC(+dp[0],+dp[1]-1,+dp[2],+tp[0]-4,+tp[1]));
+    return m._ko;
+  }
   function bits(m){return partsInZone(kickoffUTC(m), TZ());}
   function dayKey(o){return o.year+'-'+o.month+'-'+o.day;}
   function dowIdx(key){var p=key.split('-');return new Date(Date.UTC(+p[0],+p[1]-1,+p[2])).getUTCDay();}
