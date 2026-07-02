@@ -968,9 +968,9 @@
     {n:87,d:'2026-07-04T02:00',s:'R32 · M86',a:'Argentina',b:'Cape Verde',v:'Miami, USA'},
     {n:88,d:'2026-07-04T05:30',s:'R32 · M87',a:'Colombia',b:'Ghana',v:'Kansas City, USA'},
     {n:89,d:'2026-07-04T21:00',s:'ROUND OF 16 · M90',a:'Canada',b:'Morocco',v:'Houston, USA'},
-    {n:90,d:'2026-07-05T01:00',s:'ROUND OF 16 · M89',a:'Winner M74',b:'Winner M77',v:'Philadelphia, USA'},
-    {n:91,d:'2026-07-06T00:00',s:'ROUND OF 16 · M91',a:'Winner M76',b:'Winner M78',v:'New Jersey, USA'},
-    {n:92,d:'2026-07-06T04:00',s:'ROUND OF 16 · M92',a:'Winner M79',b:'Winner M80',v:'Mexico City, Mexico'},
+    {n:90,d:'2026-07-05T01:00',s:'ROUND OF 16 · M89',a:'Paraguay',b:'France',v:'Philadelphia, USA'},
+    {n:91,d:'2026-07-06T00:00',s:'ROUND OF 16 · M91',a:'Brazil',b:'Norway',v:'New Jersey, USA'},
+    {n:92,d:'2026-07-06T04:00',s:'ROUND OF 16 · M92',a:'Mexico',b:'England',v:'Mexico City, Mexico'},
     {n:93,d:'2026-07-06T23:00',s:'ROUND OF 16 · M93',a:'Winner M83',b:'Winner M84',v:'Arlington, USA'},
     {n:94,d:'2026-07-07T04:00',s:'ROUND OF 16 · M94',a:'Winner M81',b:'Winner M82',v:'Seattle, USA'},
     {n:95,d:'2026-07-07T20:00',s:'ROUND OF 16 · M95',a:'Winner M86',b:'Winner M88',v:'Atlanta, USA'},
@@ -1000,7 +1000,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 30 Jun 2026 v26.5 (next-round fixtures fill each side as feeders finish)';
+  var BUILD_TAG='Build 1 Jul 2026 v26.6 (perf sweep: ETag revalidation, dirty-checked renders, ET/pens fixes)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1252,6 +1252,7 @@
   // ══════════════════════════════════════
   function render(){
     var box=document.getElementById('sch'),out=[],byDay={},order=[],tk=todayKey();
+    var koNums=calCache?koByNum():null; // FIFA rows by MatchNumber, for pens results on KO cards
     for(var i=0;i<matches.length;i++){if(!passes(matches[i]))continue;
       var o=bits(matches[i]),k=dayKey(o);if(!byDay[k]){byDay[k]=[];order.push(k);}
       byDay[k].push({m:matches[i],o:o});}
@@ -1277,7 +1278,20 @@
         var teamsHtml;
         if(hasScore){
           var aw=sc.ga>sc.gb,bw=sc.gb>sc.ga,draw=sc.ga===sc.gb;
-          var ac=[],bc=[];
+          var ac=[],bc=[],pensNote='';
+          // drawn knockout decided on pens: pull the shootout score from the FIFA calendar so the
+          // card shows who advanced instead of a bare "FT 1-1"
+          if(draw&&!isGroup(m)&&sc.status==='FT'&&koNums){
+            var pmn=/M(\d+)/.exec(m.s),kam=pmn?koNums[+pmn[1]]:null; // FIFA number lives in the LABEL, not m.n
+            if(kam&&kam.MatchStatus===0&&kam.HomeTeamPenaltyScore!=null&&kam.AwayTeamPenaltyScore!=null&&(kam.HomeTeamPenaltyScore>0||kam.AwayTeamPenaltyScore>0)){
+              var php=kam.HomeTeamPenaltyScore,pap=kam.AwayTeamPenaltyScore;
+              var kh=(kam.Home&&kam.Home.TeamName&&kam.Home.TeamName[0])?mapTeam(kam.Home.TeamName[0].Description):null;
+              if(kh===m.b){var _t=php;php=pap;pap=_t;} // orient to OUR home side
+              pensNote=php+'-'+pap;
+              if(php>pap){ac.push('winner');bc.push('loser');}
+              else if(pap>php){bc.push('winner');ac.push('loser');}
+            }
+          }
           if(aMe)ac.push('me');if(bMe)bc.push('me');
           if(aw){ac.push('winner');bc.push('loser');}
           if(bw){bc.push('winner');ac.push('loser');}
@@ -1291,7 +1305,7 @@
         // Venue line - prepend FT/status tag for scored matches
         var venueHtml;
         if(hasScore&&st.k==='ft'){
-          venueHtml='<span class="ft-tag">FT</span> · '+escapeHtml(m.v);
+          venueHtml='<span class="ft-tag">FT'+(pensNote?' · '+pensNote+' pens':'')+'</span> · '+escapeHtml(m.v);
         }else if(hasScore&&st.k==='lv'){
           venueHtml='<span class="ft-tag">'+st.t+'</span> · '+escapeHtml(m.v);
         }else{
@@ -3032,10 +3046,10 @@
     // every 10 min, both only while a match window is open.
     sweepCalendar();
     pollTimer=setInterval(function(){
-      if(shouldPoll())fetchLiveScores();
+      if(!document.hidden&&shouldPoll())fetchLiveScores();
     },60000);
     sweepTimer=setInterval(function(){
-      if(shouldPoll())sweepCalendar();
+      if(!document.hidden&&shouldPoll())sweepCalendar();
     },600000);
   }
 
@@ -3321,7 +3335,11 @@
     var s=0,i;for(i=0;i<rows.length;i++)s+=(rows[i][5]||0);
     a.ast+=s;
   }
+  // memoized on afVer (bumped by every AFSTATS/AFPLAYERS/ODDS assignment) — sort taps and the
+  // Totals/Per-game toggle re-sort the same array instead of re-aggregating everything
+  var ttsCache=null,ttsCacheVer=-1;
   function teamTournamentStats(){
+    if(ttsCache&&ttsCacheVer===afVer)return ttsCache;
     var nameByCanon={},letters=['A','B','C','D','E','F','G','H','I','J','K','L'],li,ti;
     for(li=0;li<letters.length;li++){var gg=GROUPS[letters[li]];for(ti=0;ti<gg.length;ti++)nameByCanon[afCanon(gg[ti])]=gg[ti];}
     var agg={},k;
@@ -3337,6 +3355,7 @@
       }
     }
     var arr=[],t;for(t in agg)if(agg.hasOwnProperty(t))arr.push(agg[t]);
+    ttsCache=arr;ttsCacheVer=afVer;
     return arr;
   }
   function ttsDen(a,k){if(k==='yc'||k==='rc')return a.cn;if(k==='yca'||k==='rca')return a.ocn;return a.n;}
@@ -3535,9 +3554,16 @@
     var cls='brkt-cell'+(live?' livegame':'')+((hn===FOLLOW||an===FOLLOW)?' meCell':'');
     return '<div class="'+cls+'">'+line(hn,am.PlaceHolderA,hs,hW)+line(an,am.PlaceHolderB,as2,aW)+'<div class="meta">'+meta+'</div></div>';
   }
+  // brSig/fbSig: the brackets read ONLY calCache(.Results)+TZ+FOLLOW, so skip the full innerHTML +
+  // forced-layout SVG rebuild on every 60s tick unless one of those actually changed. If a future
+  // change makes bracket cells read per-tick state, extend the signature.
+  var brSig=null;
   function renderBracket(){
     var el=document.getElementById('tvBracket');
     if(!calCache){el.innerHTML='<div class="tv-empty">Bracket loads with the FIFA feed…</div>';return;}
+    var sig=calCacheAt+'|'+TZ()+'|'+FOLLOW;
+    if(sig===brSig)return;
+    brSig=sig;
     var rounds=[['Round of 32','Round of 32'],['Round of 16','Round of 16'],['Quarter-final','Quarter-finals'],['Semi-final','Semi-finals'],['Play-off for third place','3rd Place'],['Final','Final']];
     var rs=calCache.Results||[],byStage={},i;
     for(i=0;i<rs.length;i++){var am=rs[i];
@@ -3601,9 +3627,13 @@
     }
     svg.innerHTML=d?'<path d="'+d+'"/>':'';
   }
+  var fbSig=null;
   function renderFanBracket(){
     var host=document.getElementById('fanBracket');if(!host)return;
     if(!calCache){host.innerHTML='<div class="fb-empty">Bracket loads with the FIFA feed&hellip;</div>';return;}
+    var sig=calCacheAt+'|'+TZ()+'|'+FOLLOW;
+    if(sig===fbSig)return;
+    fbSig=sig;
     var rs=calCache.Results||[],SK={'Round of 32':'r32','Round of 16':'r16','Quarter-final':'qf','Semi-final':'sf','Final':'fin','Play-off for third place':'third'};
     var byNum={},cols={r32:[],r16:[],qf:[],sf:[],fin:[],third:[]},i;
     for(i=0;i<rs.length;i++){var am=rs[i],sn=(am.StageName&&am.StageName[0]&&am.StageName[0].Description)||'',k=SK[sn];if(!k)continue;if(am.MatchNumber!=null)byNum[am.MatchNumber]=am;cols[k].push(am);}
@@ -3675,10 +3705,10 @@
     ts.classList.toggle('on',n===1);tt.classList.toggle('on',n===2);tb.classList.toggle('on',n===3);
     ts.setAttribute('aria-pressed',n===1?'true':'false');tt.setAttribute('aria-pressed',n===2?'true':'false');tb.setAttribute('aria-pressed',n===3?'true':'false');
     save('wc26_tab',String(n));
-    if(n===2){
+    if(n===2){brSig=null; // force a fresh bracket paint on tab entry (safety belt for the sig cache)
       renderTablesView();renderTvTeamStats();if(!plLoaded)playersFetch(function(){renderTvTeamStats();},true);renderBracket();renderPlayerStats(null,0);
       ensurePstats(function(warn,finCount){renderPlayerStats(warn,finCount);renderBracket();});
-    }else if(n===3){renderFanBracket();}
+    }else if(n===3){fbSig=null;renderFanBracket();}
     if(was!==n)setTimeout(function(){window.scrollTo({top:tabScroll[n]||0});},0);
   }
 
@@ -3715,7 +3745,15 @@
       setTimeout(function(){var el=document.getElementById('d-'+k);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},60);
     }
   });
-  document.getElementById('sr').addEventListener('input',function(e){search=e.target.value;render();});
+  // debounced 150ms: a full 104-card refilter per keystroke stutters old iOS keyboards; the
+  // empty-string fast path keeps the clear (x) button instant
+  var srT=null;
+  document.getElementById('sr').addEventListener('input',function(e){
+    search=e.target.value;
+    if(srT){clearTimeout(srT);srT=null;}
+    if(search===''){render();return;}
+    srT=setTimeout(function(){srT=null;render();},150);
+  });
 
   // Delegate clicks on match cards (calendar shortcut + detail view)
   document.getElementById('sch').addEventListener('click',function(e){
@@ -3902,8 +3940,16 @@
   oddsFetch();
   if(firstVisit)openPicker();
   var _savedTab=load('wc26_tab');if(_savedTab==='2')setTab(2);else if(_savedTab==='3')setTab(3);
-  setInterval(function(){tickHero();updateFreshPill();},1000);
+  setInterval(function(){if(document.hidden)return;tickHero();updateFreshPill();},1000);
   setInterval(liveTick,60000);
+  // hidden-tab guards pause all polling/painting; on return, pull fresh scores immediately
+  // instead of waiting up to 60s for the next tick (document.hidden is undefined-falsy on
+  // ancient browsers, so everything fails open to the old always-on behaviour)
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden)return;
+    if(shouldPoll())fetchLiveScores();
+    liveTick();
+  });
 
   setTimeout(function(){
     var now=Date.now();
