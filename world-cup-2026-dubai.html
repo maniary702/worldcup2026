@@ -1161,9 +1161,13 @@
     var now=Date.now(),ko=kickoffUTC(m).getTime(),diff=ko-now;
     var sc=scoreOf(m);
     if(sc){
+      // stale-live bound: a persisted LIVE/ET/PEN whose FT flip was missed (feed hiccup while the
+      // page was closed) must not pin "Live" + drive polling forever — 4h past kickoff covers
+      // ET + pens + weather delays, and the on-load sweep self-corrects the real status.
+      if(sc.status!=='FT'&&now>ko+LIVE_WIN+240*60000) return {k:'ft',t:'FT'};
       if(sc.status==='FT') return {k:'ft',t:'FT'};
       if(sc.status==='HT') return {k:'lv',t:'HT'};
-      if(sc.status==='ET') return {k:'lv',t:'ET'};
+      if(sc.status==='ET') return {k:'lv',t:sc.minute?('ET '+sc.minute+"'"):'ET'};
       if(sc.status==='PEN') return {k:'lv',t:'PEN'};
       if(sc.status==='LIVE'){return {k:'lv',t:sc.minute?sc.minute+"'":"Live"};}
     }
@@ -1310,14 +1314,18 @@
   }
 
   function buildDateStrip(){
-    var seen={},order=[],tk=todayKey();
-    for(var i=0;i<matches.length;i++){var k=dayKey(bits(matches[i]));if(!seen[k]){seen[k]=true;order.push(k);}}
+    // single pass over matches: collect day order + fav/score flags together (was O(days x matches)
+    // twice — thousands of bits() calls per rebuild)
+    var seen={},order=[],tk=todayKey(),favDays={},scoreDays={};
+    for(var i=0;i<matches.length;i++){var m=matches[i],k=dayKey(bits(m));
+      if(!seen[k]){seen[k]=true;order.push(k);}
+      if(isFav(m)||favPoss(m))favDays[k]=true;
+      if(scoreOf(m))scoreDays[k]=true;}
     var html='';
     for(var j=0;j<order.length;j++){
-      var k=order[j],hasFav=false;
-      for(var x=0;x<matches.length;x++){if((isFav(matches[x])||favPoss(matches[x]))&&dayKey(bits(matches[x]))===k){hasFav=true;break;}}
-      var p=k.split('-');
-      html+='<div class="dpill'+(k===tk?' today':'')+(hasFav?' has-fav':'')+(hasScoresOnDay(k)?' has-scores':'')+'" data-jump="'+k+'" role="button" tabindex="0" aria-label="Jump to '+fmtDayFull(k)+'"><div class="dow">'+DOW[dowIdx(k)]+'</div><div class="dnum">'+parseInt(p[2],10)+'</div></div>';
+      var dk=order[j],hasFav=!!favDays[dk];
+      var p=dk.split('-');
+      html+='<div class="dpill'+(dk===tk?' today':'')+(hasFav?' has-fav':'')+(scoreDays[dk]?' has-scores':'')+'" data-jump="'+dk+'" role="button" tabindex="0" aria-label="Jump to '+fmtDayFull(dk)+'"><div class="dow">'+DOW[dowIdx(dk)]+'</div><div class="dnum">'+parseInt(p[2],10)+'</div></div>';
     }
     var ds=document.getElementById('ds');
     ds.innerHTML=html;
@@ -1326,10 +1334,6 @@
       var tp=ds.querySelector('.dpill.today');
       if(tp)ds.scrollLeft=Math.max(0,tp.offsetLeft-ds.clientWidth/2+tp.offsetWidth/2);
     }
-  }
-  function hasScoresOnDay(dk){
-    for(var i=0;i<matches.length;i++){if(dayKey(bits(matches[i]))===dk&&scoreOf(matches[i]))return true;}
-    return false;
   }
 
   function updateProgress(){
@@ -1361,12 +1365,18 @@
       '<div class="lx-when">'+escapeHtml(fmtShort(key)+' · '+fmtClock(o)+' · '+m.v)+'</div>'+
     '</div>';
   }
+  // Change-guarded DOM writers for the 1s hero tick: skip byte-identical rewrites so the .blip
+  // animation isn't restarted every second, iOS taps don't land on replaced nodes, and battery is
+  // spared. Callers pass PRE-ESCAPED HTML. The 'h'/'t' prefix disambiguates elements written via
+  // both innerHTML and textContent (heroBadge).
+  function setHtml(el,h){if(el.__wc!=='h'+h){el.__wc='h'+h;el.innerHTML=h;}}
+  function setText(el,t){if(el.__wc!=='t'+t){el.__wc='t'+t;el.textContent=t;}}
   // Render every live game EXCEPT the one already shown in the hero, so simultaneous games all show.
   function renderLiveExtra(liveList,primary){
     var box=document.getElementById('liveExtra');if(!box)return;
     var html='',i;
     for(i=0;i<liveList.length;i++){if(liveList[i]===primary)continue;html+=liveCardHtml(liveList[i]);}
-    box.innerHTML=html;
+    setHtml(box,html);
   }
 
   // ── HERO (score-aware) ──
@@ -1393,9 +1403,9 @@
     if(lvAny&&!lvFav&&!FOLLOW)fallback=true;
     if(!m){m=nextAny();fallback=true;}
     if(!m){hero.classList.remove('live');
-      document.getElementById('heroBadge').textContent='Tournament complete';
-      document.getElementById('heroLine').textContent='Thanks for following along';
-      document.getElementById('heroWhen').textContent='—';
+      setText(document.getElementById('heroBadge'),'Tournament complete');
+      setText(document.getElementById('heroLine'),'Thanks for following along');
+      setText(document.getElementById('heroWhen'),'—');
       document.getElementById('cD').textContent='00';document.getElementById('cH').textContent='00';
       document.getElementById('cM').textContent='00';document.getElementById('cS').textContent='00';
       hero.removeAttribute('data-n');hero.classList.remove('tapable');hero.removeAttribute('role');hero.removeAttribute('tabindex');return;}
@@ -1414,12 +1424,12 @@
       // Show live score in hero
       hero.classList.add('live');
       badge=st.t;
-      document.getElementById('heroBadge').innerHTML='<span class="blip"></span> '+escapeHtml(badge);
+      setHtml(document.getElementById('heroBadge'),'<span class="blip"></span> '+escapeHtml(badge));
       line='<span class="flag">'+(F[m.a]||'')+'</span> '+escapeHtml(m.a)+
         ' <span class="hero-sc">'+sc.ga+' - '+sc.gb+'</span> '+
         '<span class="flag">'+(F[m.b]||'')+'</span> '+escapeHtml(m.b);
-      document.getElementById('heroLine').innerHTML=line;
-      document.getElementById('heroWhen').textContent=fmtShort(key)+' · '+fmtClock(o)+' · '+m.v;
+      setHtml(document.getElementById('heroLine'),line);
+      setText(document.getElementById('heroWhen'),fmtShort(key)+' · '+fmtClock(o)+' · '+m.v);
       document.getElementById('cdown').style.display='none';
       return;
     }
@@ -1430,13 +1440,17 @@
     else if(favPoss(m)){badge='Possible '+escapeHtml(FOLLOW)+' R32';line='If '+escapeHtml(FOLLOW)+' qualify · '+fmtShort(key);}
     else{var opp=(m.a===FOLLOW)?m.b:m.a;badge='Next '+escapeHtml(FOLLOW)+' match';
       line='<span class="flag">'+(F[FOLLOW]||'')+'</span> '+escapeHtml(FOLLOW)+' <span style="opacity:.5">v</span> <span class="flag">'+(F[opp]||'')+'</span> '+escapeHtml(opp);}
-    document.getElementById('heroBadge').textContent=badge;
-    document.getElementById('heroLine').innerHTML=line;
-    document.getElementById('heroWhen').textContent=fmtShort(key)+' · '+fmtClock(o)+' · '+m.v;
     var now=Date.now(),ko=kickoffUTC(m).getTime(),diff=ko-now;
-    // time-based "Live now" only when we have NO authoritative score saying otherwise
+    // time-based "Live now" only when we have NO authoritative score saying otherwise.
+    // Computed BEFORE the badge write so heroBadge is written exactly ONCE per tick — a
+    // text-then-HTML double write would alternate the change-guard cache and restart the blip.
     var ftKnown=hasScore&&sc.status==='FT';
-    if(!ftKnown&&now>=ko&&now<=ko+LIVE_WIN){hero.classList.add('live');document.getElementById('heroBadge').innerHTML='<span class="blip"></span> Live now';return;}
+    var timeLive=!ftKnown&&now>=ko&&now<=ko+LIVE_WIN;
+    if(timeLive)setHtml(document.getElementById('heroBadge'),'<span class="blip"></span> Live now');
+    else setText(document.getElementById('heroBadge'),badge);
+    setHtml(document.getElementById('heroLine'),line);
+    setText(document.getElementById('heroWhen'),fmtShort(key)+' · '+fmtClock(o)+' · '+m.v);
+    if(timeLive){hero.classList.add('live');return;}
     hero.classList.remove('live');
     if(diff<0)diff=0;
     var dd=Math.floor(diff/86400000),hh=Math.floor((diff%86400000)/3600000),mm=Math.floor((diff%3600000)/60000),ss=Math.floor((diff%60000)/1000);
@@ -1526,7 +1540,7 @@
   function renderActiveView(){
     if(document.body.classList.contains('tab2')){
       var br=document.getElementById('tvBracket'),sl=br?br.scrollLeft:0;
-      renderTablesView();renderTvTeamStats();playersFetch(function(){renderTvTeamStats();});renderBracket();
+      renderTablesView();renderTvTeamStats();if(!plLoaded)playersFetch(function(){renderTvTeamStats();});renderBracket();
       var nb=document.getElementById('tvBracket');if(nb)nb.scrollLeft=sl;
     }else if(document.body.classList.contains('tab3')){
       var fb=document.getElementById('fanBracket'),fx=fb?fb.scrollLeft:0;
@@ -1534,15 +1548,20 @@
       var nf=document.getElementById('fanBracket');if(nf)nf.scrollLeft=fx;
     }
   }
-  function refresh(){paintChipCounts();buildDateStrip();render();tickHero();updateFabCode();updateLiveFab();updateFreshPill();renderActiveView();}
+  function refresh(){paintChipCounts();buildDateStrip();render();tickHero();updateFabCode();updateLiveFab();updateFreshPill();renderActiveView();lastFullPaint=Date.now();}
   // lighter tick: refresh content in place without rebuilding the date strip or re-animating.
   // When nothing is on (or near), skip the heavy DOM work most ticks to save battery.
-  var idleTicks=0;
+  var idleTicks=0,lastFullPaint=0;
   function liveTick(){
+    if(document.hidden)return; // backgrounded tab: no polling, no invisible DOM work (visibilitychange catches up)
     var active=shouldPoll()||!!liveMatch();
     updateProgress();tickHero();updateFreshPill();updateLiveFab();
     if(!active){idleTicks++;if(idleTicks%5)return;}else idleTicks=0;
-    if(active)afFetch();
+    if(active){afFetch();if(Date.now()-odLastAt>=300000)oddsFetch();} // odds re-anchor every ~5min during windows
+    // if a poll-driven refresh() already repainted everything in the last ~70s, skip this tick's
+    // duplicate full rebuild (the two 60s timers are phase-offset; liveTick does NOT stamp
+    // lastFullPaint so quiet pre-kickoff windows keep their countdown repaints)
+    if(Date.now()-lastFullPaint<70000)return;
     paintChipCounts();render();updateFabCode();renderActiveView();
   }
 
@@ -1558,9 +1577,17 @@
   function shouldPoll(){
     var now=Date.now(),k;
     // Keep polling while any stored game is still live (covers extra time + shootouts,
-    // which can run well past the time window) until it flips to FT.
+    // which can run well past the time window) until it flips to FT — but time-bound it:
+    // a stale LIVE whose FT flip was missed must not drive polling around the clock.
+    // (keys are strings after the localStorage round-trip, hence the String() compare)
     for(k in scores){var st=scores[k]&&scores[k].status;
-      if(st==='LIVE'||st==='HT'||st==='ET'||st==='PEN')return true;}
+      if(st==='LIVE'||st==='HT'||st==='ET'||st==='PEN'){
+        for(var q=0;q<matches.length;q++){
+          if(String(matches[q].n)!==String(k))continue;
+          if(now<=kickoffUTC(matches[q]).getTime()+LIVE_WIN+240*60000)return true;
+          break;
+        }
+      }}
     for(var i=0;i<matches.length;i++){
       var ko=kickoffUTC(matches[i]).getTime();
       // window: 15 min before kickoff to 200 min after (knockouts can reach ET + pens)
@@ -1600,8 +1627,8 @@
         else if(am.Period===6||am.Period===7||am.Period===8)st='ET';
         else if(am.Period===10||am.Period===11)st='PEN';
       }
-      setScore(mm.n,ga_val,gb_val,st,'api',minute);
-      return true;
+      // setScore dirty-checks: returns false when nothing changed, so pollers only rebuild on real movement
+      return setScore(mm.n,ga_val,gb_val,st,'api',minute);
     }
     return false;
   }
@@ -1643,7 +1670,7 @@
       var rs=data.Results||[];
       var updated=healed;
       for(var i=0;i<rs.length;i++){if(applyApiMatch(rs[i]))updated=true;}
-      if(updated){buildDateStrip();refresh();}
+      if(updated)refresh();  // refresh() already rebuilds the date strip — no double build
       updateApiStatus(true);
     })
     .catch(function(e){
@@ -1878,6 +1905,7 @@
       var ps=[];
       for(var b=0;b<batch.length;b++){
         (function(fm){
+          if(mstats[fm.IdMatch])return; // ensurePstats may have filled it from its shared timeline
           ps.push(fetch(FIFA_API+'timelines/17/285023/'+fm.IdStage+'/'+fm.IdMatch+'?language=en')
             .then(function(r){return r.ok?r.json():null;})
             .then(function(tl){if(tl&&tl.Event)mstats[fm.IdMatch]=statsForTimeline(fm,tl);else failed++;})
@@ -2167,14 +2195,14 @@
         document.getElementById('mdEvents').innerHTML='';
         document.getElementById('mdLineupPane').innerHTML='<div class="st-load">Loading…</div>';
       }
-      loadFull();afFetch();
+      loadFull();afFetch();oddsFetch(); // oddsFetch is internally throttled — keeps the win-prob bar's anchor fresh
       // load per-player WC stats so the line-up can show each player's shots on target
       ensurePstats(function(){if(mdMatch===mm&&document.getElementById('mdOverlay').classList.contains('open'))loadFull();});
       // refresh until full time: catches line-ups publishing pre-match AND live score/events
       if(st.k!=='ft')mdTimer=setInterval(function(){
         if(mdMatch!==mm||!document.getElementById('mdOverlay').classList.contains('open')){clearInterval(mdTimer);mdTimer=null;return;}
         var stNow=mdUpdateHeader(mm);
-        loadFull();afFetch();
+        loadFull();afFetch();oddsFetch();
         if(stNow.k==='ft'){clearInterval(mdTimer);mdTimer=null;}
       },60000);
     }else mdLiveEl.style.display='none';
@@ -2248,21 +2276,25 @@
     // live by FIFA status OR by the page's own clock (covers FIFA's few-minute kickoff lag)
     var key=String(row.IdMatch),live=(row.MatchStatus===3)||(statusOf(mm).k==='lv');
     var hit=matchFullCache[key];
-    // serve cache when: live and <55s old; OR finished AND the cached entry was already
-    // a finished capture (so a snapshot taken while live is re-fetched once after FT)
-    if(hit&&(live?(Date.now()-hit.at<55000):!hit.wasLive)){cb(hit.data);return;}
+    // serve cache when: live OR pre-match and <55s old (pre-match must expire so the 60s mdTimer
+    // actually catches line-up drops); OR finished AND the cached entry was already a finished
+    // capture (so a snapshot taken while live is re-fetched once after FT)
+    if(hit&&((live||hit.wasPre)?(Date.now()-hit.at<55000):!hit.wasLive)){cb(hit.data);return;}
     var base='17/285023/'+row.IdStage+'/'+row.IdMatch+'?language=en';
     Promise.all([
       fetch(FIFA_API+'timelines/'+base).then(function(r){return r.ok?r.json():null;}),
       fetch(FIFA_API+'live/football/'+base).then(function(r){return r.ok?r.json():null;})
     ]).then(function(p){
       var data=buildMatchFull(row,p[0],p[1]);
-      matchFullCache[key]={at:Date.now(),data:data,wasLive:live};cb(data);
+      matchFullCache[key]={at:Date.now(),data:data,wasLive:live,wasPre:(!live&&statusOf(mm).k!=='ft')};cb(data);
     }).catch(function(e){cb(null);});
   }
   // ── API-Football premium live data (lineups + in-game stats), baked server-side into
   // afstats.json and fetched SAME-ORIGIN here (no API key in the page). ──
-  var AFSTATS={},ODDS={},mdLastData=null;
+  // afVer: data version counter — bumped by every AFSTATS/ODDS/AFPLAYERS assignment site so
+  // aggregation caches (teamTournamentStats) invalidate exactly when data changes. Future writers
+  // of these globals MUST bump afVer.
+  var AFSTATS={},ODDS={},mdLastData=null,afVer=0;
   function afCanon(s){s=(s||'').toLowerCase()
       .replace(/ç/g,'c').replace(/ü/g,'u').replace(/[éèê]/g,'e').replace(/[íî]/g,'i').replace(/[áàâãä]/g,'a').replace(/[óôõ]/g,'o').replace(/ñ/g,'n').replace(/[^a-z]/g,'');
     var A={capeverdeislands:'capeverde',capeverde:'capeverde',congodr:'drcongo',drcongo:'drcongo',czechia:'czech',czechrepublic:'czech',turkiye:'turkey',turkey:'turkey'};
@@ -2455,10 +2487,19 @@
   }
   // ── Live bookmaker 1X2 odds + the predictor model's edge (keyless odds.json, baked server-side
   //    from the predictor's own the-odds-api pull + model probs — no key, no new API calls). ──
-  function oddsFetch(){try{var x=new XMLHttpRequest();x.open('GET','odds.json?cb='+Date.now(),true);
+  // No ?cb= buster: GitHub Pages serves strong ETags (purged on every deploy), so the browser's
+  // conditional GET returns a 0-byte 304 when the bake hasn't changed — the XHR still sees a 200
+  // with the cached body. The 45s stamp (set BEFORE send so in-flight duplicates collapse; a failed
+  // fetch simply retries next tick) de-dupes the overlapping 60s timers + overlay taps.
+  var odLastAt=0;
+  function oddsFetch(){
+    if(Date.now()-odLastAt<45000)return;odLastAt=Date.now();
+    try{var x=new XMLHttpRequest();x.open('GET','odds.json',true);x.setRequestHeader('Cache-Control','no-cache');
     x.onreadystatechange=function(){if(x.readyState!==4)return;
-      if(x.status>=200&&x.status<300){try{var j=JSON.parse(x.responseText);ODDS=j.f||{};}catch(e){}}
+      if(x.status>=200&&x.status<300){try{var j=JSON.parse(x.responseText);ODDS=j.f||{};afVer++;}catch(e){}}
       afLiveRerenderStats();
+      // the only path that repaints the win-prob bar for FT / far-out matches with the modal open
+      if(mdMatch&&document.getElementById('mdOverlay').classList.contains('open'))renderWinProb(mdMatch);
     };x.send();}catch(e){}}
   function af3flip(o){return o?{home:o.away,draw:o.draw,away:o.home}:null;}
   function afOddsEntry(a,b){
@@ -2513,10 +2554,12 @@
     if(/PEN/i.test(t))return null;
     if(/HT/i.test(t))return 45/90;
     var m=/(\d+)/.exec(t);
-    if(/ET/i.test(t)){var emin=m?parseInt(m[1],10):90;return Math.max(0,120-emin)/90;} // bare 'ET' = start of extra time (90')
+    // floor of 3 model-minutes at 90+X'/120+X': stoppage time is still playable, the bar must not
+    // claim a hard 100/0/0 while the ball is in play
+    if(/ET/i.test(t)){var emin=m?parseInt(m[1],10):90;return Math.max(120-emin,3)/90;} // bare 'ET' = start of extra time (90')
     var min=m?parseInt(m[1],10):45;
-    if(min>90)return Math.max(0,120-min)/90;
-    return Math.max(0,90-min)/90;}
+    if(min>90)return Math.max(120-min,3)/90;
+    return Math.max(90-min,3)/90;}
   function wpLive(lh,la,gh,ga,frac){
     if(frac==null)return gh>ga?[1,0,0]:(gh<ga?[0,0,1]:[0.5,0,0.5]);
     if(frac<=0.002)return gh>ga?[1,0,0]:(gh<ga?[0,0,1]:[0,1,0]);
@@ -2525,10 +2568,18 @@
     var s=W+D+L;return [W/s,D/s,L/s];}
   // honest calibration: multiclass Brier of the de-vigged market vs the actual result, played games only
   function wpBrier(){
-    var sum=0,n=0,i;
+    // the 1X2 market prices the 90-MINUTE result, so a knockout decided in ET/pens must score as
+    // the 90' DRAW (FIFA ResultType 2=pens, 3=AET), not as a win off the 120' score — otherwise
+    // the page's own honesty metric flatters itself as knockouts accumulate
+    var sum=0,n=0,i,byNum=koByNum();
     for(i=0;i<matches.length;i++){var m=matches[i],O=afOddsEntry(m.a,m.b);if(!O||!O.imp)continue;
       var st=statusOf(m),sc=scoreOf(m);if(st.k!=='ft'||!sc||sc.ga==null||sc.gb==null)continue;
       var yW=sc.ga>sc.gb?1:0,yD=sc.ga===sc.gb?1:0,yL=sc.ga<sc.gb?1:0;
+      if(!isGroup(m)){
+        var mn=/M(\d+)/.exec(m.s),am=mn?byNum[+mn[1]]:null; // FIFA number lives in the LABEL (m.n diverges)
+        if(!am)continue;                                     // can't verify the 90' result yet
+        if(am.ResultType===2||am.ResultType===3){yW=0;yD=1;yL=0;}
+      }
       sum+=Math.pow(O.imp.home-yW,2)+Math.pow(O.imp.draw-yD,2)+Math.pow(O.imp.away-yL,2);n++;}
     return n?{b:sum/n,n:n}:null;}
   function wpSeg(cls,pct,label){return '<div class="wp-seg '+cls+'" style="width:'+pct+'%">'+(pct>=13?'<span>'+label+'</span>':'')+'</div>';}
@@ -2563,9 +2614,14 @@
     if(stMatch)renderMatchStats(stStatsWarn);
     else if(stViewTeam)renderStats(stStatsWarn);
   }
-  function afFetch(){try{var x=new XMLHttpRequest();x.open('GET','afstats.json?cb='+Date.now(),true);
+  // ETag-revalidated (no ?cb= buster — see oddsFetch) + 45s throttle collapsing the overlapping
+  // 60s timers and overlay taps into one conditional request; unchanged polls cost ~0.3KB not ~25KB
+  var afLastAt=0;
+  function afFetch(){
+    if(Date.now()-afLastAt<45000)return;afLastAt=Date.now();
+    try{var x=new XMLHttpRequest();x.open('GET','afstats.json',true);x.setRequestHeader('Cache-Control','no-cache');
     x.onreadystatechange=function(){if(x.readyState!==4)return;
-      if(x.status>=200&&x.status<300){try{var j=JSON.parse(x.responseText);AFSTATS=j.m||{};}catch(e){}}
+      if(x.status>=200&&x.status<300){try{var j=JSON.parse(x.responseText);AFSTATS=j.m||{};afVer++;}catch(e){}}
       if(mdLastData&&document.getElementById('mdOverlay').classList.contains('open')){var _ts=document.getElementById('mdTeamStats');if(_ts)_ts.innerHTML=renderTeamStats(mdLastData);}
       afLiveRerenderStats();
       if(document.body.classList.contains('tab2'))renderTvTeamStats();
@@ -3089,7 +3145,7 @@
     if(!missing.length){cb(null,fin.length);return;}
     var k=0,fails=0;
     function nextBatch(){
-      if(k>=missing.length){savePstats();cb(fails?fails+' match feed(s) skipped':null,fin.length);return;}
+      if(k>=missing.length){savePstats();saveMstats();cb(fails?fails+' match feed(s) skipped':null,fin.length);return;}
       var batch=missing.slice(k,k+3);k+=3;var ps=[];
       for(var b=0;b<batch.length;b++){
         (function(fm){
@@ -3098,6 +3154,9 @@
             fetch(FIFA_API+'timelines/'+base).then(function(r){return r.ok?r.json():null;}),
             fetch(FIFA_API+'live/football/'+base).then(function(r){return r.ok?r.json():null;})
           ]).then(function(pair){
+            // share the timeline with ensureStats' mstats so the corners/cards pass doesn't
+            // re-download the same ~90 timelines (halves the cold-start FIFA burst)
+            if(pair[0]&&pair[0].Event&&!mstats[fm.IdMatch])mstats[fm.IdMatch]=statsForTimeline(fm,pair[0]);
             if(pair[0]&&pair[1])pstats[fm.IdMatch]=buildMatchPlayers(fm,pair[0],pair[1]);
             else fails++;
           }).catch(function(e){fails++;}));
@@ -3319,13 +3378,21 @@
   }
   // ── Per-player stats (lazy-loaded afplayers.json): per-team totals + per-game averages ──
   var AFPLAYERS={},plLoaded=false,plTeams=[],plSel=null,plMode='tot',plSort='g';
-  function playersFetch(cb){
+  // in-flight dedup (concurrent callers queue on one download) + 5-min failure backoff for
+  // BACKGROUND callers; user-initiated taps pass force=true so a tap always retries immediately
+  var plFetching=null,plFailTs=0;
+  function playersFetch(cb,force){
     if(plLoaded){if(cb)cb();return;}
-    try{var x=new XMLHttpRequest();x.open('GET','afplayers.json?cb='+Date.now(),true);
+    if(plFetching){if(cb)plFetching.push(cb);return;}
+    if(!force&&plFailTs&&Date.now()-plFailTs<300000){if(cb)cb();return;}
+    plFetching=cb?[cb]:[];
+    function drain(){var q=plFetching;plFetching=null;if(q)for(var i=0;i<q.length;i++)q[i]();}
+    try{var x=new XMLHttpRequest();x.open('GET','afplayers.json',true);x.setRequestHeader('Cache-Control','no-cache');
       x.onreadystatechange=function(){if(x.readyState!==4)return;
-        if(x.status>=200&&x.status<300){try{var j=JSON.parse(x.responseText);AFPLAYERS=j.m||{};plLoaded=true;}catch(e){}}
-        if(cb)cb();
-      };x.send();}catch(e){if(cb)cb();}
+        if(x.status>=200&&x.status<300){try{var j=JSON.parse(x.responseText);AFPLAYERS=j.m||{};plLoaded=true;plFailTs=0;afVer++;}catch(e){plFailTs=Date.now();}}
+        else plFailTs=Date.now();
+        drain();
+      };x.send();}catch(e){plFailTs=Date.now();drain();}
   }
   // aggregate a team's players across every game they featured in (row idx: 0 name,1 num,2 pos,3 min,
   // 4 g,5 a,6 sh,7 sot,8 fc,9 fw,10 yc,11 rc,12 tk,13 int,14 dw,15 sv,16 rt)
@@ -3360,7 +3427,7 @@
     document.getElementById('plStage').textContent=plTeams.join('  ·  ');
     document.getElementById('plBody').innerHTML='<div class="st-load">Loading player stats…</div>';
     openOverlay('plOverlay');
-    playersFetch(function(){if(document.getElementById('plOverlay').classList.contains('open'))renderPlayerStatsModal();});
+    playersFetch(function(){if(document.getElementById('plOverlay').classList.contains('open'))renderPlayerStatsModal();},true);
   }
   function renderPlayerStatsModal(){
     var body=document.getElementById('plBody');if(!body)return;
@@ -3609,7 +3676,7 @@
     ts.setAttribute('aria-pressed',n===1?'true':'false');tt.setAttribute('aria-pressed',n===2?'true':'false');tb.setAttribute('aria-pressed',n===3?'true':'false');
     save('wc26_tab',String(n));
     if(n===2){
-      renderTablesView();renderTvTeamStats();playersFetch(function(){renderTvTeamStats();});renderBracket();renderPlayerStats(null,0);
+      renderTablesView();renderTvTeamStats();if(!plLoaded)playersFetch(function(){renderTvTeamStats();},true);renderBracket();renderPlayerStats(null,0);
       ensurePstats(function(warn,finCount){renderPlayerStats(warn,finCount);renderBracket();});
     }else if(n===3){renderFanBracket();}
     if(was!==n)setTimeout(function(){window.scrollTo({top:tabScroll[n]||0});},0);
