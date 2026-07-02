@@ -1,0 +1,16 @@
+{
+  "name": "Follow your Premier League team",
+  "short_name": "PL Team",
+  "description": "Pick your Premier League club — fixtures, results, table, cups, squad and top scorers. One tap, no app.",
+  "start_url": "prem.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#37003c",
+  "theme_color": "#37003c",
+  "icons": [
+    { "src": "prem_icon_192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "prem_icon_512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "prem_icon_512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
