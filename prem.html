@@ -154,6 +154,14 @@
   .lul li b{display:inline-block;min-width:20px;color:var(--mut);font-weight:800}
   .lusb{font-size:11px;color:var(--mut);margin-top:7px;line-height:1.5}
   .luco{font-size:11px;color:var(--mut);margin-top:5px;font-weight:700}
+  /* ===== first-run team picker ===== */
+  .pick{position:fixed;inset:0;z-index:70;background:linear-gradient(135deg,var(--pur),var(--pur2));color:#fff;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px 22px}
+  .pick.on{display:flex}
+  .pick .ball{width:74px;height:74px;margin-bottom:14px}
+  .pick h2{font-size:22px;font-weight:900;margin:0 0 6px;line-height:1.15}
+  .pick p{font-size:13px;opacity:.85;margin:0 0 22px;font-weight:600;max-width:320px}
+  .pick select{width:100%;max-width:320px;border:0;border-radius:12px;padding:14px 12px;font-weight:800;font-size:16px;background:#fff;color:var(--pur);margin-bottom:14px}
+  .pick button{width:100%;max-width:320px;border:0;border-radius:24px;padding:14px;font-weight:900;font-size:16px;background:var(--grn);color:var(--pur);cursor:pointer}
 </style>
 </head>
 <body>
@@ -193,6 +201,13 @@
   </footer>
 </div>
 <div id="mm" class="mm"><div class="mmcard"><button class="mmx" id="mmClose" aria-label="Close">✕</button><div id="mmBody"></div></div></div>
+<div id="pick" class="pick">
+  <svg class="ball" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#00ff85" stroke-width="4"/><polygon points="50,30 68,43 61,64 39,64 32,43" fill="#37003c"/></svg>
+  <h2>Follow your Premier League team</h2>
+  <p>Pick your club to get started — fixtures, table, cups, squad &amp; scorers.</p>
+  <select id="pickSel" aria-label="Choose your club"></select>
+  <button id="pickGo">Follow this club</button>
+</div>
 
 <script>
 /*BAKE_START*/
@@ -215,8 +230,8 @@ var BUILD_TAG='Build 2 Jul 2026 v4 (+ shareable link preview, add-to-home-screen
   function bErr(){return "this.style.visibility='hidden'";}
 
   // followed team (code), persisted
-  var FT;
-  try{FT=parseInt(localStorage.getItem('lfc_team'),10);}catch(e){}
+  var FT, FIRST=false;
+  try{var _sv=localStorage.getItem('lfc_team');FIRST=!_sv;FT=parseInt(_sv,10);}catch(e){}
   if(!FT||!T[FT])FT=D.defaultTeam;
 
   // time helpers (viewer local tz)
@@ -483,6 +498,7 @@ var BUILD_TAG='Build 2 Jul 2026 v4 (+ shareable link preview, add-to-home-screen
     var names=[];for(var c in T)names.push([parseInt(c,10),T[c][0]]);names.sort(function(a,b){return a[1]<b[1]?-1:1;});
     var h='';for(var i=0;i<names.length;i++)h+='<option value="'+names[i][0]+'"'+(names[i][0]===FT?' selected':'')+'>'+esc(names[i][1])+'</option>';
     el('teamSel').innerHTML=h;
+    if(el('pickSel'))el('pickSel').innerHTML=h;
     el('teamSel').onchange=function(){FT=parseInt(this.value,10);try{localStorage.setItem('lfc_team',FT);}catch(e){}rerenderAll();};
   }
   function applyHeader(){
@@ -499,8 +515,10 @@ var BUILD_TAG='Build 2 Jul 2026 v4 (+ shareable link preview, add-to-home-screen
   if(M.built){var bd=new Date(M.built);el('built').textContent='Updated '+(isNaN(bd)?M.built:bd.toLocaleString());}
   el('buildtag').textContent=BUILD_TAG;
   buildPicker();applyHeader();
+  el('pickGo').onclick=function(){var v=parseInt(el('pickSel').value,10);if(v&&T[v]){FT=v;el('teamSel').value=String(v);try{localStorage.setItem('lfc_team',FT);}catch(e){}}el('pick').classList.remove('on');document.body.style.overflow='';rerenderAll();};
   var init=(location.hash||'').replace('#','');
   show(({hub:1,table:1,fixtures:1,cups:1,squad:1,stats:1}[init])?init:'hub');
+  if(FIRST){el('pick').classList.add('on');document.body.style.overflow='hidden';}
   loadAF();
 })();
 </script>
