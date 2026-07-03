@@ -450,7 +450,7 @@ var BUILD_TAG='Build 3 Jul 2026 v7 (tap any team → team hub · light + dark ·
   function lastTableHtml(){
     var rows=D.lastTable,h='<table class="lg"><thead><tr><th>#</th><th style="text-align:left">Club</th><th>Pl</th><th>GD</th><th>Pts</th></tr></thead><tbody>';
     for(var i=0;i<rows.length;i++){var r=rows[i];
-      h+='<tr class="'+(r[0]<=5?'eu':(r[0]>=18?'rel':''))+'"><td>'+r[0]+'</td><td class="tm">'+esc(r[1])+'</td><td>'+r[2]+'</td><td>'+(r[4]>0?'+':'')+r[4]+'</td><td class="pt">'+r[3]+'</td></tr>';
+      h+='<tr class="'+(r[0]<=5?'eu':(r[0]>=18?'rel':''))+'" data-team="'+r[5]+'"><td>'+r[0]+'</td><td class="tm"><img src="'+badge(r[5])+'" onerror="'+bErr()+'" alt=""/>'+esc(r[1])+'</td><td>'+r[2]+'</td><td>'+(r[4]>0?'+':'')+r[4]+'</td><td class="pt">'+r[3]+'</td></tr>';
     }
     return h+'</tbody></table>';
   }
