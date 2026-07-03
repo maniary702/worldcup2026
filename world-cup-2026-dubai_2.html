@@ -576,6 +576,10 @@
   .lup-head.b{margin:10px 2px 4px}
   .lup-sec{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--low);margin:14px 2px 8px}
   .pcb-row{display:flex;flex-wrap:wrap;gap:8px}
+  .pcb-cols{display:flex;gap:10px;align-items:flex-start}
+  .pcb-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+  .pcb-col.a{align-items:flex-end}
+  .pcb-col .pcb{max-width:100%}
   .pcb{display:inline-flex;align-items:center;gap:7px;background:var(--card2);border:1px solid var(--line);
     border-radius:999px;padding:6px 12px 6px 9px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer;transition:border-color .15s}
   .pcb:hover{border-color:var(--line2)}
@@ -1131,7 +1135,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 3 Jul 2026 v27.2 (match centre restyle: live xG strip, timeline, came-on bench, team taps, bigger type)';
+  var BUILD_TAG='Build 3 Jul 2026 v27.3 (came-on & bench chips split home-left / away-right)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -2921,26 +2925,24 @@
           if(!(r[3]>0)||xiN[afNorm(r[0])])continue;
           came.push({r:r,t:sides[s].t});cameN[afNorm(r[0])]=1;}}
     }
-    if(came.length){
-      h+='<div class="lup-sec">Came on</div><div class="pcb-row">';
-      for(i=0;i<came.length;i++){var c=came[i];
-        h+='<button type="button" class="pcb" data-pp="'+escapeHtml(c.r[0])+'" data-pp-t="'+escapeHtml(c.t)+'">'
-          +'<span class="no">'+escapeHtml(String(c.r[1]!=null?c.r[1]:''))+'</span>'+escapeHtml(c.r[0])+ppRtChip(c.r[16])+'</button>';}
-      h+='</div>';
+    // chips render as two columns: HOME team left, AWAY team right (matches the timeline sides)
+    function cameChip(c){return '<button type="button" class="pcb" data-pp="'+escapeHtml(c.r[0])+'" data-pp-t="'+escapeHtml(c.t)+'">'
+      +'<span class="no">'+escapeHtml(String(c.r[1]!=null?c.r[1]:''))+'</span>'+escapeHtml(c.r[0])+ppRtChip(c.r[16])+'</button>';}
+    function benchChip(u){return '<button type="button" class="pcb dim" data-pp="'+escapeHtml(u.p.name)+'" data-pp-t="'+escapeHtml(u.t)+'">'
+      +'<span class="no">'+escapeHtml(String(u.p.num))+'</span>'+escapeHtml(u.p.name)+'</button>';}
+    function twoCols(list,chipFn){
+      var L='',R='';
+      for(var q=0;q<list.length;q++){if(list[q].t===d.hN)L+=chipFn(list[q]);else R+=chipFn(list[q]);}
+      return '<div class="pcb-cols"><div class="pcb-col">'+L+'</div><div class="pcb-col a">'+R+'</div></div>';
     }
+    if(came.length)h+='<div class="lup-sec">Came on</div>'+twoCols(came,cameChip);
     // unused bench = lineup substitutes who never came on
     var unused=[];
     function collectUnused(side,t){if(!side||!side.subs)return;
       for(var j=0;j<side.subs.length;j++){var p=side.subs[j];
         if(cameN[afNorm(p.name)])continue;unused.push({p:p,t:t});}}
     collectUnused(hSide,d.hN);collectUnused(aSide,d.aN);
-    if(unused.length){
-      h+='<div class="lup-sec">Bench &middot; unused</div><div class="pcb-row">';
-      for(i=0;i<unused.length&&i<30;i++){var u=unused[i];
-        h+='<button type="button" class="pcb dim" data-pp="'+escapeHtml(u.p.name)+'" data-pp-t="'+escapeHtml(u.t)+'">'
-          +'<span class="no">'+escapeHtml(String(u.p.num))+'</span>'+escapeHtml(u.p.name)+'</button>';}
-      h+='</div>';
-    }
+    if(unused.length)h+='<div class="lup-sec">Bench &middot; unused</div>'+twoCols(unused,benchChip);
     var ch=(hRaw&&hRaw.coach)||(hSide&&hSide.coach)||'',ca=(aRaw&&aRaw.coach)||(aSide&&aSide.coach)||'';
     if(ch||ca)h+='<div class="lu-coach">&#128100; '+escapeHtml(ch)+(ch&&ca?' &middot; ':'')+escapeHtml(ca)+'</div>';
     h+='<div class="st-note" style="margin:10px 2px 0">Confirmed line-ups &amp; official match ratings via API-Football. Tap any player or team name for their full stats.</div>';
