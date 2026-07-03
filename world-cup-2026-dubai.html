@@ -1096,7 +1096,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 3 Jul 2026 v27.0 (player cards: match ratings, top performers, pitch line-ups, tap any player)';
+  var BUILD_TAG='Build 3 Jul 2026 v27.1 (pitch line-ups for ALL past matches via afplayers)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -2888,7 +2888,11 @@
     function sotFn(p){return (p.id!=null&&sotById[p.id])?sotById[p.id]:(sotNm[afNorm(p.name)]||0);}
     var luNote=(viaAf?'Confirmed line-ups via API-Football. ':'')+'SoT = shots on target in their last World Cup games (est.). Tap any player for their stats.';
     var pitch=viaAf?luPitchHtml(hRaw,aRaw,d.hN,d.aN):''; // pitch view with rating chips, when the feed carries grid positions
-    document.getElementById('mdLineupPane').innerHTML=hasLu?(pitch+luSide(d.hN,hSide,sotFn)+luSide(d.aN,aSide,sotFn)+'<div class="st-note" style="margin:2px 2px 0">'+escapeHtml(luNote)+'</div>'):'<div class="st-empty">Line-ups are published about an hour before kick-off - they’ll appear here automatically.</div>';
+    if(!pitch&&plLoaded){ // OLD matches: afstats trims lineups after a day — the lean copy in afplayers.json still has the grid
+      var plu=afPlayersLu(d.hN,d.aN);
+      if(plu)pitch=luPitchHtml(plu.h,plu.a,d.hN,d.aN);
+    }
+    document.getElementById('mdLineupPane').innerHTML=(hasLu||pitch)?(pitch+luSide(d.hN,hSide,sotFn)+luSide(d.aN,aSide,sotFn)+'<div class="st-note" style="margin:2px 2px 0">'+escapeHtml(luNote)+'</div>'):'<div class="st-empty">Line-ups are published about an hour before kick-off - they’ll appear here automatically.</div>';
   }
   function mdSetTab(t){
     var stats=(t==='stats');
@@ -3598,6 +3602,16 @@
     if(!e)return null;
     var sh=afCanon(hN)===e.h;
     return {home:(sh?e.home:e.away)||[],away:(sh?e.away:e.home)||[]};
+  }
+  // lean line-ups (form + XI w/ grid) published inside afplayers.json — the pitch's source for OLD
+  // matches, since afstats.json trims lineups a day after full time to stay small
+  function afPlayersLu(hN,aN){
+    var e=AFPLAYERS[[afCanon(hN),afCanon(aN)].sort().join('__')];
+    if(!e||!e.lu)return null;
+    var sh=afCanon(hN)===e.h;
+    var h=sh?e.lu.h:e.lu.a,a=sh?e.lu.a:e.lu.h;
+    if(!h||!h.xi||!h.xi.length||!a||!a.xi||!a.xi.length)return null;
+    return {h:h,a:a};
   }
   function ppRtClass(rt){return rt>=7.5?'hi':(rt>=6?'mid':'lo');}
   function ppRtChip(rt,big){if(rt==null)return '';
