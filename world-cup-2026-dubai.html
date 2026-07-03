@@ -236,7 +236,7 @@
   main{padding:6px 14px 92px;max-width:780px;margin:0 auto}
   .day{margin-top:20px;scroll-margin-top:64px}
   .dayhead{display:flex;align-items:baseline;justify-content:space-between;padding:8px 2px 9px;border-bottom:1px solid var(--line);margin-bottom:9px}
-  .dayhead .dname{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:21px;letter-spacing:.04em;text-transform:uppercase;color:var(--txt)}
+  .dayhead .dname{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;letter-spacing:.04em;text-transform:uppercase;color:var(--txt)}
   .dayhead .dcount{font-size:10px;color:var(--low);letter-spacing:.1em;text-transform:uppercase;font-weight:700}
 
   .match{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 13px;margin-bottom:9px;
@@ -274,11 +274,11 @@
   .fav .stg,.poss .stg{color:var(--gold-ink)}
 
   .flags{font-size:18px;letter-spacing:.06em;line-height:1;margin-bottom:3px}
-  .teams{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;letter-spacing:.02em;text-transform:uppercase;line-height:1.12;color:var(--txt)}
+  .teams{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:.02em;text-transform:uppercase;line-height:1.14;color:var(--txt)}
   .fav .teams{font-size:19px}
   .fav .teams .me{color:var(--fav)}
   .vs{color:var(--low);margin:0 5px;font-size:11px;font-weight:500;font-family:'Barlow',sans-serif}
-  .venue{font-size:11.5px;color:var(--mut);margin-top:4px}
+  .venue{font-size:12.5px;color:var(--mut);margin-top:4px}
 
   /* ── SCORE DISPLAY ── */
   .sc{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:22px;letter-spacing:-1px;color:var(--txt);margin:0 6px;display:inline-block;vertical-align:baseline}
@@ -524,29 +524,63 @@
   .md-tabs{display:flex;gap:8px;margin:6px 0 14px}
   .md-tab{flex:1;padding:10px;border-radius:11px;border:1px solid var(--line2);background:var(--card2);color:var(--mut);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;font-family:inherit}
   .md-tab.on{border-color:var(--pitch);color:var(--txt);background:linear-gradient(135deg,rgba(22,217,106,.12),transparent 70%),var(--card)}
-  .ts-h{display:flex;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);margin-bottom:10px}
+  .ts-h{display:flex;justify-content:space-between;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);margin-bottom:12px}
+  .ts-h [data-tm]{cursor:pointer}
+  @media(hover:hover){.ts-h [data-tm]:hover{color:var(--pitch)}}
   .af-mid{font-size:10px;font-weight:800;color:#f6c945;text-transform:none;letter-spacing:0;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;padding:0 6px}
   .af-mid .tag{display:inline-block;font-size:9.5px;padding:1px 6px;border-radius:6px;background:var(--card2);color:var(--mut);font-weight:800}
   .af-mid .tag.live{background:var(--live);color:#fff}
-  .ts-row{margin-bottom:11px}
-  .ts-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
-  .ts-top .v{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:14px;color:var(--low);min-width:26px}
+  .ts-row{margin-bottom:13px}
+  .ts-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+  .ts-top .v{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:17px;color:var(--low);min-width:30px}
   .ts-top .v.a{text-align:right}
-  .ts-top .v.lead{color:var(--txt)}
-  .ts-top .lab{font-size:12px;color:var(--mut);font-weight:600;flex:1;text-align:center}
-  .ts-bar{height:6px;border-radius:4px;background:var(--line);display:flex;overflow:hidden}
+  .ts-top .v.lead{color:var(--pitch)}
+  .ts-top .lab{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--mut);font-weight:700;flex:1;text-align:center}
+  .ts-bar{height:7px;border-radius:5px;background:var(--seg);display:flex;overflow:hidden}
   .ts-bar i{height:100%;display:block}
-  .ts-bar .bh{background:var(--fav)}
-  .ts-bar .ba{background:var(--low);margin-left:auto}
+  .ts-bar .bh{background:var(--pitch)}
+  .ts-bar .ba{background:#3b74d6;margin-left:auto}
   .ev-list{margin-top:4px}
-  .ev{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-top:1px dashed var(--line);font-size:13px}
+  .ev{display:flex;align-items:baseline;gap:10px;padding:7px 0;border-top:1px dashed var(--line);font-size:14px}
   .ev.a{flex-direction:row-reverse;text-align:right}
-  .ev .emin{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;color:var(--low);flex:0 0 34px}
+  .ev.a{flex-direction:row-reverse;text-align:right}
+  .ev .emin{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:var(--low);flex:0 0 36px}
   .ev.a .emin{text-align:right}
-  .ev .eico{flex:0 0 auto;font-size:13px;line-height:1.3}
+  .ev .eico{flex:0 0 auto;font-size:14px;line-height:1.3}
   .ev .etxt{flex:1;min-width:0;color:var(--txt);font-weight:600}
-  .ev .esub{font-weight:500;color:var(--low);font-size:11.5px}
-  .ev .escore{font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--pitch);flex:0 0 auto}
+  .ev .esub{font-weight:500;color:var(--low);font-size:12px}
+  .ev .escore{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:15px;color:var(--pitch);flex:0 0 auto}
+  .ev .etxt[data-pp]{cursor:pointer}
+  @media(hover:hover){.ev .etxt[data-pp]:hover{color:var(--pitch)}}
+  /* live match strip (Liverpool-dashboard style): xG race + event chips */
+  .lxg{display:flex;align-items:center;gap:14px;background:var(--card2);border:1px solid var(--line);border-radius:14px;
+    padding:12px 16px;margin:0 0 12px}
+  .lxg .n{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:22px;color:var(--txt);min-width:56px}
+  .lxg .n.a{text-align:right}
+  .lxg .n.lead{color:var(--pitch)}
+  .lxg .mid{flex:1;text-align:center}
+  .lxg .mid .cap{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--low);font-weight:700;margin-bottom:6px}
+  .lxg .mid .ts-bar{height:8px}
+  .evchips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 8px;margin-bottom:6px;scrollbar-width:none}
+  .evchips::-webkit-scrollbar{display:none}
+  .evchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;background:var(--card2);border:1px solid var(--line);
+    border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;color:var(--txt);white-space:nowrap}
+  .evchip .m{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--low);font-weight:700}
+  .evchip .evcard{width:9px;height:12px;border-radius:2px;display:inline-block}
+  /* line-up panel: pitch headers, came-on & bench chips */
+  .lup-head{display:flex;justify-content:space-between;align-items:baseline;font-family:'Barlow Condensed',sans-serif;
+    font-weight:800;font-size:17px;text-transform:uppercase;letter-spacing:.03em;color:var(--txt);margin:2px 2px 8px}
+  .lup-head .ff{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:var(--gold-ink)}
+  .lup-head [data-tm]{cursor:pointer}
+  @media(hover:hover){.lup-head [data-tm]:hover{color:var(--pitch)}}
+  .lup-head.b{margin:10px 2px 4px}
+  .lup-sec{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--low);margin:14px 2px 8px}
+  .pcb-row{display:flex;flex-wrap:wrap;gap:8px}
+  .pcb{display:inline-flex;align-items:center;gap:7px;background:var(--card2);border:1px solid var(--line);
+    border-radius:999px;padding:6px 12px 6px 9px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer;transition:border-color .15s}
+  .pcb:hover{border-color:var(--line2)}
+  .pcb .no{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--low);font-weight:700}
+  .pcb.dim{opacity:.65;cursor:default}
   .evcard{display:inline-block;width:9px;height:12px;border-radius:2px;vertical-align:-1px}
   .lu-side{margin-bottom:16px}
   .lu-form{display:flex;justify-content:space-between;align-items:baseline;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;text-transform:uppercase;color:var(--txt);margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:6px}
@@ -845,6 +879,7 @@
         <button class="md-tab" id="mdTabLineup" type="button" aria-pressed="false">Line-up</button>
       </div>
       <div id="mdStatsPane">
+        <div id="mdLiveTop"></div>
         <div id="mdTeamStats"></div>
         <div id="mdTopPerf"></div>
         <div id="mdEvents"></div>
@@ -1096,7 +1131,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 3 Jul 2026 v27.1 (pitch line-ups for ALL past matches via afplayers)';
+  var BUILD_TAG='Build 3 Jul 2026 v27.2 (match centre restyle: live xG strip, timeline, came-on bench, team taps, bigger type)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -2319,8 +2354,9 @@
     var o=bits(mm),sc=scoreOf(mm),st=statusOf(mm),realA=!!F[mm.a],realB=!!F[mm.b];
     document.getElementById('mdStage').textContent=mm.s;
     document.getElementById('mdTitle').innerHTML=
-      (realA?F[mm.a]+' ':'')+escapeHtml(realA?mm.a:phPretty(mm.a))+
-      '<span class="vsx">v</span>'+(realB?F[mm.b]+' ':'')+escapeHtml(realB?mm.b:phPretty(mm.b));
+      (realA?'<span data-tm="'+escapeHtml(mm.a)+'" role="button" tabindex="0">'+F[mm.a]+' '+escapeHtml(mm.a)+'</span>':escapeHtml(phPretty(mm.a)))+
+      '<span class="vsx">v</span>'+
+      (realB?'<span data-tm="'+escapeHtml(mm.b)+'" role="button" tabindex="0">'+F[mm.b]+' '+escapeHtml(mm.b)+'</span>':escapeHtml(phPretty(mm.b)));
     mdUpdateHeader(mm);
     document.getElementById('mdWhen').textContent=fmtDayFull(dayKey(o))+' · '+fmtClock(o);
     document.getElementById('mdTz').textContent='Your time ('+escapeHtml(cityOf(TZ()))+') · '+escapeHtml(mm.v);
@@ -2357,6 +2393,7 @@
       if(cHit&&cHit.data)renderMatchFull(cHit.data);
       else{
         document.getElementById('mdTeamStats').innerHTML='<div class="st-load">Loading match data…</div>';
+        document.getElementById('mdLiveTop').innerHTML='';
         document.getElementById('mdTopPerf').innerHTML='';
         document.getElementById('mdEvents').innerHTML='';
         document.getElementById('mdLineupPane').innerHTML='<div class="st-load">Loading…</div>';
@@ -2801,7 +2838,7 @@
       ['Corners','cor'],['Fouls','fouls'],['Offsides','off'],['Saves','saves'],['Pass accuracy %','passp']];
     var liveTag=(af.st==='1H'||af.st==='2H'||af.st==='HT'||af.st==='ET'||af.st==='BT'||af.st==='P')?
       '<span class="tag live">'+escapeHtml(af.min?af.min+"'":'Live')+'</span>':'<span class="tag">FT</span>';
-    var h='<div class="ts-h"><span>'+(F[d.hN]||'')+' '+escapeHtml(d.hN)+'</span><span class="af-mid">&#9889; Premium '+liveTag+'</span><span>'+escapeHtml(d.aN)+' '+(F[d.aN]||'')+'</span></div>';
+    var h='<div class="ts-h"><span data-tm="'+escapeHtml(d.hN)+'" role="button" tabindex="0">'+(F[d.hN]||'')+' '+escapeHtml(d.hN)+'</span><span class="af-mid">&#9889; Premium '+liveTag+'</span><span data-tm="'+escapeHtml(d.aN)+'" role="button" tabindex="0">'+escapeHtml(d.aN)+' '+(F[d.aN]||'')+'</span></div>';
     for(var i=0;i<rows.length;i++){var k=rows[i][1],hv=H[k],av=A[k];if(hv==null&&av==null)continue;
       var hn=n(hv),an=n(av),tot=hn+an,hp=tot?Math.round(hn/tot*100):50;
       h+='<div class="ts-row"><div class="ts-top"><span class="v'+(hn>an?' lead':'')+'">'+escapeHtml(hv==null?'-':String(hv))+'</span><span class="lab">'+rows[i][0]+'</span><span class="v a'+(an>hn?' lead':'')+'">'+escapeHtml(av==null?'-':String(av))+'</span></div>'
@@ -2813,7 +2850,7 @@
     var af=afFor(d.hN,d.aN);
     if(af&&af.home&&af.away&&(af.home.poss!=null||af.home.sh!=null||af.away.poss!=null||af.away.sh!=null))return renderAfStats(d,af);
     var rows=[['Shots','sh'],['Corners','co'],['Fouls','fo'],['Yellow cards','y'],['Red cards','r'],['Subs','su']];
-    var h='<div class="ts-h"><span>'+(F[d.hN]||'')+' '+escapeHtml(d.hN)+'</span><span>'+escapeHtml(d.aN)+' '+(F[d.aN]||'')+'</span></div>';
+    var h='<div class="ts-h"><span data-tm="'+escapeHtml(d.hN)+'" role="button" tabindex="0">'+(F[d.hN]||'')+' '+escapeHtml(d.hN)+'</span><span data-tm="'+escapeHtml(d.aN)+'" role="button" tabindex="0">'+escapeHtml(d.aN)+' '+(F[d.aN]||'')+'</span></div>';
     for(var i=0;i<rows.length;i++){var hv=d.st.h[rows[i][1]],av=d.st.a[rows[i][1]],tot=hv+av,hp=tot?Math.round(hv/tot*100):50;
       h+='<div class="ts-row"><div class="ts-top"><span class="v'+(hv>av?' lead':'')+'">'+hv+'</span><span class="lab">'+rows[i][0]+'</span><span class="v a'+(av>hv?' lead':'')+'">'+av+'</span></div>'
         +'<div class="ts-bar"><i class="bh" style="width:'+hp+'%"></i><i class="ba" style="width:'+(100-hp)+'%"></i></div></div>';}
@@ -2829,13 +2866,18 @@
   }
   function renderEvents(d){
     if(!d.events.length)return '<div class="st-empty" style="margin-top:8px">No events logged yet.</div>';
-    var h='<h4 class="ts-h" style="margin:16px 0 8px">Match events</h4><div class="ev-list">';
-    for(var i=0;i<d.events.length;i++){var e=d.events[i],fl=(e.side==='h')?(F[d.hN]||''):(e.side==='a'?(F[d.aN]||''):'');
+    // side-aligned timeline: home events read left-to-right, away events mirrored right-to-left;
+    // player names are tappable (data-pp) so the timeline is a click-through surface too
+    var h='<h4 class="ts-h" style="margin:16px 0 8px">Timeline</h4><div class="ev-list">';
+    for(var i=0;i<d.events.length;i++){var e=d.events[i];
+      var team=(e.side==='a')?d.aN:d.hN;
+      var who=e.kind==='sub'?(e.inn||''):(e.name||'');
+      var pp=who?' data-pp="'+escapeHtml(who)+'" data-pp-t="'+escapeHtml(team)+'" role="button" tabindex="0"':'';
       var txt;
-      if(e.kind==='sub')txt='<span class="etxt">'+fl+' '+escapeHtml(e.inn||'?')+' <span class="esub">for '+escapeHtml(e.out||'?')+'</span></span>';
-      else if(e.kind==='goal')txt='<span class="etxt">'+fl+' '+escapeHtml(e.name||'Goal')+(e.pen?' <span class="esub">(pen)</span>':'')+(e.assist?' <span class="esub">· assist '+escapeHtml(e.assist)+'</span>':'')+'</span><span class="escore">'+escapeHtml(e.sc)+'</span>';
-      else txt='<span class="etxt">'+fl+' '+escapeHtml(e.name||'Player')+(e.second?' <span class="esub">(2nd yellow)</span>':'')+'</span>';
-      h+='<div class="ev"><span class="emin">'+escapeHtml(e.min)+'</span><span class="eico">'+evIcon(e)+'</span>'+txt+'</div>';
+      if(e.kind==='sub')txt='<span class="etxt"'+pp+'>'+escapeHtml(e.inn||'?')+' <span class="esub">for '+escapeHtml(e.out||'?')+'</span></span>';
+      else if(e.kind==='goal')txt='<span class="etxt"'+pp+'>'+escapeHtml(e.name||'Goal')+' <span class="esub">Goal'+(e.pen?' (pen)':'')+(e.assist?' &middot; assist '+escapeHtml(e.assist):'')+'</span></span><span class="escore">'+escapeHtml(e.sc)+'</span>';
+      else txt='<span class="etxt"'+pp+'>'+escapeHtml(e.name||'Player')+' <span class="esub">'+(e.kind==='rc'?'Red card':'Yellow card')+(e.second?' (2nd yellow)':'')+'</span></span>';
+      h+='<div class="ev'+(e.side==='a'?' a':'')+'"><span class="emin">'+escapeHtml(e.min)+'</span><span class="eico">'+evIcon(e)+'</span>'+txt+'</div>';
     }
     return h+'</div>';
   }
@@ -2860,6 +2902,75 @@
     if(s.coach)h+='<div class="lu-coach">&#128100; '+escapeHtml(s.coach)+'</div>';
     return h+'</div>';
   }
+  // FotMob-style line-up panel: team+formation headers around the pitch, then "Came on" chips
+  // (subs who actually played, with their ratings) and the unused bench. Replaces the old long
+  // text lists whenever the pitch can render; luSide() remains the pre-match/FIFA fallback.
+  function luPanelHtml(d,pitch,hRaw,aRaw,hSide,aSide){
+    var h='<div class="lup-head"><span data-tm="'+escapeHtml(d.hN)+'" role="button" tabindex="0">'+(F[d.hN]||'')+' '+escapeHtml(d.hN)+'</span><span class="ff">'+escapeHtml((hRaw&&hRaw.form)||'')+'</span></div>';
+    h+=pitch;
+    h+='<div class="lup-head b"><span class="ff">'+escapeHtml((aRaw&&aRaw.form)||'')+'</span><span data-tm="'+escapeHtml(d.aN)+'" role="button" tabindex="0">'+escapeHtml(d.aN)+' '+(F[d.aN]||'')+'</span></div>';
+    // came on = players with minutes who are not in either starting XI
+    var pp=afPlayersFor(d.hN,d.aN),xiN={},i;
+    function markXi(raw){if(raw&&raw.xi)for(var j=0;j<raw.xi.length;j++)xiN[afNorm(raw.xi[j][1])]=1;}
+    markXi(hRaw);markXi(aRaw);
+    var came=[],cameN={};
+    if(pp){
+      var sides=[{rows:pp.home,t:d.hN},{rows:pp.away,t:d.aN}];
+      for(var s=0;s<2;s++){var rows=sides[s].rows||[];
+        for(i=0;i<rows.length;i++){var r=rows[i];
+          if(!(r[3]>0)||xiN[afNorm(r[0])])continue;
+          came.push({r:r,t:sides[s].t});cameN[afNorm(r[0])]=1;}}
+    }
+    if(came.length){
+      h+='<div class="lup-sec">Came on</div><div class="pcb-row">';
+      for(i=0;i<came.length;i++){var c=came[i];
+        h+='<button type="button" class="pcb" data-pp="'+escapeHtml(c.r[0])+'" data-pp-t="'+escapeHtml(c.t)+'">'
+          +'<span class="no">'+escapeHtml(String(c.r[1]!=null?c.r[1]:''))+'</span>'+escapeHtml(c.r[0])+ppRtChip(c.r[16])+'</button>';}
+      h+='</div>';
+    }
+    // unused bench = lineup substitutes who never came on
+    var unused=[];
+    function collectUnused(side,t){if(!side||!side.subs)return;
+      for(var j=0;j<side.subs.length;j++){var p=side.subs[j];
+        if(cameN[afNorm(p.name)])continue;unused.push({p:p,t:t});}}
+    collectUnused(hSide,d.hN);collectUnused(aSide,d.aN);
+    if(unused.length){
+      h+='<div class="lup-sec">Bench &middot; unused</div><div class="pcb-row">';
+      for(i=0;i<unused.length&&i<30;i++){var u=unused[i];
+        h+='<button type="button" class="pcb dim" data-pp="'+escapeHtml(u.p.name)+'" data-pp-t="'+escapeHtml(u.t)+'">'
+          +'<span class="no">'+escapeHtml(String(u.p.num))+'</span>'+escapeHtml(u.p.name)+'</button>';}
+      h+='</div>';
+    }
+    var ch=(hRaw&&hRaw.coach)||(hSide&&hSide.coach)||'',ca=(aRaw&&aRaw.coach)||(aSide&&aSide.coach)||'';
+    if(ch||ca)h+='<div class="lu-coach">&#128100; '+escapeHtml(ch)+(ch&&ca?' &middot; ':'')+escapeHtml(ca)+'</div>';
+    h+='<div class="st-note" style="margin:10px 2px 0">Confirmed line-ups &amp; official match ratings via API-Football. Tap any player or team name for their full stats.</div>';
+    return h;
+  }
+  // Liverpool-dashboard-style live strip: real live xG race + a scrolling strip of key events
+  function mdLiveTopHtml(d){
+    if(!d||!d.fifaLive)return '';
+    var h='';
+    var af=afFor(d.hN,d.aN);
+    if(af&&af.home&&af.away&&(af.home.xg!=null||af.away.xg!=null)){
+      var hx=afNum(af.home.xg)||0,ax=afNum(af.away.xg)||0,tot=hx+ax,hp=tot?Math.round(hx/tot*100):50;
+      h+='<div class="lxg"><span class="n'+(hx>ax?' lead':'')+'">'+hx.toFixed(2)+'</span>'
+        +'<span class="mid"><span class="cap">Expected goals &middot; live</span>'
+        +'<span class="ts-bar"><i class="bh" style="width:'+hp+'%"></i><i class="ba" style="width:'+(100-hp)+'%"></i></span></span>'
+        +'<span class="n a'+(ax>hx?' lead':'')+'">'+ax.toFixed(2)+'</span></div>';
+    }
+    if(d.events&&d.events.length){
+      var chips='',n=0;
+      for(var i=0;i<d.events.length;i++){var e=d.events[i];
+        if(e.kind!=='goal'&&e.kind!=='yc'&&e.kind!=='rc')continue;
+        var team=(e.side==='a')?d.aN:d.hN;
+        var nm=ppLast(e.name||'');
+        chips+='<span class="evchip" data-pp="'+escapeHtml(e.name||'')+'" data-pp-t="'+escapeHtml(team)+'" role="button" tabindex="0">'
+          +'<span class="m">'+escapeHtml(e.min)+'</span>'+evIcon(e)+' '+escapeHtml(nm)+'</span>';
+        n++;}
+      if(n)h+='<div class="evchips">'+chips+'</div>';
+    }
+    return h;
+  }
   function renderMatchFull(d){
     if(!d){document.getElementById('mdLive').style.display='none';return;}
     mdLastData=d;
@@ -2872,6 +2983,8 @@
     }
     if(d.hasData)document.getElementById('mdTeamStats').innerHTML=renderTeamStats(d);
     else document.getElementById('mdTeamStats').innerHTML='<div class="st-empty">Match stats appear once the game kicks off.</div>';
+    // Liverpool-dashboard-style live strip (real live xG race + key-event chips) while in play
+    document.getElementById('mdLiveTop').innerHTML=mdLiveTopHtml(d);
     // FotMob-style top performers by official match rating (needs afplayers rows for this match)
     document.getElementById('mdTopPerf').innerHTML=(d.hasData&&plLoaded)?mdTopPerfHtml(d.hN,d.aN):'';
     document.getElementById('mdEvents').innerHTML=d.hasData?renderEvents(d):'';
@@ -2886,13 +2999,20 @@
     var hasLu=(hSide&&hSide.xi&&hSide.xi.length)||(aSide&&aSide.xi&&aSide.xi.length);
     var sotById=playerSotMap(),sotNm=sotByName();
     function sotFn(p){return (p.id!=null&&sotById[p.id])?sotById[p.id]:(sotNm[afNorm(p.name)]||0);}
-    var luNote=(viaAf?'Confirmed line-ups via API-Football. ':'')+'SoT = shots on target in their last World Cup games (est.). Tap any player for their stats.';
     var pitch=viaAf?luPitchHtml(hRaw,aRaw,d.hN,d.aN):''; // pitch view with rating chips, when the feed carries grid positions
     if(!pitch&&plLoaded){ // OLD matches: afstats trims lineups after a day — the lean copy in afplayers.json still has the grid
       var plu=afPlayersLu(d.hN,d.aN);
-      if(plu)pitch=luPitchHtml(plu.h,plu.a,d.hN,d.aN);
+      if(plu){pitch=luPitchHtml(plu.h,plu.a,d.hN,d.aN);
+        if(pitch){ // normalise the lean shape ({f,xi}) to what the panel header/chips expect
+          if(!hRaw)hRaw={form:plu.h.f,xi:plu.h.xi,coach:''};
+          if(!aRaw)aRaw={form:plu.a.f,xi:plu.a.xi,coach:''};
+        }}
     }
-    document.getElementById('mdLineupPane').innerHTML=(hasLu||pitch)?(pitch+luSide(d.hN,hSide,sotFn)+luSide(d.aN,aSide,sotFn)+'<div class="st-note" style="margin:2px 2px 0">'+escapeHtml(luNote)+'</div>'):'<div class="st-empty">Line-ups are published about an hour before kick-off - they’ll appear here automatically.</div>';
+    var pane=document.getElementById('mdLineupPane');
+    if(pitch)pane.innerHTML=luPanelHtml(d,pitch,hRaw,aRaw,hSide,aSide);          // the FotMob-style panel
+    else if(hasLu)pane.innerHTML=luSide(d.hN,hSide,sotFn)+luSide(d.aN,aSide,sotFn)+ // pre-match / no-grid fallback lists
+      '<div class="st-note" style="margin:2px 2px 0">'+escapeHtml((viaAf?'Confirmed line-ups via API-Football. ':'')+'SoT = shots on target in their last World Cup games (est.). Tap any player for their stats.')+'</div>';
+    else pane.innerHTML='<div class="st-empty">Line-ups are published about an hour before kick-off - they’ll appear here automatically.</div>';
   }
   function mdSetTab(t){
     var stats=(t==='stats');
@@ -4198,17 +4318,22 @@
   function ppDelegate(e){
     var t=e.target;
     while(t&&t!==this){
-      if(t.getAttribute&&t.getAttribute('data-pp')){
-        var team=t.getAttribute('data-pp-t')||null;
-        var mm=mdMatch;
-        openPlayerCard(t.getAttribute('data-pp'),team,mm?mm.a:null,mm?mm.b:null);
-        return;
+      if(t.getAttribute){
+        if(t.getAttribute('data-pp')){
+          var team=t.getAttribute('data-pp-t')||null;
+          var mm=mdMatch;
+          openPlayerCard(t.getAttribute('data-pp'),team,mm?mm.a:null,mm?mm.b:null);
+          return;
+        }
+        var tm2=t.getAttribute('data-tm'); // team name tap -> that team's full stats view
+        if(tm2&&F[tm2]){stViewTeam=tm2;openStats();return;}
       }
       t=t.parentNode;
     }
   }
   document.getElementById('mdLineupPane').addEventListener('click',ppDelegate);
   document.getElementById('mdStatsPane').addEventListener('click',ppDelegate);
+  document.getElementById('mdTitle').addEventListener('click',ppDelegate);
   document.getElementById('plBody').addEventListener('click',function(e){
     var t=e.target;
     while(t&&t!==this){
