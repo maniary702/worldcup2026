@@ -142,6 +142,64 @@
   .wp-legend .ll{text-align:right}
   .wp-cal{font-size:10.5px;color:var(--low);margin-top:8px;text-align:center;line-height:1.45}
   .wp-cal b{color:var(--mut)}
+  /* FotMob-style match-rating chips (green >=7.5, gold >=6, red below) */
+  .ppr{display:inline-flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;
+    font-weight:800;border-radius:6px;padding:1px 5px;font-size:10px;line-height:1.4}
+  .ppr.hi{background:var(--pitch);color:#04150b}
+  [data-theme="light"] .ppr.hi{color:#fff}
+  .ppr.mid{background:var(--gold);color:#241c04}
+  .ppr.lo{background:var(--live);color:#fff}
+  /* top performers (match modal) */
+  .mtp{display:flex;flex-direction:column;gap:7px;margin:10px 0 2px}
+  .mtp-row{display:flex;align-items:center;gap:11px;background:var(--card2);border:1px solid var(--line);
+    border-radius:11px;padding:8px 12px;cursor:pointer;transition:border-color .15s}
+  .mtp-row:hover{border-color:var(--line2)}
+  .mtp-row .rk{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;color:var(--low);min-width:14px}
+  .mtp-row .nm{flex:1;font-weight:600;color:var(--txt);font-size:13px;min-width:0}
+  .mtp-row .nm small{display:block;font-size:10px;color:var(--low);font-weight:600}
+  .mtp-row .ppr{font-size:12px;padding:3px 8px}
+  /* line-up pitch */
+  .ppitch{position:relative;border-radius:12px;height:340px;overflow:hidden;margin:0 0 12px;
+    background:repeating-linear-gradient(180deg, var(--grassA, #0d2b1c) 0 34px, var(--grassB, #11341f) 34px 68px);
+    border:1px solid rgba(22,217,106,.25)}
+  [data-theme="light"] .ppitch{background:repeating-linear-gradient(180deg,#dff0e5 0 34px,#d3e9db 34px 68px);border-color:rgba(8,146,71,.35)}
+  .ppitch .half{position:absolute;left:0;right:0;top:50%;border-top:1.5px solid rgba(22,217,106,.25)}
+  .ppitch .circ{position:absolute;left:50%;top:50%;width:70px;height:70px;transform:translate(-50%,-50%);
+    border:1.5px solid rgba(22,217,106,.25);border-radius:50%}
+  [data-theme="light"] .ppitch .half,[data-theme="light"] .ppitch .circ{border-color:rgba(8,146,71,.35)}
+  .pp-dot{position:absolute;transform:translate(-50%,-50%);text-align:center;width:62px;cursor:pointer}
+  .pp-dot .b{position:relative;width:25px;height:25px;border-radius:50%;margin:0 auto;display:flex;align-items:center;
+    justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:10px;
+    border:2px solid rgba(255,255,255,.75);color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+  .pp-dot.h .b{background:#c9152f}
+  .pp-dot.a .b{background:#3b74d6}
+  .pp-dot:hover .b{filter:brightness(1.25)}
+  .pp-dot .b .ppr{position:absolute;top:-8px;right:-13px;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+  .pp-dot .nm{font-size:9px;font-weight:700;color:var(--txt);margin-top:2px;line-height:1.15;
+    text-shadow:0 1px 2px rgba(0,0,0,.35);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  [data-theme="light"] .pp-dot .nm{text-shadow:none}
+  .lu-p[data-pp]{cursor:pointer}
+  @media(hover:hover){.lu-p[data-pp]:hover .pnm{color:var(--pitch)}}
+  .pl-tbl tr[data-ppn]{cursor:pointer}
+  @media(hover:hover){.pl-tbl tr[data-ppn]:hover .tn{color:var(--pitch)}}
+  /* player detail card */
+  .ppc-head{display:flex;align-items:center;gap:14px;padding:2px 0 6px}
+  .ppc-av{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;
+    font-family:'JetBrains Mono',monospace;font-weight:800;font-size:17px;color:#fff;background:var(--pitch2);
+    border:2px solid rgba(255,255,255,.7);box-shadow:0 3px 10px rgba(0,0,0,.35)}
+  .ppc-head .nm{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;text-transform:uppercase;
+    letter-spacing:.02em;color:var(--txt);line-height:1.05}
+  .ppc-head .meta{font-size:11px;color:var(--low);margin-top:3px}
+  .ppc-head .bigrt{margin-left:auto;text-align:center;flex:none}
+  .ppc-head .bigrt .ppr{font-size:16px;padding:6px 11px;border-radius:9px}
+  .ppc-head .bigrt .cap{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--low);font-weight:700;margin-top:4px}
+  .ppc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .ppc-cell{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:9px 8px;text-align:center}
+  .ppc-cell .v{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:16px;color:var(--txt)}
+  .ppc-cell .v .sub{font-size:10px;color:var(--low);font-weight:600}
+  .ppc-cell .l{font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--low);font-weight:700;margin-top:3px;line-height:1.3}
+  .ppc-cell .yc,.ppc-cell .rc{display:inline-block;width:9px;height:12px;border-radius:2px;vertical-align:-1px}
+  .ppc-cell .yc{background:#f5c542}.ppc-cell .rc{background:#e01030}
 
   .progwrap{margin-top:14px}
   .progbar{height:5px;border-radius:999px;background:var(--line);overflow:hidden}
@@ -788,6 +846,7 @@
       </div>
       <div id="mdStatsPane">
         <div id="mdTeamStats"></div>
+        <div id="mdTopPerf"></div>
         <div id="mdEvents"></div>
       </div>
       <div id="mdLineupPane" style="display:none"></div>
@@ -833,6 +892,17 @@
     <div class="st-note">Per-player totals and per-game averages (per appearance) from the official match feed: goals, shots, shots on target, fouls committed &amp; won, cards, plus tackles, interceptions, duels won, saves and average rating. Tap a heading to sort.</div>
     <div class="sm-btns">
       <button class="sm-cancel" id="plClose" style="flex:1">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Player detail card: tap a player anywhere (pitch, line-up list, squad table, top performers) -->
+<div class="smodal-overlay" id="ppOverlay">
+  <div class="smodal" role="dialog" aria-modal="true">
+    <div class="ppc-head" id="ppcHead"></div>
+    <div class="statsbody" id="ppcBody"></div>
+    <div class="sm-btns" style="margin-top:14px">
+      <button class="sm-cancel" id="ppClose" style="flex:1">Close</button>
     </div>
   </div>
 </div>
@@ -1026,7 +1096,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 3 Jul 2026 v26.8 (Compact schedule: your local time, live/upcoming only)';
+  var BUILD_TAG='Build 3 Jul 2026 v27.0 (player cards: match ratings, top performers, pitch line-ups, tap any player)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1046,7 +1116,7 @@
     }catch(e){}
   };
   // ── modal hygiene: one overlay at a time, Escape closes, body scroll locked, focus moved ──
-  var OVERLAYS=['pkOverlay','mdOverlay','stOverlay','grpOverlay','plOverlay','cpOverlay'];
+  var OVERLAYS=['pkOverlay','mdOverlay','stOverlay','grpOverlay','plOverlay','cpOverlay','ppOverlay'];
   var lastFocus=null;
   function syncModalState(){
     var open=false;
@@ -2287,12 +2357,15 @@
       if(cHit&&cHit.data)renderMatchFull(cHit.data);
       else{
         document.getElementById('mdTeamStats').innerHTML='<div class="st-load">Loading match data…</div>';
+        document.getElementById('mdTopPerf').innerHTML='';
         document.getElementById('mdEvents').innerHTML='';
         document.getElementById('mdLineupPane').innerHTML='<div class="st-load">Loading…</div>';
       }
       loadFull();afFetch();oddsFetch(); // oddsFetch is internally throttled — keeps the win-prob bar's anchor fresh
       // load per-player WC stats so the line-up can show each player's shots on target
       ensurePstats(function(){if(mdMatch===mm&&document.getElementById('mdOverlay').classList.contains('open'))loadFull();});
+      // per-player match ratings for the top-performers block + pitch chips (cheap 304 once loaded)
+      if(!plLoaded)playersFetch(function(){if(mdMatch===mm&&document.getElementById('mdOverlay').classList.contains('open'))loadFull();});
       // refresh until full time: catches line-ups publishing pre-match AND live score/events
       if(st.k!=='ft')mdTimer=setInterval(function(){
         if(mdMatch!==mm||!document.getElementById('mdOverlay').classList.contains('open')){clearInterval(mdTimer);mdTimer=null;return;}
@@ -2781,7 +2854,7 @@
     if(!s||!s.xi||!s.xi.length)return '';
     var h='<div class="lu-side"><div class="lu-form"><span>'+(F[name]||'')+' '+escapeHtml(name)+'</span><span class="ff">'+escapeHtml(s.form||'')+'</span></div>';
     function row(p,sub){var sv=sotFn?sotFn(p):0;var ps=sv?' <span class="lu-sot">'+sv+' SoT</span>':'';
-      return '<div class="lu-p'+(sub?' sub':'')+'"><span class="pn">'+escapeHtml(String(p.num))+'</span><span class="pnm">'+escapeHtml(p.name)+(p.cap?' (C)':'')+ps+'</span><span class="ppos">'+escapeHtml(p.pos)+'</span></div>';}
+      return '<div class="lu-p'+(sub?' sub':'')+'" data-pp="'+escapeHtml(p.name)+'" data-pp-t="'+escapeHtml(name)+'" role="button" tabindex="0"><span class="pn">'+escapeHtml(String(p.num))+'</span><span class="pnm">'+escapeHtml(p.name)+(p.cap?' (C)':'')+ps+'</span><span class="ppos">'+escapeHtml(p.pos)+'</span></div>';}
     for(var i=0;i<s.xi.length;i++)h+=row(s.xi[i],false);
     if(s.subs&&s.subs.length){h+='<div class="lu-subs-h">Substitutes</div>';for(var j=0;j<s.subs.length;j++)h+=row(s.subs[j],true);}
     if(s.coach)h+='<div class="lu-coach">&#128100; '+escapeHtml(s.coach)+'</div>';
@@ -2799,18 +2872,23 @@
     }
     if(d.hasData)document.getElementById('mdTeamStats').innerHTML=renderTeamStats(d);
     else document.getElementById('mdTeamStats').innerHTML='<div class="st-empty">Match stats appear once the game kicks off.</div>';
+    // FotMob-style top performers by official match rating (needs afplayers rows for this match)
+    document.getElementById('mdTopPerf').innerHTML=(d.hasData&&plLoaded)?mdTopPerfHtml(d.hN,d.aN):'';
     document.getElementById('mdEvents').innerHTML=d.hasData?renderEvents(d):'';
     // line-ups: prefer the confirmed API-Football XI (adds the coach), per side, falling back to the
     // FIFA feed when AF hasn't published. SoT chips work for both (FIFA by player id, AF by name).
-    var afE=afEntry(d.hN,d.aN),afLu=afE&&afE.lineups,hSide=null,aSide=null,viaAf=false;
-    if(afLu){var shh=afCanon(d.hN)===afE.h;hSide=afLuSide(shh?afLu.home:afLu.away);aSide=afLuSide(shh?afLu.away:afLu.home);viaAf=!!(hSide||aSide);}
+    var afE=afEntry(d.hN,d.aN),afLu=afE&&afE.lineups,hSide=null,aSide=null,viaAf=false,hRaw=null,aRaw=null;
+    if(afLu){var shh=afCanon(d.hN)===afE.h;
+      hRaw=shh?afLu.home:afLu.away;aRaw=shh?afLu.away:afLu.home;
+      hSide=afLuSide(hRaw);aSide=afLuSide(aRaw);viaAf=!!(hSide||aSide);}
     if(!(hSide&&hSide.xi&&hSide.xi.length)&&d.lu&&d.lu.h)hSide=d.lu.h;
     if(!(aSide&&aSide.xi&&aSide.xi.length)&&d.lu&&d.lu.a)aSide=d.lu.a;
     var hasLu=(hSide&&hSide.xi&&hSide.xi.length)||(aSide&&aSide.xi&&aSide.xi.length);
     var sotById=playerSotMap(),sotNm=sotByName();
     function sotFn(p){return (p.id!=null&&sotById[p.id])?sotById[p.id]:(sotNm[afNorm(p.name)]||0);}
-    var luNote=(viaAf?'Confirmed line-ups via API-Football. ':'')+'SoT = shots on target in their last World Cup games (est.).';
-    document.getElementById('mdLineupPane').innerHTML=hasLu?(luSide(d.hN,hSide,sotFn)+luSide(d.aN,aSide,sotFn)+'<div class="st-note" style="margin:2px 2px 0">'+escapeHtml(luNote)+'</div>'):'<div class="st-empty">Line-ups are published about an hour before kick-off - they’ll appear here automatically.</div>';
+    var luNote=(viaAf?'Confirmed line-ups via API-Football. ':'')+'SoT = shots on target in their last World Cup games (est.). Tap any player for their stats.';
+    var pitch=viaAf?luPitchHtml(hRaw,aRaw,d.hN,d.aN):''; // pitch view with rating chips, when the feed carries grid positions
+    document.getElementById('mdLineupPane').innerHTML=hasLu?(pitch+luSide(d.hN,hSide,sotFn)+luSide(d.aN,aSide,sotFn)+'<div class="st-note" style="margin:2px 2px 0">'+escapeHtml(luNote)+'</div>'):'<div class="st-empty">Line-ups are published about an hour before kick-off - they’ll appear here automatically.</div>';
   }
   function mdSetTab(t){
     var stats=(t==='stats');
@@ -3510,6 +3588,159 @@
     var arr=[],n;for(n in out)if(out.hasOwnProperty(n))arr.push(out[n]);
     return arr;
   }
+  // ══════════════════════════════════════
+  //  PLAYER CARD (FotMob-style): match ratings, top performers, pitch line-ups, tap-any-player
+  //  (afplayers row idx: 0 name,1 num,2 pos,3 min,4 g,5 a,6 sh,7 sot,8 fc,9 fw,10 yc,11 rc,
+  //   12 tk,13 int,14 dw,15 sv,16 rt)
+  // ══════════════════════════════════════
+  function afPlayersFor(hN,aN){
+    var e=AFPLAYERS[[afCanon(hN),afCanon(aN)].sort().join('__')];
+    if(!e)return null;
+    var sh=afCanon(hN)===e.h;
+    return {home:(sh?e.home:e.away)||[],away:(sh?e.away:e.home)||[]};
+  }
+  function ppRtClass(rt){return rt>=7.5?'hi':(rt>=6?'mid':'lo');}
+  function ppRtChip(rt,big){if(rt==null)return '';
+    return '<span class="ppr '+ppRtClass(rt)+'">'+(Math.round(rt*10)/10).toFixed(1)+'</span>';}
+  function ppLast(n){var p=String(n||'').split(' ');return p[p.length-1];}
+  function ppFindRow(rows,name){
+    if(!rows)return null;var i;
+    for(i=0;i<rows.length;i++)if(rows[i][0]===name)return rows[i];
+    var want=afNorm(ppLast(name));
+    for(i=0;i<rows.length;i++)if(afNorm(ppLast(rows[i][0]))===want)return rows[i];
+    return null;
+  }
+  // the player's most recent played match for their team (for "last game" when opened without match context)
+  function ppLatestFor(name,team){
+    var key=afCanon(team),best=null,k;
+    for(k in AFPLAYERS){if(!AFPLAYERS.hasOwnProperty(k))continue;var e=AFPLAYERS[k];if(!e)continue;
+      var side=(e.h===key)?'home':((e.a===key)?'away':null);if(!side)continue;
+      var r=ppFindRow(e[side],name);if(!r)continue;
+      if(!best||String(e.date||'')>String(best.date||''))best={date:e.date,row:r,opp:(side==='home'?e.aN:e.hN)};
+    }
+    return best;
+  }
+  function ppCell(v,l){return '<div class="ppc-cell"><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
+  function ppMatchGrid(r){
+    var h='<div class="ppc-grid">';
+    h+=ppCell(r[3]!=null?r[3]:'-','Minutes');
+    h+=ppCell(r[4]||0,'Goals');
+    h+=ppCell(r[5]||0,'Assists');
+    h+=ppCell((r[6]||0)+' <span class="sub">('+(r[7]||0)+' on tgt)</span>','Shots');
+    h+=ppCell(r[14]||0,'Duels won');
+    h+=ppCell(r[12]||0,'Tackles');
+    h+=ppCell(r[13]||0,'Interceptions');
+    h+=ppCell(r[8]||0,'Fouls committed');
+    h+=ppCell(r[9]||0,'Fouls won');
+    if(r[2]==='G'||(r[15]||0)>0)h+=ppCell(r[15]||0,'Saves');
+    h+=ppCell(r[10]?'<span class="yc"></span> '+r[10]:'0','Yellow cards');
+    h+=ppCell(r[11]?'<span class="rc"></span> '+r[11]:'0','Red cards');
+    return h+'</div>';
+  }
+  function openPlayerCard(name,team,hN,aN){
+    if(!plLoaded){playersFetch(function(){openPlayerCard(name,team,hN,aN);},true);return;}
+    var mrow=null,mLbl='';
+    if(hN&&aN){
+      var pp=afPlayersFor(hN,aN);
+      if(pp){mrow=ppFindRow(pp.home,name);
+        if(mrow){if(!team)team=hN;}
+        else{mrow=ppFindRow(pp.away,name);if(mrow&&!team)team=aN;}
+        if(mrow)mLbl='This match';}
+    }
+    if(!team)return;
+    if(!mrow){var latest=ppLatestFor(name,team);
+      if(latest){mrow=latest.row;mLbl='Last match &middot; v '+escapeHtml(latest.opp||'');}}
+    // tournament aggregate for this player
+    var agg=playerTeamAgg(team),tour=null,i;
+    for(i=0;i<agg.length;i++)if(agg[i].name===name){tour=agg[i];break;}
+    if(!tour){var wantN=afNorm(ppLast(name));
+      for(i=0;i<agg.length;i++)if(afNorm(ppLast(agg[i].name))===wantN){tour=agg[i];break;}}
+    if(!mrow&&!tour){showToast(ppLast(name)+' has no World Cup minutes yet - stats appear once they play');return;}
+    var num=(mrow?mrow[1]:(tour?tour.num:''))||'',pos=(mrow?mrow[2]:(tour?tour.pos:''))||'';
+    var rt=mrow?mrow[16]:null;
+    document.getElementById('ppcHead').innerHTML=
+      '<div class="ppc-av">'+escapeHtml(String(num))+'</div>'+
+      '<div style="min-width:0"><div class="nm">'+escapeHtml(name)+'</div>'+
+      '<div class="meta">'+(F[team]||'')+' '+escapeHtml(team)+(pos?' &middot; '+escapeHtml(pos):'')+(num!==''?' &middot; #'+escapeHtml(String(num)):'')+'</div></div>'+
+      (rt!=null?'<div class="bigrt">'+ppRtChip(rt)+'<div class="cap">Match rating</div></div>':'');
+    var h='';
+    if(mrow)h+='<div class="st-sec"><h4>'+mLbl+'</h4>'+ppMatchGrid(mrow)+'</div>';
+    if(tour){
+      var avgRt=tour.rtN?(tour.rtSum/tour.rtN):null;
+      h+='<div class="st-sec"><h4>Tournament &middot; '+tour.ap+' appearance'+(tour.ap===1?'':'s')+'</h4><div class="ppc-grid">';
+      h+=ppCell(tour.min,'Minutes');
+      h+=ppCell(tour.g,'Goals');
+      h+=ppCell(tour.a,'Assists');
+      h+=ppCell(tour.sh+' <span class="sub">('+tour.sot+' on tgt)</span>','Shots');
+      h+=ppCell(avgRt!=null?ppRtChip(avgRt):'-','Avg rating');
+      h+=ppCell(tour.dw,'Duels won');
+      h+=ppCell(tour.tk,'Tackles');
+      h+=ppCell(tour.fw,'Fouls won');
+      if(tour.sv>0)h+=ppCell(tour.sv,'Saves');
+      h+=ppCell((tour.yc||tour.rc)?((tour.yc?'<span class="yc"></span> '+tour.yc:'')+(tour.rc?' <span class="rc"></span> '+tour.rc:'')):'0','Cards');
+      h+='</div></div>';
+    }
+    h+='<div class="st-note" style="margin:6px 0 0">Real per-player data from API-Football&rsquo;s World Cup feed &mdash; ratings are their official match ratings.</div>';
+    document.getElementById('ppcBody').innerHTML=h;
+    // open ON TOP of whatever overlay launched it (match modal / squad table stay underneath)
+    document.getElementById('ppOverlay').classList.add('open');
+    syncModalState();
+  }
+  // top performers block for the open match (top 3 by official match rating)
+  function mdTopPerfHtml(hN,aN){
+    var pp=afPlayersFor(hN,aN);if(!pp)return '';
+    var all=[],i;
+    for(i=0;i<pp.home.length;i++)if(pp.home[i][16]!=null)all.push({r:pp.home[i],t:hN});
+    for(i=0;i<pp.away.length;i++)if(pp.away[i][16]!=null)all.push({r:pp.away[i],t:aN});
+    if(all.length<3)return '';
+    all.sort(function(x,y){return y.r[16]-x.r[16];});
+    var h='<div class="st-sec af-sec"><h4>&#11088; Top performers <span style="font-weight:600;letter-spacing:0;text-transform:none">(official match ratings)</span></h4><div class="mtp">';
+    for(i=0;i<3;i++){var p=all[i],r=p.r;
+      var sub=(r[4]?r[4]+' goal'+(r[4]>1?'s':''):'')+(r[5]?(r[4]?', ':'')+r[5]+' assist'+(r[5]>1?'s':''):'');
+      if(!sub)sub=(r[2]==='G'?(r[15]||0)+' saves':(r[14]||0)+' duels won');
+      h+='<div class="mtp-row" data-pp="'+escapeHtml(r[0])+'" data-pp-t="'+escapeHtml(p.t)+'" role="button" tabindex="0">'+
+        '<span class="rk">'+(i+1)+'</span>'+
+        '<span class="nm">'+escapeHtml(r[0])+'<small>'+(F[p.t]||'')+' '+escapeHtml(p.t)+' &middot; '+sub+'</small></span>'+
+        ppRtChip(r[16])+'</div>';
+    }
+    h+='</div><div class="st-note" style="margin:8px 0 0">Tap a player for their full numbers.</div></div>';
+    return h;
+  }
+  // pitch view above the line-up lists, players placed by the feed's real formation grid
+  function luPitchHtml(hRaw,aRaw,hN,aN){
+    if(!hRaw||!hRaw.xi||!hRaw.xi.length||!aRaw||!aRaw.xi||!aRaw.xi.length)return '';
+    var hasGrid=false,i;
+    for(i=0;i<hRaw.xi.length;i++)if(hRaw.xi[i][3]){hasGrid=true;break;}
+    if(!hasGrid)return '';
+    var pp=afPlayersFor(hN,aN);
+    function chipFor(side,name){
+      if(!pp)return '';
+      var r=ppFindRow(side==='h'?pp.home:pp.away,name);
+      return r?ppRtChip(r[16]):'';
+    }
+    function dots(xi,css,topHalf,teamName){
+      var rows={},maxRow=1,html='';
+      for(var j=0;j<xi.length;j++){var p=xi[j];
+        var g=String(p[3]||'1:1').split(':'),rw=parseInt(g[0],10)||1,cl=parseInt(g[1],10)||1;
+        if(!rows[rw])rows[rw]=[];rows[rw].push({num:p[0],name:p[1],col:cl});
+        if(rw>maxRow)maxRow=rw;}
+      for(var rk in rows){if(!rows.hasOwnProperty(rk))continue;
+        var rr=parseInt(rk,10),players=rows[rk];
+        players.sort(function(x,y){return x.col-y.col;});
+        var band=0.06+((rr-0.5)/maxRow)*0.40;
+        var y=topHalf?band:(1-band);
+        for(var q=0;q<players.length;q++){var pl=players[q];
+          var x=(q+0.5)/players.length;if(!topHalf)x=1-x;
+          html+='<div class="pp-dot '+css+'" data-pp="'+escapeHtml(pl.name)+'" data-pp-t="'+escapeHtml(teamName)+'" role="button" tabindex="0" aria-label="'+escapeHtml(pl.name)+' - player stats" style="left:'+(x*100).toFixed(1)+'%;top:'+(y*100).toFixed(1)+'%">'+
+            '<div class="b">'+escapeHtml(String(pl.num!=null?pl.num:''))+chipFor(css,pl.name)+'</div>'+
+            '<div class="nm">'+escapeHtml(ppLast(pl.name))+'</div></div>';
+        }}
+      return html;
+    }
+    return '<div class="ppitch"><div class="half"></div><div class="circ"></div>'+
+      dots(hRaw.xi,'h',true,hN)+dots(aRaw.xi,'a',false,aN)+'</div>';
+  }
+
   var PL_COLS=[['min','Min'],['g','G'],['a','A'],['sh','Sh'],['sot','SoT'],['fc','FC'],['fw','FW'],['yc','Y'],['rc','R'],['tk','Tkl'],['intc','Int'],['dw','DuW'],['sv','Sv'],['rt','Rtg']];
   function plVal(p,k){
     if(k==='rt')return p.rtN?(p.rtSum/p.rtN):0;
@@ -3557,7 +3788,7 @@
     for(var i=0;i<roster.length;i++){var p=roster[i];
       var fl=(plSel==='__both__')?((F[p.team]||'')+' '):'';
       var nm=fl+escapeHtml(p.name)+(p.pos?' <span class="pl-pos">'+escapeHtml(p.pos)+'</span>':'');
-      h+='<tr><td class="tn">'+nm+'</td><td>'+p.ap+'</td>';
+      h+='<tr data-ppn="'+escapeHtml(p.name)+'" data-ppt="'+escapeHtml(p.team)+'"><td class="tn">'+nm+'</td><td>'+p.ap+'</td>';
       for(c=0;c<PL_COLS.length;c++){var k=PL_COLS[c][0];h+='<td'+(plSort===k?' class="pts"':'')+'>'+plCell(p,k)+'</td>';}
       h+='</tr>';
     }
@@ -3920,7 +4151,8 @@
   // Escape closes whichever overlay is open
   document.addEventListener('keydown',function(e){
     if(e.key!=='Escape')return;
-    if(document.getElementById('plOverlay').classList.contains('open'))closeOverlay('plOverlay');
+    if(document.getElementById('ppOverlay').classList.contains('open'))closeOverlay('ppOverlay'); // stacked on md/pl — close first
+    else if(document.getElementById('plOverlay').classList.contains('open'))closeOverlay('plOverlay');
     else if(document.getElementById('cpOverlay').classList.contains('open'))closeOverlay('cpOverlay');
     else if(document.getElementById('stOverlay').classList.contains('open'))closeStats();
     else if(document.getElementById('mdOverlay').classList.contains('open'))closeMatchDetail();
@@ -3946,6 +4178,23 @@
     }
   });
   // Player-stats modal: team selector · Totals/Per-game toggle · tap-a-heading sort
+  // Player card: close controls + tap-any-player delegation (pitch dots, line-up rows, top performers)
+  document.getElementById('ppClose').addEventListener('click',function(){closeOverlay('ppOverlay');});
+  document.getElementById('ppOverlay').addEventListener('click',function(e){if(e.target===this)closeOverlay('ppOverlay');});
+  function ppDelegate(e){
+    var t=e.target;
+    while(t&&t!==this){
+      if(t.getAttribute&&t.getAttribute('data-pp')){
+        var team=t.getAttribute('data-pp-t')||null;
+        var mm=mdMatch;
+        openPlayerCard(t.getAttribute('data-pp'),team,mm?mm.a:null,mm?mm.b:null);
+        return;
+      }
+      t=t.parentNode;
+    }
+  }
+  document.getElementById('mdLineupPane').addEventListener('click',ppDelegate);
+  document.getElementById('mdStatsPane').addEventListener('click',ppDelegate);
   document.getElementById('plBody').addEventListener('click',function(e){
     var t=e.target;
     while(t&&t!==this){
@@ -3953,6 +4202,8 @@
         var tm=t.getAttribute('data-pl-team');if(tm){plSel=tm;renderPlayerStatsModal();return;}
         var md=t.getAttribute('data-pl-mode');if(md){plMode=md;renderPlayerStatsModal();return;}
         var so=t.getAttribute('data-pl-sort');if(so){plSort=so;renderPlayerStatsModal();return;}
+        // squad table row -> that player's own card (stacked on top of this table)
+        var pn=t.getAttribute('data-ppn');if(pn){openPlayerCard(pn,t.getAttribute('data-ppt')||plSel,null,null);return;}
       }
       t=t.parentNode;
     }
