@@ -575,16 +575,19 @@
   @media(hover:hover){.lup-head [data-tm]:hover{color:var(--pitch)}}
   .lup-head.b{margin:10px 2px 4px}
   .lup-sec{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--low);margin:14px 2px 8px}
-  .pcb-row{display:flex;flex-wrap:wrap;gap:8px}
-  .pcb-cols{display:flex;gap:10px;align-items:flex-start}
-  .pcb-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
-  .pcb-col.a{align-items:flex-end}
-  .pcb-col .pcb{max-width:100%}
-  .pcb{display:inline-flex;align-items:center;gap:7px;background:var(--card2);border:1px solid var(--line);
-    border-radius:999px;padding:6px 12px 6px 9px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer;transition:border-color .15s}
-  .pcb:hover{border-color:var(--line2)}
-  .pcb .no{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--low);font-weight:700}
-  .pcb.dim{opacity:.65;cursor:default}
+  .pcb-cols{display:flex;gap:12px;align-items:flex-start}
+  .pcb-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;align-items:stretch}
+  /* LiveScore-style substitute rows: number bubble + name + grey "#num - position" subline */
+  .pls{display:flex;align-items:center;gap:9px;width:100%;padding:6px 7px;background:none;border:none;
+    border-radius:10px;cursor:pointer;text-align:left;color:var(--txt);font-family:inherit;transition:background .15s}
+  .pls:hover{background:var(--card2)}
+  .pls-no{flex:0 0 26px;width:26px;height:26px;border-radius:50%;background:var(--card2);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--low)}
+  .pls-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+  .pls-nm{font-size:13.5px;font-weight:600;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pls-sub{font-size:10.5px;color:var(--low);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pls .ppr{flex:0 0 auto}
+  .pls.dim{opacity:.62}
   .evcard{display:inline-block;width:9px;height:12px;border-radius:2px;vertical-align:-1px}
   .lu-side{margin-bottom:16px}
   .lu-form{display:flex;justify-content:space-between;align-items:baseline;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;text-transform:uppercase;color:var(--txt);margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:6px}
@@ -1135,7 +1138,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 3 Jul 2026 v27.3 (came-on & bench chips split home-left / away-right)';
+  var BUILD_TAG='Build 4 Jul 2026 v27.4 (own goals on the timeline, LiveScore-style subs, name fixes)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -2517,7 +2520,9 @@
   function afFor(hN,aN){var e=afEntry(hN,aN);if(!e||!e.stats)return null;var sh=afCanon(hN)===e.h;
     return {st:e.st,min:e.min,home:sh?e.stats.home:e.stats.away,away:sh?e.stats.away:e.stats.home};}
   function afKeys(o){for(var k in o)if(o.hasOwnProperty(k))return true;return false;}
-  function afNorm(s){return (s||'').toLowerCase().replace(/ç/g,'c').replace(/ü/g,'u').replace(/[éèê]/g,'e').replace(/[íî]/g,'i').replace(/[áàâãä]/g,'a').replace(/[óôõ]/g,'o').replace(/ñ/g,'n').replace(/[^a-z]/g,'');}
+  // API-Football embeds HTML entities inside names ("O&apos;Neill") - decode before display or matching
+  function ppDecode(s){return String(s||'').replace(/&apos;/g,"'").replace(/&#0?39;/g,"'").replace(/&quot;/g,'"').replace(/&amp;/g,'&');}
+  function afNorm(s){return ppDecode(s||'').toLowerCase().replace(/ç/g,'c').replace(/ü/g,'u').replace(/[éèê]/g,'e').replace(/[íî]/g,'i').replace(/[áàâãä]/g,'a').replace(/[óôõ]/g,'o').replace(/ñ/g,'n').replace(/[^a-z]/g,'');}
   // convert an API-Football line-up side ([[num,name,pos,grid]]) to the luSide() shape (+ coach)
   function afLuSide(s){
     if(!s||!s.xi||!s.xi.length)return null;
@@ -2804,8 +2809,14 @@
     if(!O||!O.imp||!wpFin(O.imp.home)||!wpFin(O.imp.draw)||!wpFin(O.imp.away))return ''; // hide on missing/malformed odds
     var st=statusOf(mm),sc=scoreOf(mm),live=(st.k==='lv'&&sc&&sc.ga!=null&&sc.gb!=null),p,cap;
     if(live){
-      var lam=wpLambdas(mm,O.imp);p=wpLive(lam.lh,lam.la,sc.ga,sc.gb,wpRemFrac(st));
-      cap='<span class="wp-live"><span class="blip"></span> LIVE '+escapeHtml(st.t||'')+'</span>';
+      // clock: prefer API-Football's elapsed minute (updates every poll) over FIFA's, which can
+      // sit stale mid-half (showed 23' at real 42'). Same string feeds display AND wpRemFrac.
+      var stT=st.t||'',afL=afFor(mm.a,mm.b);
+      if(afL&&afL.min!=null&&afL.min!==''&&afL.st&&afL.st!=='FT'&&afL.st!=='NS'){
+        stT=(afL.st==='HT')?'HT':((afL.st==='P')?'PENS':((afL.st==='ET'||afL.st==='BT')?'ET '+afL.min+"'":afL.min+"'"));
+      }
+      var lam=wpLambdas(mm,O.imp);p=wpLive(lam.lh,lam.la,sc.ga,sc.gb,wpRemFrac({t:stT}));
+      cap='<span class="wp-live"><span class="blip"></span> LIVE '+escapeHtml(stT)+'</span>';
     }else{p=[O.imp.home,O.imp.draw,O.imp.away];cap=(st.k==='ft')?'Pre-match outlook':'Win probability';}
     var w=Math.round(p[0]*100),d=Math.round(p[1]*100),l=Math.round(p[2]*100),sum=w+d+l;
     if(sum!==100){var diff=100-sum;if(w>=d&&w>=l)w+=diff;else if(l>=d)l+=diff;else d+=diff;}
@@ -2880,6 +2891,7 @@
     var h='<h4 class="ts-h" style="margin:16px 0 8px">Timeline</h4><div class="ev-list">';
     for(var i=0;i<d.events.length;i++){var e=d.events[i];
       var team=(e.side==='a')?d.aN:d.hN;
+      if(e.og)team=(e.side==='a')?d.hN:d.aN; // og: the event sits on the benefiting side, the scorer plays for the other
       var who=e.kind==='sub'?(e.inn||''):(e.name||'');
       var pp=who?' data-pp="'+escapeHtml(who)+'" data-pp-t="'+escapeHtml(team)+'" role="button" tabindex="0"':'';
       var txt;
@@ -2905,7 +2917,7 @@
     if(!s||!s.xi||!s.xi.length)return '';
     var h='<div class="lu-side"><div class="lu-form"><span>'+(F[name]||'')+' '+escapeHtml(name)+'</span><span class="ff">'+escapeHtml(s.form||'')+'</span></div>';
     function row(p,sub){var sv=sotFn?sotFn(p):0;var ps=sv?' <span class="lu-sot">'+sv+' SoT</span>':'';
-      return '<div class="lu-p'+(sub?' sub':'')+'" data-pp="'+escapeHtml(p.name)+'" data-pp-t="'+escapeHtml(name)+'" role="button" tabindex="0"><span class="pn">'+escapeHtml(String(p.num))+'</span><span class="pnm">'+escapeHtml(p.name)+(p.cap?' (C)':'')+ps+'</span><span class="ppos">'+escapeHtml(p.pos)+'</span></div>';}
+      return '<div class="lu-p'+(sub?' sub':'')+'" data-pp="'+escapeHtml(p.name)+'" data-pp-t="'+escapeHtml(name)+'" role="button" tabindex="0"><span class="pn">'+escapeHtml(String(p.num))+'</span><span class="pnm">'+escapeHtml(ppDecode(p.name))+(p.cap?' (C)':'')+ps+'</span><span class="ppos">'+escapeHtml(p.pos)+'</span></div>';}
     for(var i=0;i<s.xi.length;i++)h+=row(s.xi[i],false);
     if(s.subs&&s.subs.length){h+='<div class="lu-subs-h">Substitutes</div>';for(var j=0;j<s.subs.length;j++)h+=row(s.subs[j],true);}
     if(s.coach)h+='<div class="lu-coach">&#128100; '+escapeHtml(s.coach)+'</div>';
@@ -2918,36 +2930,41 @@
     var h='<div class="lup-head"><span data-tm="'+escapeHtml(d.hN)+'" role="button" tabindex="0">'+(F[d.hN]||'')+' '+escapeHtml(d.hN)+'</span><span class="ff">'+escapeHtml((hRaw&&hRaw.form)||'')+'</span></div>';
     h+=pitch;
     h+='<div class="lup-head b"><span class="ff">'+escapeHtml((aRaw&&aRaw.form)||'')+'</span><span data-tm="'+escapeHtml(d.aN)+'" role="button" tabindex="0">'+escapeHtml(d.aN)+' '+(F[d.aN]||'')+'</span></div>';
-    // came on = players with minutes who are not in either starting XI
-    var pp=afPlayersFor(d.hN,d.aN),xiN={},i;
-    function markXi(raw){if(raw&&raw.xi)for(var j=0;j<raw.xi.length;j++)xiN[afNorm(raw.xi[j][1])]=1;}
-    markXi(hRaw);markXi(aRaw);
-    var came=[],cameN={};
-    if(pp){
-      var sides=[{rows:pp.home,t:d.hN},{rows:pp.away,t:d.aN}];
-      for(var s=0;s<2;s++){var rows=sides[s].rows||[];
-        for(i=0;i<rows.length;i++){var r=rows[i];
-          if(!(r[3]>0)||xiN[afNorm(r[0])])continue;
-          came.push({r:r,t:sides[s].t});cameN[afNorm(r[0])]=1;}}
+    // came on vs unused bench, driven by the confirmed SUBSTITUTES list: a sub "came on" when
+    // their player row shows minutes. ppFindRow bridges the two naming domains (full vs "G. Kobel").
+    var pp=afPlayersFor(d.hN,d.aN),came=[],unused=[],i;
+    function splitSubs(side,rows,t){if(!side||!side.subs)return;
+      for(var j=0;j<side.subs.length;j++){var p=side.subs[j];
+        var r=pp?ppFindRow(rows,p.name):null;
+        if(r&&r[3]>0)came.push({p:p,r:r,t:t});else unused.push({p:p,r:r,t:t});}}
+    splitSubs(hSide,pp&&pp.home,d.hN);
+    splitSubs(aSide,pp&&pp.away,d.aN);
+    if(!came.length&&!unused.length&&pp){ // old matches: subs list trimmed - fall back to minutes-vs-XI from player rows
+      var sides=[{rows:pp.home,t:d.hN,xi:hRaw&&hRaw.xi},{rows:pp.away,t:d.aN,xi:aRaw&&aRaw.xi}];
+      for(var s=0;s<2;s++){var rows=sides[s].rows||[],xiRows=[],j2;
+        for(j2=0;j2<(sides[s].xi||[]).length;j2++)xiRows.push([sides[s].xi[j2][1]]);
+        for(i=0;i<rows.length;i++){var r2=rows[i];
+          if(!(r2[3]>0)||ppFindRow(xiRows,r2[0]))continue;
+          came.push({p:{num:r2[1],name:r2[0],pos:posWord(r2[2])},r:r2,t:sides[s].t});}}
     }
-    // chips render as two columns: HOME team left, AWAY team right (matches the timeline sides)
-    function cameChip(c){return '<button type="button" class="pcb" data-pp="'+escapeHtml(c.r[0])+'" data-pp-t="'+escapeHtml(c.t)+'">'
-      +'<span class="no">'+escapeHtml(String(c.r[1]!=null?c.r[1]:''))+'</span>'+escapeHtml(c.r[0])+ppRtChip(c.r[16])+'</button>';}
-    function benchChip(u){return '<button type="button" class="pcb dim" data-pp="'+escapeHtml(u.p.name)+'" data-pp-t="'+escapeHtml(u.t)+'">'
-      +'<span class="no">'+escapeHtml(String(u.p.num))+'</span>'+escapeHtml(u.p.name)+'</button>';}
-    function twoCols(list,chipFn){
+    // LiveScore-style list rows (number bubble + full name + position subline), two columns:
+    // HOME team left, AWAY team right (matches the timeline sides)
+    function plsRow(c,dim){
+      var name=ppDecode(c.p.name),num=(c.p.num!=null&&c.p.num!=='')?c.p.num:(c.r?c.r[1]:'');
+      var pos=posWord(c.p.pos)||posWord(c.r&&c.r[2])||'';
+      var sub='#'+(num!==''?num:'?')+(pos?' · '+pos:'')+((!dim&&c.r&&c.r[3]>0)?' · '+c.r[3]+' min':'');
+      return '<button type="button" class="pls'+(dim?' dim':'')+'" data-pp="'+escapeHtml(name)+'" data-pp-t="'+escapeHtml(c.t)+'">'
+        +'<span class="pls-no">'+escapeHtml(String(num!==''?num:'?'))+'</span>'
+        +'<span class="pls-mid"><span class="pls-nm">'+escapeHtml(name)+'</span>'
+        +'<span class="pls-sub">'+escapeHtml(sub)+'</span></span>'
+        +((!dim&&c.r)?ppRtChip(c.r[16]):'')+'</button>';}
+    function twoCols(list,rowFn,dim){
       var L='',R='';
-      for(var q=0;q<list.length;q++){if(list[q].t===d.hN)L+=chipFn(list[q]);else R+=chipFn(list[q]);}
+      for(var q=0;q<list.length;q++){if(list[q].t===d.hN)L+=rowFn(list[q],dim);else R+=rowFn(list[q],dim);}
       return '<div class="pcb-cols"><div class="pcb-col">'+L+'</div><div class="pcb-col a">'+R+'</div></div>';
     }
-    if(came.length)h+='<div class="lup-sec">Came on</div>'+twoCols(came,cameChip);
-    // unused bench = lineup substitutes who never came on
-    var unused=[];
-    function collectUnused(side,t){if(!side||!side.subs)return;
-      for(var j=0;j<side.subs.length;j++){var p=side.subs[j];
-        if(cameN[afNorm(p.name)])continue;unused.push({p:p,t:t});}}
-    collectUnused(hSide,d.hN);collectUnused(aSide,d.aN);
-    if(unused.length)h+='<div class="lup-sec">Bench &middot; unused</div>'+twoCols(unused,benchChip);
+    if(came.length)h+='<div class="lup-sec">Came on</div>'+twoCols(came,plsRow,false);
+    if(unused.length)h+='<div class="lup-sec">Bench &middot; unused</div>'+twoCols(unused,plsRow,true);
     var ch=(hRaw&&hRaw.coach)||(hSide&&hSide.coach)||'',ca=(aRaw&&aRaw.coach)||(aSide&&aSide.coach)||'';
     if(ch||ca)h+='<div class="lu-coach">&#128100; '+escapeHtml(ch)+(ch&&ca?' &middot; ':'')+escapeHtml(ca)+'</div>';
     h+='<div class="st-note" style="margin:10px 2px 0">Confirmed line-ups &amp; official match ratings via API-Football. Tap any player or team name for their full stats.</div>';
@@ -2970,8 +2987,8 @@
       for(var i=0;i<d.events.length;i++){var e=d.events[i];
         if(e.kind!=='goal'&&e.kind!=='yc'&&e.kind!=='rc')continue;
         var team=(e.side==='a')?d.aN:d.hN;
-        var nm=ppLast(e.name||'');
-        chips+='<span class="evchip" data-pp="'+escapeHtml(e.name||'')+'" data-pp-t="'+escapeHtml(team)+'" role="button" tabindex="0">'
+        var nm=ppLast(e.name||'')+(e.og?' (og)':'');
+        chips+='<span class="evchip" data-pp="'+escapeHtml(e.name||'')+'" data-pp-t="'+escapeHtml(e.og?((e.side==='a')?d.hN:d.aN):team)+'" role="button" tabindex="0">'
           +'<span class="m">'+escapeHtml(e.min)+'</span>'+evIcon(e)+' '+escapeHtml(nm)+'</span>';
         n++;}
       if(n)h+='<div class="evchips">'+chips+'</div>';
@@ -3743,13 +3760,29 @@
   function ppRtClass(rt){return rt>=7.5?'hi':(rt>=6?'mid':'lo');}
   function ppRtChip(rt,big){if(rt==null)return '';
     return '<span class="ppr '+ppRtClass(rt)+'">'+(Math.round(rt*10)/10).toFixed(1)+'</span>';}
-  function ppLast(n){var p=String(n||'').split(' ');return p[p.length-1];}
+  function ppLast(n){var p=ppDecode(String(n||'')).split(' ');return p[p.length-1];}
+  function posWord(p){var m={G:'Goalkeeper',D:'Defender',M:'Midfielder',F:'Attacker'};return m[p]||(p||'');}
+  // match a display name against player rows across the two naming domains the feeds use
+  // (line-ups carry full names "Gregor Kobel", player rows abbreviate to "G. Kobel"):
+  // exact normalised -> first-initial+last-name (if unique) -> last-name (if unique)
+  function ppNameBits(n){
+    var raw=ppDecode(String(n||'')).replace(/\./g,' ').split(/\s+/),parts=[],i;
+    for(i=0;i<raw.length;i++)if(raw[i])parts.push(raw[i]);
+    if(!parts.length)return null;
+    return {ini:afNorm(parts[0]).charAt(0),last:afNorm(parts[parts.length-1])};
+  }
   function ppFindRow(rows,name){
-    if(!rows)return null;var i;
-    for(i=0;i<rows.length;i++)if(rows[i][0]===name)return rows[i];
-    var want=afNorm(ppLast(name));
-    for(i=0;i<rows.length;i++)if(afNorm(ppLast(rows[i][0]))===want)return rows[i];
-    return null;
+    if(!rows)return null;var i,n=afNorm(name);
+    for(i=0;i<rows.length;i++)if(afNorm(rows[i][0])===n)return rows[i];
+    var w=ppNameBits(name);if(!w||!w.last)return null;
+    var hit=null,cnt=0,b;
+    for(i=0;i<rows.length;i++){b=ppNameBits(rows[i][0]);
+      if(b&&b.last===w.last&&b.ini===w.ini){cnt++;hit=rows[i];}}
+    if(cnt===1)return hit;
+    hit=null;cnt=0;
+    for(i=0;i<rows.length;i++){b=ppNameBits(rows[i][0]);
+      if(b&&b.last===w.last){cnt++;hit=rows[i];}}
+    return cnt===1?hit:null;
   }
   // the player's most recent played match for their team (for "last game" when opened without match context)
   function ppLatestFor(name,team){
@@ -3801,7 +3834,7 @@
     var rt=mrow?mrow[16]:null;
     document.getElementById('ppcHead').innerHTML=
       '<div class="ppc-av">'+escapeHtml(String(num))+'</div>'+
-      '<div style="min-width:0"><div class="nm">'+escapeHtml(name)+'</div>'+
+      '<div style="min-width:0"><div class="nm">'+escapeHtml(ppDecode(name))+'</div>'+
       '<div class="meta">'+(F[team]||'')+' '+escapeHtml(team)+(pos?' &middot; '+escapeHtml(pos):'')+(num!==''?' &middot; #'+escapeHtml(String(num)):'')+'</div></div>'+
       (rt!=null?'<div class="bigrt">'+ppRtChip(rt)+'<div class="cap">Match rating</div></div>':'');
     var h='';
@@ -3838,10 +3871,16 @@
     var h='<div class="st-sec af-sec"><h4>&#11088; Top performers <span style="font-weight:600;letter-spacing:0;text-transform:none">(official match ratings)</span></h4><div class="mtp">';
     for(i=0;i<3;i++){var p=all[i],r=p.r;
       var sub=(r[4]?r[4]+' goal'+(r[4]>1?'s':''):'')+(r[5]?(r[4]?', ':'')+r[5]+' assist'+(r[5]>1?'s':''):'');
-      if(!sub)sub=(r[2]==='G'?(r[15]||0)+' saves':(r[14]||0)+' duels won');
+      if(!sub){ // context line: first non-zero stat that says why they rated well
+        if(r[2]==='G'&&(r[15]||0)>0)sub=r[15]+' save'+(r[15]>1?'s':'');
+        else if((r[7]||0)>0)sub=r[7]+' on target';
+        else if((r[14]||0)>0)sub=r[14]+' duels won';
+        else if((r[12]||0)>0)sub=r[12]+' tackle'+(r[12]>1?'s':'');
+        else sub=(r[3]!=null?r[3]:'-')+' min played';
+      }
       h+='<div class="mtp-row" data-pp="'+escapeHtml(r[0])+'" data-pp-t="'+escapeHtml(p.t)+'" role="button" tabindex="0">'+
         '<span class="rk">'+(i+1)+'</span>'+
-        '<span class="nm">'+escapeHtml(r[0])+'<small>'+(F[p.t]||'')+' '+escapeHtml(p.t)+' &middot; '+sub+'</small></span>'+
+        '<span class="nm">'+escapeHtml(ppDecode(r[0]))+'<small>'+(F[p.t]||'')+' '+escapeHtml(p.t)+' &middot; '+sub+'</small></span>'+
         ppRtChip(r[16])+'</div>';
     }
     h+='</div><div class="st-note" style="margin:8px 0 0">Tap a player for their full numbers.</div></div>';
@@ -3872,7 +3911,7 @@
         var y=topHalf?band:(1-band);
         for(var q=0;q<players.length;q++){var pl=players[q];
           var x=(q+0.5)/players.length;if(!topHalf)x=1-x;
-          html+='<div class="pp-dot '+css+'" data-pp="'+escapeHtml(pl.name)+'" data-pp-t="'+escapeHtml(teamName)+'" role="button" tabindex="0" aria-label="'+escapeHtml(pl.name)+' - player stats" style="left:'+(x*100).toFixed(1)+'%;top:'+(y*100).toFixed(1)+'%">'+
+          html+='<div class="pp-dot '+css+'" data-pp="'+escapeHtml(pl.name)+'" data-pp-t="'+escapeHtml(teamName)+'" role="button" tabindex="0" aria-label="'+escapeHtml(ppDecode(pl.name))+' - player stats" style="left:'+(x*100).toFixed(1)+'%;top:'+(y*100).toFixed(1)+'%">'+
             '<div class="b">'+escapeHtml(String(pl.num!=null?pl.num:''))+chipFor(css,pl.name)+'</div>'+
             '<div class="nm">'+escapeHtml(ppLast(pl.name))+'</div></div>';
         }}
@@ -3928,7 +3967,7 @@
     h+='</tr>';
     for(var i=0;i<roster.length;i++){var p=roster[i];
       var fl=(plSel==='__both__')?((F[p.team]||'')+' '):'';
-      var nm=fl+escapeHtml(p.name)+(p.pos?' <span class="pl-pos">'+escapeHtml(p.pos)+'</span>':'');
+      var nm=fl+escapeHtml(ppDecode(p.name))+(p.pos?' <span class="pl-pos">'+escapeHtml(p.pos)+'</span>':'');
       h+='<tr data-ppn="'+escapeHtml(p.name)+'" data-ppt="'+escapeHtml(p.team)+'"><td class="tn">'+nm+'</td><td>'+p.ap+'</td>';
       for(c=0;c<PL_COLS.length;c++){var k=PL_COLS[c][0];h+='<td'+(plSort===k?' class="pts"':'')+'>'+plCell(p,k)+'</td>';}
       h+='</tr>';
