@@ -657,7 +657,7 @@
     </button>
     <button class="statschip cp" id="cpOpen" aria-label="Open the compact schedule list">
       <span class="big">&#128203; Compact list</span>
-      <span class="sub">all matches &middot; one line each &middot; US Eastern nights</span>
+      <span class="sub">one line each &middot; what's on now &amp; next</span>
     </button>
     <span class="freshpill" id="freshPill" style="display:none"></span>
   </div>
@@ -840,9 +840,9 @@
 <div class="smodal-overlay" id="cpOverlay">
   <div class="smodal" role="dialog" aria-modal="true">
     <h3>Compact Schedule</h3>
-    <div class="sm-stage">All 104 matches &middot; one line each &middot; US Eastern time</div>
+    <div class="sm-stage">Live &amp; upcoming matches &middot; one line each</div>
     <div class="statsbody" id="cpBody"></div>
-    <div class="st-note">Times are US Eastern (ET), fixed here regardless of the timezone picked above. A match after midnight still counts under the PREVIOUS evening&rsquo;s group &mdash; the way people still call it "Monday Night" even once a late kick-off runs past midnight. Tap any line for full match details.</div>
+    <div class="st-note">Times are in your chosen zone (device or the one picked under "Times" above). A match after midnight still counts under the PREVIOUS evening&rsquo;s group &mdash; the way people still call it "Monday Night" even once a late kick-off runs past midnight. Finished matches drop off this list; see the Schedule tab for full results. Tap any line for full match details.</div>
     <div class="sm-btns">
       <button class="sm-cancel" id="cpClose" style="flex:1">Close</button>
     </div>
@@ -1026,7 +1026,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 3 Jul 2026 v26.7 (Compact schedule: one-line list grouped by US Eastern night)';
+  var BUILD_TAG='Build 3 Jul 2026 v26.8 (Compact schedule: your local time, live/upcoming only)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1380,14 +1380,17 @@
   // grouped by "night" rather than calendar day — an early-morning kickoff (before 6am ET) still
   // counts under the PREVIOUS evening's group, same as how "Monday Night Football" games are still
   // called that even once they run past midnight. ──
-  function usGroupKey(m){
-    var o=partsInZone(kickoffUTC(m),'America/New_York');
+  function cpGroupKey(m){
+    // groups by "night" in whichever zone the page is currently showing (device default or the
+    // user's picked zone via TZ()) — a kickoff before 6am still counts under the PREVIOUS evening's
+    // group, the way "Monday Night Football" is still called that once it runs past midnight
+    var o=partsInZone(kickoffUTC(m),TZ());
     var d=new Date(Date.UTC(+o.year,+o.month-1,+o.day));
-    if(hourOf(o)<6)d.setUTCDate(d.getUTCDate()-1); // pre-6am ET rolls back to the night before
+    if(hourOf(o)<6)d.setUTCDate(d.getUTCDate()-1);
     return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());
   }
   function cpLineHtml(m){
-    var o=partsInZone(kickoffUTC(m),'America/New_York'),sc=scoreOf(m),st=statusOf(m);
+    var o=bits(m),sc=scoreOf(m),st=statusOf(m); // bits() = partsInZone(kickoffUTC(m),TZ()), same as the schedule cards
     var aNm=F[m.a]?m.a:phPretty(m.a),bNm=F[m.b]?m.b:phPretty(m.b),mid;
     if(sc&&sc.ga!=null&&sc.gb!=null){
       mid=escapeHtml(aNm)+' <b>'+sc.ga+'-'+sc.gb+'</b> '+escapeHtml(bNm)+
@@ -1396,17 +1399,22 @@
       mid=escapeHtml(aNm)+' vs '+escapeHtml(bNm);
     }
     return '<div class="cp-row" data-n="'+m.n+'" role="button" tabindex="0" aria-label="'+
-      escapeHtml(aNm+' versus '+bNm+', '+fmtClock(o)+' Eastern — open match details')+'">'+
+      escapeHtml(aNm+' versus '+bNm+', '+fmtClock(o)+' — open match details')+'">'+
       '<span class="cp-t">'+fmtClock(o)+'</span><span class="cp-m">'+mid+'</span></div>';
   }
   function renderCompressed(){
     var body=document.getElementById('cpBody');if(!body)return;
-    var sorted=matches.slice().sort(function(x,y){return kickoffUTC(x).getTime()-kickoffUTC(y).getTime();});
+    // old/finished matches are dropped entirely — this view is "what's on now and next", not a
+    // results archive (the main Schedule tab already covers full history + past results)
+    var upcoming=[];
+    for(var u=0;u<matches.length;u++){if(statusOf(matches[u]).k!=='ft')upcoming.push(matches[u]);}
+    var sorted=upcoming.sort(function(x,y){return kickoffUTC(x).getTime()-kickoffUTC(y).getTime();});
     var groups={},order=[],i;
-    for(i=0;i<sorted.length;i++){var k=usGroupKey(sorted[i]);
+    for(i=0;i<sorted.length;i++){var k=cpGroupKey(sorted[i]);
       if(!groups[k]){groups[k]=[];order.push(k);}
       groups[k].push(sorted[i]);}
     var html='';
+    if(!order.length)html='<div class="st-empty">All matches played &mdash; check the Schedule tab for full results.</div>';
     for(var j=0;j<order.length;j++){
       var gk=order[j],rows=groups[gk],lines='';
       for(i=0;i<rows.length;i++)lines+=cpLineHtml(rows[i]);
