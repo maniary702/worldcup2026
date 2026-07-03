@@ -2454,6 +2454,11 @@
       }
       var side=(tid===hId)?'h':(tid===aId?'a':'');
       if(t===1){pendingAssist={n:nm(e),m:e.MatchMinute||''};continue;} // assist precedes its goal
+      if(t===34){ // own goal (FIFA Type 34): counts for the OPPOSITE side, scorer keeps the credit line
+        events.push({min:e.MatchMinute||'',side:(tid===hId)?'a':(tid===aId?'h':''),kind:'goal',name:nm(e),og:true,
+          sc:(e.HomeGoals!=null&&e.AwayGoals!=null)?e.HomeGoals+'-'+e.AwayGoals:''});
+        pendingAssist=null;continue;
+      }
       if(t===0||t===41){
         // skip penalty-shootout kicks (Period 10+) - they are not in-game goals
         var sho=(e.Period!=null)?(e.Period>=10):(parseMin(e.MatchMinute)==null||parseMin(e.MatchMinute)>120);
@@ -2879,9 +2884,9 @@
       var pp=who?' data-pp="'+escapeHtml(who)+'" data-pp-t="'+escapeHtml(team)+'" role="button" tabindex="0"':'';
       var txt;
       if(e.kind==='sub')txt='<span class="etxt"'+pp+'>'+escapeHtml(e.inn||'?')+' <span class="esub">for '+escapeHtml(e.out||'?')+'</span></span>';
-      else if(e.kind==='goal')txt='<span class="etxt"'+pp+'>'+escapeHtml(e.name||'Goal')+' <span class="esub">Goal'+(e.pen?' (pen)':'')+(e.assist?' &middot; assist '+escapeHtml(e.assist):'')+'</span></span><span class="escore">'+escapeHtml(e.sc)+'</span>';
+      else if(e.kind==='goal')txt='<span class="etxt"'+pp+'>'+escapeHtml(e.name||'Goal')+' <span class="esub">'+(e.og?'Own goal':'Goal'+(e.pen?' (pen)':''))+(e.assist?' &middot; assist '+escapeHtml(e.assist):'')+'</span></span><span class="escore">'+escapeHtml(e.sc)+'</span>';
       else txt='<span class="etxt"'+pp+'>'+escapeHtml(e.name||'Player')+' <span class="esub">'+(e.kind==='rc'?'Red card':'Yellow card')+(e.second?' (2nd yellow)':'')+'</span></span>';
-      h+='<div class="ev'+(e.side==='a'?' a':'')+'"><span class="emin">'+escapeHtml(e.min)+'</span><span class="eico">'+evIcon(e)+'</span>'+txt+'</div>';
+      h+='<div class="ev'+(e.side==='a'?' a':'')+'"><span class="emin">'+(e.min?escapeHtml(e.min):'&ndash;')+'</span><span class="eico">'+evIcon(e)+'</span>'+txt+'</div>';
     }
     return h+'</div>';
   }
