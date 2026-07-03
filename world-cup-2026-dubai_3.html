@@ -279,6 +279,16 @@
   .statschip:active{transform:scale(.97)}
   .statschip .big{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-ink)}
   .statschip .sub{font-family:'Barlow',sans-serif;font-weight:600;font-size:11px;color:var(--mut)}
+  .statschip.cp{background:linear-gradient(135deg,rgba(22,217,106,.10),transparent 70%),var(--card);border-color:var(--line2)}
+  .statschip.cp .big{color:var(--pitch)}
+  .cp-sec{margin-bottom:12px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+  .cp-sec h4{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+  .cp-row{display:flex;align-items:baseline;gap:10px;padding:6px 2px;border-top:1px dashed var(--line);cursor:pointer}
+  .cp-row:first-of-type{border-top:none}
+  .cp-row:active{opacity:.7}
+  .cp-t{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:var(--low);white-space:nowrap;min-width:56px}
+  .cp-m{font-size:13.5px;color:var(--txt);font-weight:600}
+  .cp-live{color:var(--live);font-weight:800;font-size:11px;margin-left:4px}
   .match{cursor:pointer}
   .st-mtitle{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;text-transform:uppercase;color:var(--txt);margin:0 0 14px;text-align:center}
   .st-mtitle .vsx{color:var(--low);font-size:13px;margin:0 5px}
@@ -645,6 +655,10 @@
       <span class="big">&#128202; Betting stats</span>
       <span class="sub">pens &middot; corners &middot; cards</span>
     </button>
+    <button class="statschip cp" id="cpOpen" aria-label="Open the compact schedule list">
+      <span class="big">&#128203; Compact list</span>
+      <span class="sub">all matches &middot; one line each &middot; US Eastern nights</span>
+    </button>
     <span class="freshpill" id="freshPill" style="display:none"></span>
   </div>
 
@@ -823,6 +837,18 @@
   </div>
 </div>
 
+<div class="smodal-overlay" id="cpOverlay">
+  <div class="smodal" role="dialog" aria-modal="true">
+    <h3>Compact Schedule</h3>
+    <div class="sm-stage">All 104 matches &middot; one line each &middot; US Eastern time</div>
+    <div class="statsbody" id="cpBody"></div>
+    <div class="st-note">Times are US Eastern (ET), fixed here regardless of the timezone picked above. A match after midnight still counts under the PREVIOUS evening&rsquo;s group &mdash; the way people still call it "Monday Night" even once a late kick-off runs past midnight. Tap any line for full match details.</div>
+    <div class="sm-btns">
+      <button class="sm-cancel" id="cpClose" style="flex:1">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   "use strict";
@@ -971,7 +997,7 @@
     {n:90,d:'2026-07-05T01:00',s:'ROUND OF 16 · M89',a:'Paraguay',b:'France',v:'Philadelphia, USA'},
     {n:91,d:'2026-07-06T00:00',s:'ROUND OF 16 · M91',a:'Brazil',b:'Norway',v:'New Jersey, USA'},
     {n:92,d:'2026-07-06T04:00',s:'ROUND OF 16 · M92',a:'Mexico',b:'England',v:'Mexico City, Mexico'},
-    {n:93,d:'2026-07-06T23:00',s:'ROUND OF 16 · M93',a:'Winner M83',b:'Winner M84',v:'Arlington, USA'},
+    {n:93,d:'2026-07-06T23:00',s:'ROUND OF 16 · M93',a:'Portugal',b:'Spain',v:'Arlington, USA'},
     {n:94,d:'2026-07-07T04:00',s:'ROUND OF 16 · M94',a:'USA',b:'Belgium',v:'Seattle, USA'},
     {n:95,d:'2026-07-07T20:00',s:'ROUND OF 16 · M95',a:'Winner M86',b:'Winner M88',v:'Atlanta, USA'},
     {n:96,d:'2026-07-08T00:00',s:'ROUND OF 16 · M96',a:'Winner M85',b:'Winner M87',v:'Vancouver, Canada'},
@@ -1000,7 +1026,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 1 Jul 2026 v26.6 (perf sweep: ETag revalidation, dirty-checked renders, ET/pens fixes)';
+  var BUILD_TAG='Build 3 Jul 2026 v26.7 (Compact schedule: one-line list grouped by US Eastern night)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1020,7 +1046,7 @@
     }catch(e){}
   };
   // ── modal hygiene: one overlay at a time, Escape closes, body scroll locked, focus moved ──
-  var OVERLAYS=['pkOverlay','mdOverlay','stOverlay','grpOverlay','plOverlay'];
+  var OVERLAYS=['pkOverlay','mdOverlay','stOverlay','grpOverlay','plOverlay','cpOverlay'];
   var lastFocus=null;
   function syncModalState(){
     var open=false;
@@ -1085,7 +1111,7 @@
   var FIFA_LIVE=FIFA_API+'live/football/now?language=en';
 
   // Final scores baked in at build time, so played games show even if the feed is down
-  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1],13:[0,0],14:[1,1],15:[1,1],16:[2,2],17:[3,1],18:[1,4],19:[3,0],20:[3,1],21:[1,1],22:[4,2],23:[1,0],24:[1,3],25:[1,1],26:[4,1],27:[6,0],28:[1,0],29:[2,0],30:[0,1],31:[3,0],32:[0,1],33:[5,1],34:[2,1],35:[0,0],36:[0,4],37:[4,0],38:[0,0],39:[2,2],40:[1,3],41:[2,0],42:[3,0],43:[3,2],44:[1,2],45:[5,0],46:[0,0],47:[0,1],48:[1,0],49:[2,1],50:[3,1],51:[4,2],52:[0,3],53:[1,0],54:[0,3],55:[0,2],56:[2,1],57:[1,3],58:[1,1],59:[3,2],60:[0,0],61:[1,4],62:[5,0],63:[0,0],64:[0,1],65:[1,5],66:[1,1],67:[0,2],68:[2,1],69:[0,0],70:[3,1],71:[3,3],72:[1,3],73:[0,1],74:[2,1],75:[1,1],76:[1,1],77:[1,2],78:[3,0],79:[2,0],80:[2,1],81:[3,2],82:[2,0]};
+  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1],13:[0,0],14:[1,1],15:[1,1],16:[2,2],17:[3,1],18:[1,4],19:[3,0],20:[3,1],21:[1,1],22:[4,2],23:[1,0],24:[1,3],25:[1,1],26:[4,1],27:[6,0],28:[1,0],29:[2,0],30:[0,1],31:[3,0],32:[0,1],33:[5,1],34:[2,1],35:[0,0],36:[0,4],37:[4,0],38:[0,0],39:[2,2],40:[1,3],41:[2,0],42:[3,0],43:[3,2],44:[1,2],45:[5,0],46:[0,0],47:[0,1],48:[1,0],49:[2,1],50:[3,1],51:[4,2],52:[0,3],53:[1,0],54:[0,3],55:[0,2],56:[2,1],57:[1,3],58:[1,1],59:[3,2],60:[0,0],61:[1,4],62:[5,0],63:[0,0],64:[0,1],65:[1,5],66:[1,1],67:[0,2],68:[2,1],69:[0,0],70:[3,1],71:[3,3],72:[1,3],73:[0,1],74:[2,1],75:[1,1],76:[1,1],77:[1,2],78:[3,0],79:[2,0],80:[2,1],81:[3,2],82:[2,0],83:[3,0],84:[2,1],85:[2,0]};
   function applySeed(){
     for(var n in SEED){
       if(!scores[n])scores[n]={ga:SEED[n][0],gb:SEED[n][1],status:'FT',source:'api',minute:null};
@@ -1350,6 +1376,51 @@
     }
   }
 
+  // ── COMPACT SCHEDULE (Joel's request): one text line per match, fixed to US Eastern time,
+  // grouped by "night" rather than calendar day — an early-morning kickoff (before 6am ET) still
+  // counts under the PREVIOUS evening's group, same as how "Monday Night Football" games are still
+  // called that even once they run past midnight. ──
+  function usGroupKey(m){
+    var o=partsInZone(kickoffUTC(m),'America/New_York');
+    var d=new Date(Date.UTC(+o.year,+o.month-1,+o.day));
+    if(hourOf(o)<6)d.setUTCDate(d.getUTCDate()-1); // pre-6am ET rolls back to the night before
+    return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());
+  }
+  function cpLineHtml(m){
+    var o=partsInZone(kickoffUTC(m),'America/New_York'),sc=scoreOf(m),st=statusOf(m);
+    var aNm=F[m.a]?m.a:phPretty(m.a),bNm=F[m.b]?m.b:phPretty(m.b),mid;
+    if(sc&&sc.ga!=null&&sc.gb!=null){
+      mid=escapeHtml(aNm)+' <b>'+sc.ga+'-'+sc.gb+'</b> '+escapeHtml(bNm)+
+        (st.k==='lv'?' <span class="cp-live">'+escapeHtml(st.t||'live')+'</span>':'');
+    }else{
+      mid=escapeHtml(aNm)+' vs '+escapeHtml(bNm);
+    }
+    return '<div class="cp-row" data-n="'+m.n+'" role="button" tabindex="0" aria-label="'+
+      escapeHtml(aNm+' versus '+bNm+', '+fmtClock(o)+' Eastern — open match details')+'">'+
+      '<span class="cp-t">'+fmtClock(o)+'</span><span class="cp-m">'+mid+'</span></div>';
+  }
+  function renderCompressed(){
+    var body=document.getElementById('cpBody');if(!body)return;
+    var sorted=matches.slice().sort(function(x,y){return kickoffUTC(x).getTime()-kickoffUTC(y).getTime();});
+    var groups={},order=[],i;
+    for(i=0;i<sorted.length;i++){var k=usGroupKey(sorted[i]);
+      if(!groups[k]){groups[k]=[];order.push(k);}
+      groups[k].push(sorted[i]);}
+    var html='';
+    for(var j=0;j<order.length;j++){
+      var gk=order[j],rows=groups[gk],lines='';
+      for(i=0;i<rows.length;i++)lines+=cpLineHtml(rows[i]);
+      html+='<div class="cp-sec"><h4>'+escapeHtml(fmtDayFull(gk))+'</h4>'+lines+'</div>';
+    }
+    body.innerHTML=html;
+  }
+  // re-render only while the overlay is actually open (called from refresh(), which itself only
+  // fires on a real data change or an explicit view action — cheap to leave unconditional here)
+  function cpLiveRerender(){
+    var ov=document.getElementById('cpOverlay');
+    if(ov&&ov.classList.contains('open'))renderCompressed();
+  }
+
   function updateProgress(){
     var now=Date.now(),played=0;
     for(var i=0;i<matches.length;i++){
@@ -1562,7 +1633,7 @@
       var nf=document.getElementById('fanBracket');if(nf)nf.scrollLeft=fx;
     }
   }
-  function refresh(){paintChipCounts();buildDateStrip();render();tickHero();updateFabCode();updateLiveFab();updateFreshPill();renderActiveView();lastFullPaint=Date.now();}
+  function refresh(){paintChipCounts();buildDateStrip();render();tickHero();updateFabCode();updateLiveFab();updateFreshPill();renderActiveView();cpLiveRerender();lastFullPaint=Date.now();}
   // lighter tick: refresh content in place without rebuilding the date strip or re-animating.
   // When nothing is on (or near), skip the heavy DOM work most ticks to save battery.
   var idleTicks=0,lastFullPaint=0;
@@ -3842,6 +3913,7 @@
   document.addEventListener('keydown',function(e){
     if(e.key!=='Escape')return;
     if(document.getElementById('plOverlay').classList.contains('open'))closeOverlay('plOverlay');
+    else if(document.getElementById('cpOverlay').classList.contains('open'))closeOverlay('cpOverlay');
     else if(document.getElementById('stOverlay').classList.contains('open'))closeStats();
     else if(document.getElementById('mdOverlay').classList.contains('open'))closeMatchDetail();
     else if(document.getElementById('grpOverlay').classList.contains('open'))closeOverlay('grpOverlay');
@@ -3893,6 +3965,17 @@
   document.getElementById('statsOpen').addEventListener('click',openStats);
   document.getElementById('stClose').addEventListener('click',closeStats);
   document.getElementById('stOverlay').addEventListener('click',function(e){if(e.target===this)closeStats();});
+  document.getElementById('cpOpen').addEventListener('click',function(){renderCompressed();openOverlay('cpOverlay');});
+  document.getElementById('cpClose').addEventListener('click',function(){closeOverlay('cpOverlay');});
+  document.getElementById('cpOverlay').addEventListener('click',function(e){if(e.target===this)closeOverlay('cpOverlay');});
+  document.getElementById('cpBody').addEventListener('click',function(e){
+    var t=e.target;while(t&&t!==this){if(t.getAttribute&&t.getAttribute('data-n')){closeOverlay('cpOverlay');openMatchDetail(parseInt(t.getAttribute('data-n'),10));return;}t=t.parentNode;}
+  });
+  document.getElementById('cpBody').addEventListener('keydown',function(e){
+    if(e.key!=='Enter'&&e.key!==' ')return;var t=e.target;
+    if(!(t.classList&&t.classList.contains('cp-row')))return;
+    e.preventDefault();closeOverlay('cpOverlay');openMatchDetail(parseInt(t.getAttribute('data-n'),10));
+  });
   document.getElementById('stTeam').addEventListener('change',function(){
     if(F[this.value]){stViewTeam=this.value;renderStats(null);}
   });
