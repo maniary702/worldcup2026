@@ -126,6 +126,35 @@
   .livex .lx-line .flag{font-size:20px;vertical-align:-2px}
   .livex .lx-sc{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:31px;color:var(--live);margin:0 8px;letter-spacing:-1px;vertical-align:-2px;animation:scorePulse 2s ease-in-out infinite}
   .livex .lx-when{font-size:12px;color:var(--mut);margin-top:6px}
+  /* premium live hero card (FotMob-style "Live now") — one per in-play game, replaces the plain hero */
+  .hlv{border-radius:20px;position:relative;overflow:hidden;border:1px solid var(--live);
+    background:linear-gradient(160deg,var(--card) 0%,var(--card2) 100%);padding:16px 16px 14px;cursor:pointer;
+    box-shadow:0 10px 32px var(--shadow)}
+  .hlv:active{transform:scale(.99)}
+  .hlv .badge{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:#fff;background:var(--live);border-radius:999px;padding:4px 11px;margin-bottom:12px}
+  .hlv .blip{width:7px;height:7px;border-radius:50%;background:#fff;display:inline-block;animation:blink 1s steps(2) infinite}
+  .hlv-main{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .hlv-team{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:7px}
+  .hlv-team .fl{width:72px;height:72px;border-radius:50%;background:var(--card2);border:2px solid var(--line2);
+    display:flex;align-items:center;justify-content:center;font-size:38px;line-height:1}
+  .hlv-team.lead .fl{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-tint)}
+  .hlv-team .nm{font-family:'Barlow Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:16.5px;
+    letter-spacing:.04em;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .hlv-mid{flex:0 0 auto;text-align:center;min-width:112px}
+  .hlv-mid .sc{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:42px;letter-spacing:-2px;color:var(--txt);
+    line-height:1;animation:scorePulse 2s ease-in-out infinite}
+  .hlv-mid .ph{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:9px;font-size:11.5px;
+    font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--pitch)}
+  .hlv-mid .ph .blip{background:var(--pitch)}
+  .hlv-mom{margin:0 0 12px}
+  .hlv-mom .cap{display:flex;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--low);margin-bottom:6px}
+  .hlv .lxg{margin-bottom:12px}
+  .hlv .evchips{margin-bottom:10px}
+  .hlv-cta{display:block;width:100%;background:var(--live);color:#fff;border:none;border-radius:14px;
+    padding:13px 0;font-family:inherit;font-size:15.5px;font-weight:800;cursor:pointer;letter-spacing:.01em}
+  .hlv-cta:active{opacity:.85}
   /* live win-probability bar (book-anchored in-play model) */
   .wp{margin:2px 0 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);padding:11px 13px 12px}
   .wp-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--low);font-weight:700}
@@ -1138,7 +1167,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 4 Jul 2026 v27.4 (own goals on the timeline, LiveScore-style subs, name fixes)';
+  var BUILD_TAG='Build 4 Jul 2026 v27.5 (premium live hero: score, xG momentum, event chips, match-centre CTA)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1576,12 +1605,71 @@
   // both innerHTML and textContent (heroBadge).
   function setHtml(el,h){if(el.__wc!=='h'+h){el.__wc='h'+h;el.innerHTML=h;}}
   function setText(el,t){if(el.__wc!=='t'+t){el.__wc='t'+t;el.textContent=t;}}
-  // Render every live game EXCEPT the one already shown in the hero, so simultaneous games all show.
+  // Render every live game as a premium hero card (uniform, all simultaneous games shown).
   function renderLiveExtra(liveList,primary){
     var box=document.getElementById('liveExtra');if(!box)return;
     var html='',i;
-    for(i=0;i<liveList.length;i++){if(liveList[i]===primary)continue;html+=liveCardHtml(liveList[i]);}
+    for(i=0;i<liveList.length;i++){if(liveList[i]===primary)continue;html+=heroLiveCardHtml(liveList[i]);}
     setHtml(box,html);
+  }
+  // ── premium live hero helpers ──
+  // xG momentum: client-side ring buffer of the live xG race, sampled ~once a minute per game.
+  // Honest derivation — we have no per-minute pressure feed, so "momentum" = share of xG CREATED
+  // over (up to) the last 10 minutes; the row hides until the window is long enough to mean something.
+  var momSamples={},heroEvAt={};
+  function momTake(m){
+    var af=afFor(m.a,m.b);if(!af||!af.home||af.home.xg==null||af.away.xg==null)return;
+    var hx=afNum(af.home.xg)||0,ax=afNum(af.away.xg)||0,buf=momSamples[m.n]||(momSamples[m.n]=[]),now=Date.now();
+    if(buf.length&&now-buf[buf.length-1].t<45000)return;
+    buf.push({t:now,hx:hx,ax:ax});
+    while(buf.length&&now-buf[0].t>11*60000)buf.shift();
+  }
+  function momShare(m){ // home share (0-100) of xG created in the window; null = not enough data yet
+    var buf=momSamples[m.n];if(!buf||buf.length<2)return null;
+    var now=Date.now(),ref=buf[0],i;
+    for(i=0;i<buf.length;i++){if(now-buf[i].t<=10*60000){ref=buf[i];break;}}
+    var last=buf[buf.length-1];
+    if(last.t-ref.t<150000)return null; // need >=2.5 real minutes before claiming momentum
+    var hd=Math.max(last.hx-ref.hx,0),ad=Math.max(last.ax-ref.ax,0);
+    if(hd+ad<=0)return 50;
+    return Math.round(hd/(hd+ad)*100);
+  }
+  function phaseLabel(m,af,st){
+    var M={'1H':'1st half',HT:'Half time','2H':'2nd half',ET:'Extra time',BT:'Break',P:'Penalties',PEN:'Penalties'};
+    if(af&&M[af.st])return M[af.st];
+    var t=st.t||'';if(/PEN/i.test(t))return 'Penalties';if(/HT/i.test(t))return 'Half time';if(/ET/i.test(t))return 'Extra time';
+    var mt=/(\d+)/.exec(t),mn=mt?parseInt(mt[1],10):0;
+    return mn>90?'Extra time':(mn>45?'2nd half':'1st half');
+  }
+  function cachedFull(m){ // rich match data (events) once the 60s warm fetch has landed
+    if(!calCache)return null;var row=fifaRowFor(m);if(!row)return null;
+    var hit=matchFullCache[String(row.IdMatch)];return hit?hit.data:null;
+  }
+  function heroLiveCardHtml(m){
+    var sc=scoreOf(m),st=statusOf(m),af=afFor(m.a,m.b);
+    var ga=(sc&&sc.ga!=null)?sc.ga:0,gb=(sc&&sc.gb!=null)?sc.gb:0;
+    var mn=(af&&af.min!=null&&af.min!=='')?af.min+"'":(st.t||'Live');
+    var h='<div class="hlv" data-n="'+m.n+'" role="button" tabindex="0" aria-label="'+escapeHtml(m.a+' '+ga+' - '+gb+' '+m.b+', live - open the match centre')+'">';
+    h+='<span class="badge"><span class="blip"></span> Live &middot; '+escapeHtml(m.v)+'</span>';
+    h+='<div class="hlv-main">';
+    h+='<div class="hlv-team'+(ga>gb?' lead':'')+'"><span class="fl">'+(F[m.a]||'')+'</span><span class="nm">'+escapeHtml(m.a)+'</span></div>';
+    h+='<div class="hlv-mid"><div class="sc">'+ga+'&ndash;'+gb+'</div><div class="ph"><span class="blip"></span> '+escapeHtml(mn+' · '+phaseLabel(m,af,st))+'</div></div>';
+    h+='<div class="hlv-team'+(gb>ga?' lead':'')+'"><span class="fl">'+(F[m.b]||'')+'</span><span class="nm">'+escapeHtml(m.b)+'</span></div>';
+    h+='</div>';
+    var hp=momShare(m);
+    if(hp!=null)h+='<div class="hlv-mom"><div class="cap"><span>xG momentum</span><span>last 10 min</span></div>'
+      +'<div class="ts-bar"><i class="bh" style="width:'+hp+'%"></i><i class="ba" style="width:'+(100-hp)+'%"></i></div></div>';
+    if(af&&af.home&&(af.home.xg!=null||af.away.xg!=null)){
+      var hx=afNum(af.home.xg)||0,ax=afNum(af.away.xg)||0,hpx=(hx+ax)?Math.round(hx/(hx+ax)*100):50;
+      h+='<div class="lxg"><span class="n'+(hx>ax?' lead':'')+'">'+hx.toFixed(2)+'</span>'
+        +'<span class="mid"><span class="cap">Expected goals &middot; live</span>'
+        +'<span class="ts-bar"><i class="bh" style="width:'+hpx+'%"></i><i class="ba" style="width:'+(100-hpx)+'%"></i></span></span>'
+        +'<span class="n a'+(ax>hx?' lead':'')+'">'+ax.toFixed(2)+'</span></div>';
+    }
+    var d=cachedFull(m);
+    if(d&&d.events&&d.events.length)h+=evChipsHtml(d);
+    h+='<button type="button" class="hlv-cta" data-n="'+m.n+'">Open live match centre</button>';
+    return h+'</div>';
   }
 
   // ── HERO (score-aware) ──
@@ -1595,17 +1683,24 @@
       if(isFav(matches[li2])&&!lvFav)lvFav=matches[li2];
       if(!lvAny)lvAny=matches[li2];
     }
-    // 2+ simultaneous live games (final group round): drop the big single hero and render EVERY
-    // live game as one uniform card, so the boxes match instead of one big + one small.
-    if(liveList.length>=2){
+    // any game in play: drop the plain hero and render EVERY live game as a premium card
+    // (uniform when simultaneous). Momentum sampling + a 60s warm fetch of the FIFA timeline
+    // keep the xG-momentum row and event chips current; fetchMatchFull throttles via its cache.
+    if(liveList.length>=1){
       hero.style.display='none';
+      for(var lw=0;lw<liveList.length;lw++){
+        momTake(liveList[lw]);
+        if(!heroEvAt[liveList[lw].n]||Date.now()-heroEvAt[liveList[lw].n]>60000){
+          heroEvAt[liveList[lw].n]=Date.now();
+          fetchMatchFull(liveList[lw],function(){});
+        }
+      }
       renderLiveExtra(liveList,null);
       return;
     }
     hero.style.display='';
     renderLiveExtra(liveList,lvFav||lvAny);
-    m=lvFav||lvAny||nextFav();
-    if(lvAny&&!lvFav&&!FOLLOW)fallback=true;
+    m=nextFav();
     if(!m){m=nextAny();fallback=true;}
     if(!m){hero.classList.remove('live');
       setText(document.getElementById('heroBadge'),'Tournament complete');
@@ -2982,18 +3077,20 @@
         +'<span class="ts-bar"><i class="bh" style="width:'+hp+'%"></i><i class="ba" style="width:'+(100-hp)+'%"></i></span></span>'
         +'<span class="n a'+(ax>hx?' lead':'')+'">'+ax.toFixed(2)+'</span></div>';
     }
-    if(d.events&&d.events.length){
-      var chips='',n=0;
-      for(var i=0;i<d.events.length;i++){var e=d.events[i];
-        if(e.kind!=='goal'&&e.kind!=='yc'&&e.kind!=='rc')continue;
-        var team=(e.side==='a')?d.aN:d.hN;
-        var nm=ppLast(e.name||'')+(e.og?' (og)':'');
-        chips+='<span class="evchip" data-pp="'+escapeHtml(e.name||'')+'" data-pp-t="'+escapeHtml(e.og?((e.side==='a')?d.hN:d.aN):team)+'" role="button" tabindex="0">'
-          +'<span class="m">'+escapeHtml(e.min)+'</span>'+evIcon(e)+' '+escapeHtml(nm)+'</span>';
-        n++;}
-      if(n)h+='<div class="evchips">'+chips+'</div>';
-    }
+    if(d.events&&d.events.length)h+=evChipsHtml(d);
     return h;
+  }
+  // scrolling key-event chips (goals/cards, tappable) — shared by the match centre and live hero
+  function evChipsHtml(d){
+    var chips='',n=0;
+    for(var i=0;i<d.events.length;i++){var e=d.events[i];
+      if(e.kind!=='goal'&&e.kind!=='yc'&&e.kind!=='rc')continue;
+      var team=(e.side==='a')?d.aN:d.hN;
+      var nm=ppLast(e.name||'')+(e.og?' (og)':'');
+      chips+='<span class="evchip" data-pp="'+escapeHtml(e.name||'')+'" data-pp-t="'+escapeHtml(e.og?((e.side==='a')?d.hN:d.aN):team)+'" role="button" tabindex="0">'
+        +'<span class="m">'+escapeHtml(e.min)+'</span>'+evIcon(e)+' '+escapeHtml(nm)+'</span>';
+      n++;}
+    return n?'<div class="evchips">'+chips+'</div>':'';
   }
   function renderMatchFull(d){
     if(!d){document.getElementById('mdLive').style.display='none';return;}
@@ -4298,12 +4395,21 @@
     if(el)el.scrollIntoView({behavior:'smooth',block:'center'});});
   // tapping an extra live card opens that match's detail modal (same as a schedule row)
   document.getElementById('liveExtra').addEventListener('click',function(e){
-    var c=e.target;while(c&&c!==this&&!(c.classList&&c.classList.contains('livex')))c=c.parentNode;
+    // event chips inside a premium card open the PLAYER card (with match context); anything else
+    // in the card (incl. the CTA button) opens the match centre
+    var p=e.target;while(p&&p!==this&&!(p.getAttribute&&p.getAttribute('data-pp')))p=p.parentNode;
+    var c=e.target;while(c&&c!==this&&!(c.classList&&(c.classList.contains('livex')||c.classList.contains('hlv'))))c=c.parentNode;
+    if(p&&p!==this&&p.getAttribute('data-pp')){
+      var mmN=c&&c!==this&&c.getAttribute('data-n')?parseInt(c.getAttribute('data-n'),10):null,hN=null,aN=null;
+      if(mmN!=null)for(var q=0;q<matches.length;q++)if(matches[q].n===mmN){hN=matches[q].a;aN=matches[q].b;break;}
+      openPlayerCard(p.getAttribute('data-pp'),p.getAttribute('data-pp-t'),hN,aN);
+      return;
+    }
     if(c&&c!==this&&c.getAttribute('data-n'))openMatchDetail(parseInt(c.getAttribute('data-n'),10));
   });
   document.getElementById('liveExtra').addEventListener('keydown',function(e){
     if(e.key!=='Enter'&&e.key!==' ')return;var c=e.target;
-    if(!(c.classList&&c.classList.contains('livex')))return;
+    if(!(c.classList&&(c.classList.contains('livex')||c.classList.contains('hlv'))))return;
     if(c.getAttribute('data-n')){e.preventDefault();openMatchDetail(parseInt(c.getAttribute('data-n'),10));}
   });
   // the single hero opens its match's stats on tap when it represents a real game (live or next up)
