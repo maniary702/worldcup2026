@@ -485,6 +485,14 @@
   .fb-col.r32 .fb-m{border-top:3px solid #7cc3ff}.fb-col.r16 .fb-m{border-top:3px solid #74e0a8}
   .fb-col.qf .fb-m{border-top:3px solid #ffd86b}.fb-col.sf .fb-m{border-top:3px solid #ffb56b}
   .fb-col.fin .fb-m{border-top:3px solid #ffd24a;background:rgba(255,210,74,.15);height:92px}
+  /* completed rounds compact LiveScore-style: results-only mini boxes, so the rounds still being
+     played stay big and the whole bracket pulls closer together as the tournament gets deeper */
+  .fb-col.past{width:116px}
+  .fb-m.mini{height:44px;padding:4px 6px}
+  .fb-m.mini .fb-row{font-size:11px;line-height:1.35}
+  .fb-m.mini .fb-row .fl{width:14px}
+  .fb-m.mini .fb-row .ph{font-size:9.5px}
+  .fb-m.mini .fb-row .sc{padding-left:4px}
   .fb-lines{position:absolute;top:0;left:0;z-index:1;pointer-events:none;overflow:visible}
   .fb-lines path{stroke:rgba(255,255,255,.30);stroke-width:1.4;fill:none}
   .fb-third{margin:16px auto 0;max-width:230px;text-align:center}
@@ -1167,7 +1175,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 6 Jul 2026 v27.6 (live clock: trust the furthest-along feed, no more stuck minutes)';
+  var BUILD_TAG='Build 6 Jul 2026 v27.7 (bracket: finished rounds compact, R16+ taps open the match not the groups)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -4188,7 +4196,7 @@
   function fbFeedNums(am){var r=[],a=/^W(\d+)$/.exec(am.PlaceHolderA||''),b=/^W(\d+)$/.exec(am.PlaceHolderB||'');if(a)r.push(a[1]);if(b)r.push(b[1]);return r;}
   function fbVenue(am){var s=am.Stadium&&am.Stadium.Name&&am.Stadium.Name[0]&&am.Stadium.Name[0].Description;return s?String(s).replace(/\s+Stadium$/i,''):'';}
   function fbPrevKey(key){var p=key.split('-'),d=new Date(Date.UTC(+p[0],+p[1]-1,+p[2]));d.setUTCDate(d.getUTCDate()-1);var m=d.getUTCMonth()+1,da=d.getUTCDate();return d.getUTCFullYear()+'-'+(m<10?'0':'')+m+'-'+(da<10?'0':'')+da;}
-  function fbMatchBox(am,key){
+  function fbMatchBox(am,key,mini){
     var hn=(am.Home&&am.Home.TeamName)?mapTeam(am.Home.TeamName[0].Description):null;
     var an=(am.Away&&am.Away.TeamName)?mapTeam(am.Away.TeamName[0].Description):null;
     var hs=(am.Home&&am.Home.Score!=null)?am.Home.Score:null,as2=(am.Away&&am.Away.Score!=null)?am.Away.Score:null;
@@ -4208,7 +4216,10 @@
         (sc!=null?'<span class="sc">'+sc+'</span>':'')+'</div>';
     }
     var feed=fbFeedNums(am),venue=fbVenue(am);
-    var cls='fb-m'+(live?' live':'')+((hn===FOLLOW||an===FOLLOW)?' me':'');
+    var cls='fb-m'+(mini?' mini':'')+(live?' live':'')+((hn===FOLLOW||an===FOLLOW)?' me':'');
+    if(mini) // completed round: results-only mini box (no date/venue - it's history)
+      return '<div class="'+cls+'" data-num="'+am.MatchNumber+'"'+(feed.length?' data-feeders="'+feed.join(',')+'"':'')+'>'+
+        side(hn,am.PlaceHolderA,hs,hW)+side(an,am.PlaceHolderB,as2,aW)+'</div>';
     return '<div class="'+cls+'" data-num="'+am.MatchNumber+'"'+(feed.length?' data-feeders="'+feed.join(',')+'"':'')+'>'+
       '<div class="fb-when">'+when+'</div>'+side(hn,am.PlaceHolderA,hs,hW)+'<div class="fb-vs">v</div>'+side(an,am.PlaceHolderB,as2,aW)+
       '<div class="fb-venue">'+(venue?'<span class="pin">&#128205;</span>'+escapeHtml(venue):'')+'</div></div>';
@@ -4253,8 +4264,12 @@
     var html='<div class="fb-inner" id="fbInner"><svg class="fb-lines"></svg>';
     for(var c=0;c<order.length;c++){var key=order[c][0],arr=cols[key];if(!arr.length)continue;
       arr.sort(function(x,y){return getSlot(x.MatchNumber)-getSlot(y.MatchNumber);});
-      html+='<div class="fb-colwrap"><div class="fb-col-h">'+order[c][1]+'</div><div class="fb-col '+key+'">';
-      for(i=0;i<arr.length;i++)html+=fbMatchBox(arr[i],key);
+      // a fully-played round compacts to results-only mini boxes (LiveScore-style), pulling the
+      // whole bracket tighter as the tournament goes deeper; the final never compacts
+      var past=(key!=='fin');
+      for(i=0;i<arr.length&&past;i++)if(arr[i].MatchStatus!==0)past=false;
+      html+='<div class="fb-colwrap"><div class="fb-col-h">'+order[c][1]+'</div><div class="fb-col '+key+(past?' past':'')+'">';
+      for(i=0;i<arr.length;i++)html+=fbMatchBox(arr[i],key,past);
       html+='</div></div>';
     }
     html+='</div>';
@@ -4278,6 +4293,27 @@
     }
     side(am.Home,am.PlaceHolderA);side(am.Away,am.PlaceHolderB);
     return set;
+  }
+  // the page's schedule rows carry the FIFA match number in their stage label ("R32 · M85",
+  // "ROUND OF 16 · M90") — the row index n is NOT the FIFA number, so map via the label
+  function pageMatchForKo(am){
+    var num=am.MatchNumber,i,m2;
+    for(i=0;i<matches.length;i++){m2=/M(\d+)\s*$/.exec(matches[i].s||'');
+      if(m2&&+m2[1]===num)return matches[i];}
+    return null;
+  }
+  // bracket tap routing: at R32 the interesting context IS the groups that fed the tie; from the
+  // Round of 16 onwards group origins stop mattering — open the match itself instead:
+  // played/live -> match centre (result, stats, line-ups); upcoming -> the H2H betting-stats view
+  function openBracketMatch(num){
+    if(!calCache){openGroupsForMatch(num);return;}
+    var am=koByNum()[num];if(!am)return;
+    var sn=(am.StageName&&am.StageName[0]&&am.StageName[0].Description)||'';
+    if(sn==='Round of 32'){openGroupsForMatch(num);return;}
+    var mm=pageMatchForKo(am);
+    if(!mm||(!F[mm.a]&&!F[mm.b])){showToast('This tie isn’t decided yet — it fills in as the earlier rounds finish');return;}
+    if(am.MatchStatus===0||am.MatchStatus===3)openMatchDetail(mm.n);
+    else openMatchStats(mm.n);
   }
   function openGroupsForMatch(num){
     if(!calCache)return;
@@ -4462,7 +4498,7 @@
   document.getElementById('grpOverlay').addEventListener('click',function(e){if(e.target===this)closeOverlay('grpOverlay');});
   document.getElementById('fanBracket').addEventListener('click',function(e){
     var n=e.target;
-    while(n&&n!==this){if(n.getAttribute&&n.getAttribute('data-num')){openGroupsForMatch(n.getAttribute('data-num'));return;}n=n.parentNode;}
+    while(n&&n!==this){if(n.getAttribute&&n.getAttribute('data-num')){openBracketMatch(n.getAttribute('data-num'));return;}n=n.parentNode;}
   });
   // Team-stats table: tap a team for its players · Totals/Per-game toggle · tap-a-heading sort
   document.getElementById('tvTeamStats').addEventListener('click',function(e){
