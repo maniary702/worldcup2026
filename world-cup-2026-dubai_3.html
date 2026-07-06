@@ -1142,9 +1142,9 @@
     {n:94,d:'2026-07-07T04:00',s:'ROUND OF 16 · M94',a:'USA',b:'Belgium',v:'Seattle, USA'},
     {n:95,d:'2026-07-07T20:00',s:'ROUND OF 16 · M95',a:'Argentina',b:'Egypt',v:'Atlanta, USA'},
     {n:96,d:'2026-07-08T00:00',s:'ROUND OF 16 · M96',a:'Switzerland',b:'Colombia',v:'Vancouver, Canada'},
-    {n:97,d:'2026-07-10T00:00',s:'QUARTER-FINAL · M97',a:'Winner M89',b:'Winner M90',v:'Foxborough, USA',big:true},
+    {n:97,d:'2026-07-10T00:00',s:'QUARTER-FINAL · M97',a:'France',b:'Morocco',v:'Foxborough, USA',big:true},
     {n:98,d:'2026-07-10T23:00',s:'QUARTER-FINAL · M98',a:'Winner M93',b:'Winner M94',v:'Los Angeles, USA',big:true},
-    {n:99,d:'2026-07-12T01:00',s:'QUARTER-FINAL · M99',a:'Winner M91',b:'Winner M92',v:'Miami, USA',big:true},
+    {n:99,d:'2026-07-12T01:00',s:'QUARTER-FINAL · M99',a:'Norway',b:'England',v:'Miami, USA',big:true},
     {n:100,d:'2026-07-12T05:00',s:'QUARTER-FINAL · M100',a:'Winner M95',b:'Winner M96',v:'Kansas City, USA',big:true},
     {n:101,d:'2026-07-14T23:00',s:'SEMI-FINAL · M101',a:'Winner M97',b:'Winner M98',v:'Arlington, USA',big:true},
     {n:102,d:'2026-07-15T23:00',s:'SEMI-FINAL · M102',a:'Winner M99',b:'Winner M100',v:'Atlanta, USA',big:true},
@@ -1167,7 +1167,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 4 Jul 2026 v27.5 (premium live hero: score, xG momentum, event chips, match-centre CTA)';
+  var BUILD_TAG='Build 6 Jul 2026 v27.6 (live clock: trust the furthest-along feed, no more stuck minutes)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1252,7 +1252,7 @@
   var FIFA_LIVE=FIFA_API+'live/football/now?language=en';
 
   // Final scores baked in at build time, so played games show even if the feed is down
-  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1],13:[0,0],14:[1,1],15:[1,1],16:[2,2],17:[3,1],18:[1,4],19:[3,0],20:[3,1],21:[1,1],22:[4,2],23:[1,0],24:[1,3],25:[1,1],26:[4,1],27:[6,0],28:[1,0],29:[2,0],30:[0,1],31:[3,0],32:[0,1],33:[5,1],34:[2,1],35:[0,0],36:[0,4],37:[4,0],38:[0,0],39:[2,2],40:[1,3],41:[2,0],42:[3,0],43:[3,2],44:[1,2],45:[5,0],46:[0,0],47:[0,1],48:[1,0],49:[2,1],50:[3,1],51:[4,2],52:[0,3],53:[1,0],54:[0,3],55:[0,2],56:[2,1],57:[1,3],58:[1,1],59:[3,2],60:[0,0],61:[1,4],62:[5,0],63:[0,0],64:[0,1],65:[1,5],66:[1,1],67:[0,2],68:[2,1],69:[0,0],70:[3,1],71:[3,3],72:[1,3],73:[0,1],74:[2,1],75:[1,1],76:[1,1],77:[1,2],78:[3,0],79:[2,0],80:[2,1],81:[3,2],82:[2,0],83:[3,0],84:[2,1],85:[2,0],86:[1,1],87:[3,2],88:[1,0]};
+  var SEED={1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[1,1],6:[1,1],7:[0,1],8:[2,0],9:[7,1],10:[2,2],11:[1,0],12:[5,1],13:[0,0],14:[1,1],15:[1,1],16:[2,2],17:[3,1],18:[1,4],19:[3,0],20:[3,1],21:[1,1],22:[4,2],23:[1,0],24:[1,3],25:[1,1],26:[4,1],27:[6,0],28:[1,0],29:[2,0],30:[0,1],31:[3,0],32:[0,1],33:[5,1],34:[2,1],35:[0,0],36:[0,4],37:[4,0],38:[0,0],39:[2,2],40:[1,3],41:[2,0],42:[3,0],43:[3,2],44:[1,2],45:[5,0],46:[0,0],47:[0,1],48:[1,0],49:[2,1],50:[3,1],51:[4,2],52:[0,3],53:[1,0],54:[0,3],55:[0,2],56:[2,1],57:[1,3],58:[1,1],59:[3,2],60:[0,0],61:[1,4],62:[5,0],63:[0,0],64:[0,1],65:[1,5],66:[1,1],67:[0,2],68:[2,1],69:[0,0],70:[3,1],71:[3,3],72:[1,3],73:[0,1],74:[2,1],75:[1,1],76:[1,1],77:[1,2],78:[3,0],79:[2,0],80:[2,1],81:[3,2],82:[2,0],83:[3,0],84:[2,1],85:[2,0],86:[1,1],87:[3,2],88:[1,0],89:[0,3],90:[0,1],91:[1,2],92:[2,3]};
   function applySeed(){
     for(var n in SEED){
       if(!scores[n])scores[n]={ga:SEED[n][0],gb:SEED[n][1],status:'FT',source:'api',minute:null};
@@ -1634,9 +1634,26 @@
     if(hd+ad<=0)return 50;
     return Math.round(hd/(hd+ad)*100);
   }
+  // best live clock: FIFA and the afstats bake BOTH lag at times (FIFA sat at 23' at real 42';
+  // afstats sat at 80' while FIFA showed 90+2' — Pages gating can delay the bake for minutes).
+  // A live clock only moves forward, so trust whichever source is FURTHER ALONG.
+  function clockNum(s){var mt=/(\d+)(?:\s*\+\s*(\d+))?/.exec(String(s||''));if(!mt)return null;
+    return parseInt(mt[1],10)+(mt[2]?parseInt(mt[2],10):0);}
+  function bestLiveClock(af,st){
+    var ft=st.t||'',fn=clockNum(ft);
+    if(af&&(af.st==='P'||af.st==='PEN'))return 'PENS';
+    if(fn==null&&/HT|PEN/i.test(ft))return ft; // non-numeric FIFA states pass through
+    var an=(af&&af.min!=null&&af.min!==''&&af.st!=='FT'&&af.st!=='NS')?clockNum(af.min):null;
+    if(an!=null&&(fn==null||an>fn))return ((af.st==='ET'||af.st==='BT')?'ET ':'')+an+"'";
+    if(fn!=null)return ft;
+    return ft||'Live';
+  }
   function phaseLabel(m,af,st){
     var M={'1H':'1st half',HT:'Half time','2H':'2nd half',ET:'Extra time',BT:'Break',P:'Penalties',PEN:'Penalties'};
-    if(af&&M[af.st])return M[af.st];
+    if(af&&M[af.st]){ // stale-bake guard: if FIFA's clock has moved past the bake's phase, derive from the clock instead
+      var fn2=clockNum(st.t),an2=clockNum(af.min);
+      if(fn2==null||an2==null||fn2<=an2)return M[af.st];
+    }
     var t=st.t||'';if(/PEN/i.test(t))return 'Penalties';if(/HT/i.test(t))return 'Half time';if(/ET/i.test(t))return 'Extra time';
     var mt=/(\d+)/.exec(t),mn=mt?parseInt(mt[1],10):0;
     return mn>90?'Extra time':(mn>45?'2nd half':'1st half');
@@ -1648,7 +1665,7 @@
   function heroLiveCardHtml(m){
     var sc=scoreOf(m),st=statusOf(m),af=afFor(m.a,m.b);
     var ga=(sc&&sc.ga!=null)?sc.ga:0,gb=(sc&&sc.gb!=null)?sc.gb:0;
-    var mn=(af&&af.min!=null&&af.min!=='')?af.min+"'":(st.t||'Live');
+    var mn=bestLiveClock(af,st);
     var h='<div class="hlv" data-n="'+m.n+'" role="button" tabindex="0" aria-label="'+escapeHtml(m.a+' '+ga+' - '+gb+' '+m.b+', live - open the match centre')+'">';
     h+='<span class="badge"><span class="blip"></span> Live &middot; '+escapeHtml(m.v)+'</span>';
     h+='<div class="hlv-main">';
@@ -2904,12 +2921,8 @@
     if(!O||!O.imp||!wpFin(O.imp.home)||!wpFin(O.imp.draw)||!wpFin(O.imp.away))return ''; // hide on missing/malformed odds
     var st=statusOf(mm),sc=scoreOf(mm),live=(st.k==='lv'&&sc&&sc.ga!=null&&sc.gb!=null),p,cap;
     if(live){
-      // clock: prefer API-Football's elapsed minute (updates every poll) over FIFA's, which can
-      // sit stale mid-half (showed 23' at real 42'). Same string feeds display AND wpRemFrac.
-      var stT=st.t||'',afL=afFor(mm.a,mm.b);
-      if(afL&&afL.min!=null&&afL.min!==''&&afL.st&&afL.st!=='FT'&&afL.st!=='NS'){
-        stT=(afL.st==='HT')?'HT':((afL.st==='P'||afL.st==='PEN')?'PENS':((afL.st==='ET'||afL.st==='BT')?'ET '+afL.min+"'":afL.min+"'"));
-      }
+      // clock: furthest-along of FIFA vs API-Football. Same string feeds display AND wpRemFrac.
+      var stT=bestLiveClock(afFor(mm.a,mm.b),st);
       var lam=wpLambdas(mm,O.imp);p=wpLive(lam.lh,lam.la,sc.ga,sc.gb,wpRemFrac({t:stT}));
       cap='<span class="wp-live"><span class="blip"></span> LIVE '+escapeHtml(stT)+'</span>';
     }else{p=[O.imp.home,O.imp.draw,O.imp.away];cap=(st.k==='ft')?'Pre-match outlook':'Win probability';}
