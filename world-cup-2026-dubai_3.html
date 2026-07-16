@@ -4673,7 +4673,7 @@
       var lo=0.30,hi=0.67,pos=Math.max(0,Math.min(1,(mo.brier-lo)/(hi-lo)))*100;
       function verdict(x,cls,lbl){if(!x)return '';
         return '<div class="vc '+cls+'"><div class="lb">'+lbl+'</div><div class="m">'+cerMatchLabel(x.m,x.sc)+
-          '<br><span style="color:#8b96bd;font-weight:600">market gave the result '+cerPct(x.p)+'%</span></div></div>';}
+          '<br><span style="color:#8b96bd;font-weight:600">market gave the result '+Math.min(99,cerPct(x.p))+'%</span></div></div>';}
       h+='<div class="cer-sec"><div class="cer-card">'+
         '<div class="cer-h"><span class="em">🧠</span> The model’s report card</div>'+
         '<div class="cer-sub">We published a win-probability every match and graded it honestly. Final multiclass Brier score across '+mo.n+' games:</div>'+
