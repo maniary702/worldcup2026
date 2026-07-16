@@ -726,6 +726,112 @@
     .dayhead .dname{font-size:25px}
     .match:hover{border-color:var(--line2);transform:translateY(-1px)}
   }
+  /* ══ CLOSING CEREMONY — full-screen takeover, opens when the final is decided ══ */
+  #cerOverlay{position:fixed;inset:0;z-index:1200;display:none;background:
+    radial-gradient(120% 80% at 50% -10%,rgba(245,197,66,.22),transparent 60%),
+    linear-gradient(180deg,#0a0f1e 0%,#070b16 55%,#05070f 100%);
+    overflow:hidden}
+  #cerOverlay.open{display:block}
+  body.cer-open{overflow:hidden}
+  body.cer-open #ppOverlay{z-index:1300}  /* a player card tapped from an award sits ABOVE the ceremony */
+  #cerConfetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+  #cerClose{position:fixed;top:14px;right:14px;z-index:5;width:38px;height:38px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.22);background:rgba(10,14,26,.6);color:#fff;font-size:16px;
+    cursor:pointer;line-height:1;backdrop-filter:blur(6px)}
+  #cerClose:hover{background:rgba(10,14,26,.85)}
+  #cerScroll{position:absolute;inset:0;z-index:3;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  #cerBody{max-width:560px;margin:0 auto;padding:64px 18px 90px;color:#f3f1ea}
+  .cer-sec{margin:0 0 40px;opacity:0;transform:translateY(16px);animation:cerRise .7s cubic-bezier(.2,.7,.3,1) forwards}
+  .cer-sec:nth-child(2){animation-delay:.10s}.cer-sec:nth-child(3){animation-delay:.20s}
+  .cer-sec:nth-child(4){animation-delay:.30s}.cer-sec:nth-child(5){animation-delay:.40s}
+  .cer-sec:nth-child(6){animation-delay:.50s}.cer-sec:nth-child(7){animation-delay:.60s}
+  @keyframes cerRise{to{opacity:1;transform:none}}
+  .cer-kick{font-size:11px;font-weight:800;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--gold);text-align:center;margin-bottom:12px}
+  /* champion hero */
+  .cer-champ{text-align:center;padding:14px 0 4px}
+  .cer-champ .fl{font-size:104px;line-height:1;filter:drop-shadow(0 10px 26px rgba(0,0,0,.5));animation:cerPop .8s cubic-bezier(.2,1.4,.4,1) both}
+  @keyframes cerPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+  .cer-champ .lbl{font-size:12px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .cer-champ .nm{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:58px;line-height:.98;
+    text-transform:uppercase;letter-spacing:.5px;margin:2px 0 8px;
+    background:linear-gradient(180deg,#fff 0%,#f5c542 130%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .cer-champ .fin{font-size:15px;color:#cdd4e6;font-weight:600}
+  .cer-champ .fin b{color:#fff;font-weight:800;font-family:'JetBrains Mono',monospace}
+  .cer-champ .via{font-size:12px;color:var(--low);margin-top:6px}
+  /* generic card */
+  .cer-card{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);border-radius:18px;
+    padding:18px 16px;box-shadow:0 14px 44px -18px rgba(0,0,0,.7)}
+  .cer-h{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:23px;text-transform:uppercase;
+    letter-spacing:.4px;margin:0 0 3px;display:flex;align-items:center;gap:9px}
+  .cer-h .em{font-size:20px}
+  .cer-sub{font-size:12.5px;color:#9aa4bf;margin:0 0 14px;line-height:1.5}
+  /* wrapped stat tiles */
+  .cer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .cer-tile{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:13px 12px}
+  .cer-tile .v{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:27px;color:#fff;line-height:1;letter-spacing:-1px}
+  .cer-tile .v small{font-size:13px;color:var(--gold);margin-left:2px;letter-spacing:0}
+  .cer-tile .k{font-size:11px;color:#8b96bd;font-weight:700;margin-top:6px;letter-spacing:.02em}
+  .cer-tile.wide{grid-column:1/-1}
+  /* heart-rate moment */
+  .cer-hr{background:linear-gradient(150deg,rgba(224,16,48,.16),rgba(255,255,255,.03));
+    border:1px solid rgba(255,91,95,.32);border-radius:18px;padding:18px 16px}
+  .cer-hr .min{font-family:'JetBrains Mono',monospace;font-weight:900;font-size:34px;color:var(--live);line-height:1}
+  .cer-hr .desc{font-size:15px;font-weight:700;color:#fff;margin:8px 0 12px;line-height:1.35}
+  .cer-swing{display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-weight:800}
+  .cer-swing .from{color:#8b96bd}.cer-swing .to{color:var(--pitch);font-size:22px}
+  .cer-swing .arw{color:var(--live);font-size:18px}
+  .cer-swbar{position:relative;height:8px;border-radius:6px;background:rgba(255,255,255,.1);margin-top:12px;overflow:hidden}
+  .cer-swbar .fillA{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.28)}
+  .cer-swbar .fillB{position:absolute;top:0;bottom:0;background:var(--pitch)}
+  /* awards */
+  .cer-awd{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);cursor:pointer}
+  .cer-awd:last-child{border-bottom:none}
+  .cer-awd .med{font-size:22px;flex:0 0 auto;width:26px;text-align:center}
+  .cer-awd .who{flex:1;min-width:0}
+  .cer-awd .who .n{font-weight:800;font-size:15px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cer-awd .who .t{font-size:11.5px;color:#8b96bd;margin-top:1px}
+  .cer-awd .val{font-family:'JetBrains Mono',monospace;font-weight:900;font-size:22px;color:var(--gold);flex:0 0 auto}
+  .cer-awd .val small{font-size:11px;color:#8b96bd;font-weight:700}
+  /* model report card */
+  .cer-brier{text-align:center;margin:4px 0 8px}
+  .cer-brier .big{font-family:'JetBrains Mono',monospace;font-weight:900;font-size:52px;color:var(--pitch);line-height:1}
+  .cer-brier .cap{font-size:12px;color:#9aa4bf;margin-top:4px}
+  .cer-scale{position:relative;height:34px;margin:16px 2px 6px}
+  .cer-scale .track{position:absolute;left:0;right:0;top:14px;height:6px;border-radius:4px;
+    background:linear-gradient(90deg,var(--pitch),#f5c542 62%,var(--live))}
+  .cer-scale .tick{position:absolute;top:2px;width:2px;height:30px;background:#fff;border-radius:2px;transform:translateX(-1px)}
+  .cer-scale .tag{position:absolute;top:-2px;font-size:10px;font-weight:800;color:#fff;white-space:nowrap;transform:translateX(-50%)}
+  .cer-scale .noskill{position:absolute;top:20px;font-size:9.5px;color:#8b96bd;transform:translateX(-50%)}
+  .cer-verdict{display:flex;gap:10px;margin-top:14px}
+  .cer-verdict .vc{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:11px}
+  .cer-verdict .vc .lb{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#8b96bd;margin-bottom:5px}
+  .cer-verdict .vc.best .lb{color:var(--pitch)}.cer-verdict .vc.worst .lb{color:var(--live)}
+  .cer-verdict .vc .m{font-size:12.5px;font-weight:700;color:#fff;line-height:1.3}
+  /* countdown */
+  .cer-next{text-align:center}
+  .cer-cd{display:flex;justify-content:center;gap:8px;margin:14px 0 6px}
+  .cer-cd .u{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:11px 6px;min-width:62px}
+  .cer-cd .u .n{font-family:'JetBrains Mono',monospace;font-weight:900;font-size:28px;color:#fff;line-height:1}
+  .cer-cd .u .l{font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#8b96bd;margin-top:5px}
+  .cer-nextname{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;text-transform:uppercase;color:#fff;letter-spacing:.4px}
+  .cer-nexthost{font-size:12.5px;color:#9aa4bf;margin-top:3px}
+  .cer-prov{font-size:10.5px;color:var(--low);margin-top:8px}
+  .cer-foot{text-align:center;font-size:12px;color:#7c86a8;padding:6px 0 0;line-height:1.6}
+  .cer-foot .again{color:var(--gold);font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+  /* champion state on the hero (before the ceremony is opened) */
+  .hero.champ{background:radial-gradient(120% 90% at 50% 0%,rgba(245,197,66,.18),transparent 62%),var(--card);border-color:var(--gold)}
+  .hero .cer-open-btn{display:block;width:100%;margin-top:12px;background:linear-gradient(90deg,#f5c542,#e8a91f);
+    color:#241a04;border:none;border-radius:13px;padding:13px 0;font-family:inherit;font-size:15px;font-weight:900;
+    letter-spacing:.3px;cursor:pointer}
+  .hero .cer-open-btn:active{opacity:.88}
+  @media (prefers-reduced-motion: reduce){
+    .cer-sec,.cer-champ .fl{animation:none!important;opacity:1!important;transform:none!important}
+  }
+  @media(max-width:400px){
+    .cer-champ .nm{font-size:48px}.cer-champ .fl{font-size:86px}
+    .cer-cd .u{min-width:54px;padding:9px 4px}.cer-cd .u .n{font-size:23px}
+  }
 </style>
 </head>
 <body>
@@ -990,6 +1096,13 @@
   </div>
 </div>
 
+<!-- Closing ceremony: full-screen takeover, opens once the FINAL is decided (dormant until then) -->
+<div id="cerOverlay" aria-hidden="true">
+  <canvas id="cerConfetti"></canvas>
+  <button id="cerClose" aria-label="Close the closing ceremony">&#10005;</button>
+  <div id="cerScroll"><div id="cerBody"></div></div>
+</div>
+
 <script>
 (function(){
   "use strict";
@@ -1167,7 +1280,7 @@
   function pad(n){return n<10?'0'+n:''+n;}
   function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  var BUILD_TAG='Build 16 Jul 2026 v28.0 (permanent archive: the site now outlives the FIFA feed)';
+  var BUILD_TAG='Build 16 Jul 2026 v28.1 (closing ceremony: champion takeover, wrapped, heart-rate, awards, model report card)';
   // visible error trap: if anything throws on this device, say so instead of dying silently
   window.onerror=function(msg,src2,line,col,err){
     try{
@@ -1718,6 +1831,9 @@
     }
     hero.style.display='';
     renderLiveExtra(liveList,lvFav||lvAny);
+    // final decided + nothing live -> champion banner (and auto-open the ceremony once)
+    var ci=champInfo();
+    if(ci){renderChampionHero(hero,ci);return;}
     m=nextFav();
     if(!m){m=nextAny();fallback=true;}
     if(!m){hero.classList.remove('live');
@@ -4342,6 +4458,312 @@
     if(am.MatchStatus===0||am.MatchStatus===3)openMatchDetail(mm.n);
     else openMatchStats(mm.n);
   }
+  // ══════════════════════════════════════
+  //  CLOSING CEREMONY — a full-screen send-off that lights up when the FINAL is decided.
+  //  Everything below is computed from data already in the page (SEED, ODDS, AFPLAYERS, the
+  //  win-prob model) - no new feeds. Dormant until champInfo() can name a champion.
+  // ══════════════════════════════════════
+  var cerAuto=false,cerConfettiRAF=null;
+  // the final (M104) from calCache (live feed OR the baked archive), else null
+  function champInfo(){
+    var am=koByNum()[104];
+    if(am&&am.MatchStatus===0){
+      var hn=(am.Home&&am.Home.TeamName)?mapTeam(am.Home.TeamName[0].Description):null;
+      var an=(am.Away&&am.Away.TeamName)?mapTeam(am.Away.TeamName[0].Description):null;
+      var hs=(am.Home&&am.Home.Score!=null)?am.Home.Score:null,as2=(am.Away&&am.Away.Score!=null)?am.Away.Score:null;
+      var hp=am.HomeTeamPenaltyScore,ap=am.AwayTeamPenaltyScore;
+      if(hn&&an&&hs!=null&&as2!=null){
+        var hW=hs>as2,pens=false;
+        if(hs===as2&&hp!=null&&ap!=null&&(hp>0||ap>0)){hW=hp>ap;pens=true;}
+        else if(hs===as2)return null; // drawn with no shootout data - can't crown yet
+        return {champ:hW?hn:an,runner:hW?an:hn,cs:hW?hs:as2,rs:hW?as2:hs,
+          pens:pens,cp:hW?hp:ap,rp:hW?ap:hp,aet:am.ResultType===3};
+      }
+    }
+    // fallback: the page's own M104 row via SEED / live score (no pens info here)
+    var mm=null,i;for(i=0;i<matches.length;i++){if(/M104\s*$/.test(matches[i].s||'')){mm=matches[i];break;}}
+    if(mm){var st=statusOf(mm),sc=scoreOf(mm);
+      if(st.k==='ft'&&sc&&sc.ga!=null&&sc.gb!=null&&sc.ga!==sc.gb){var hW2=sc.ga>sc.gb;
+        return {champ:hW2?mm.a:mm.b,runner:hW2?mm.b:mm.a,cs:hW2?sc.ga:sc.gb,rs:hW2?sc.gb:sc.ga,pens:false,aet:false};}}
+    return null;
+  }
+  function tournamentDone(){return !!champInfo();}
+  function cerMatchLabel(m,sc){return escapeHtml(m.a)+' '+sc.ga+'-'+sc.gb+' '+escapeHtml(m.b);}
+  function cerRound(m){var s=(m.s||'').split('·')[0].replace(/[0-9]/g,'').trim();
+    return s.replace(/^GROUP.*/,'Group stage').replace(/^R32.*/i,'Round of 32').replace(/ROUND OF 16/i,'Round of 16')
+      .replace(/QUARTER-FINAL/i,'Quarter-final').replace(/SEMI-FINAL/i,'Semi-final').replace(/THIRD PLACE/i,'Third place').replace(/FINAL/i,'Final');}
+
+  // ── "Your tournament, wrapped" — from FOLLOW + the user's own timezone, no tracking ──
+  function cerWrapped(team){
+    if(!team||!F[team])return null;
+    var i,played=0,gf=0,ga=0,late=0,goals=0,best=null;
+    for(i=0;i<matches.length;i++){var m=matches[i];
+      if(m.a!==team&&m.b!==team)continue;
+      if(statusOf(m).k!=='ft')continue;
+      var sc=scoreOf(m);if(!sc||sc.ga==null||sc.gb==null)continue;
+      var home=(m.a===team),us=home?sc.ga:sc.gb,them=home?sc.gb:sc.ga;
+      played++;gf+=us;ga+=them;goals+=sc.ga+sc.gb;
+      if(isLate(bits(m)))late++;
+      if(!best||(us-them)>best.d)best={d:us-them,m:m,sc:sc};
+    }
+    return played?{team:team,played:played,gf:gf,ga:ga,late:late,goals:goals,best:best}:null;
+  }
+
+  // ── the heart-rate moment: the single goal that moved the followed team's win probability most,
+  //    reconstructed from the archive timelines + the book-anchored live model ──
+  function cerSwingsFor(mm,d){
+    var O=afOddsEntry(mm.a,mm.b);if(!O||!O.imp)return null;
+    var lam=wpLambdas(mm,O.imp),teamIdx=(afCanon(FOLLOW)===afCanon(mm.a))?0:2;
+    var aIsHome=(afCanon(mm.a)===afCanon(d.hN)),best=null,i;
+    for(i=0;i<d.events.length;i++){var e=d.events[i];if(e.kind!=='goal'||!e.sc)continue;
+      var sp=String(e.sc).split('-'),H=parseInt(sp[0],10),A=parseInt(sp[1],10);
+      if(isNaN(H)||isNaN(A))continue;
+      var aAft=aIsHome?H:A,bAft=aIsHome?A:H;                       // running score in mm.a/mm.b terms
+      var scorerA=(e.side==='h')?aIsHome:!aIsHome;                 // did mm.a just score? (e.side is benefiting side)
+      var aBef=aAft-(scorerA?1:0),bBef=bAft-(scorerA?0:1);
+      if(aBef<0||bBef<0)continue;
+      var frac=wpRemFrac({t:e.min||''});
+      var pB=wpLive(lam.lh,lam.la,aBef,bBef,frac)[teamIdx];
+      var pA=wpLive(lam.lh,lam.la,aAft,bAft,frac)[teamIdx];
+      var sw=Math.abs(pA-pB);
+      if(!best||sw>best.swing)best={swing:sw,from:pB,to:pA,min:e.min||'',scorer:e.name||'',
+        scoredForA:scorerA,mm:mm,rose:(pA>pB)};
+    }
+    return best;
+  }
+  function cerHeartRate(team,cb){
+    var jobs=[],i;
+    for(i=0;i<matches.length;i++){var m=matches[i];
+      if(m.a!==team&&m.b!==team)continue;
+      if(statusOf(m).k!=='ft')continue;
+      if(!afOddsEntry(m.a,m.b))continue;
+      jobs.push(m);}
+    if(!jobs.length){cb(null);return;}
+    var best=null,pend=jobs.length;
+    function done(){if(--pend<=0)cb(best);}
+    for(i=0;i<jobs.length;i++){(function(mm){
+      fetchMatchFull(mm,function(d){
+        if(d&&d.events){var s=cerSwingsFor(mm,d);if(s&&(!best||s.swing>best.swing))best=s;}
+        done();
+      });})(jobs[i]);}
+  }
+
+  // ── tournament-wide player awards (from AFPLAYERS, keyed by team|name) ──
+  function cerAllPlayers(){
+    var out={},k;
+    for(k in AFPLAYERS){if(!AFPLAYERS.hasOwnProperty(k))continue;var e=AFPLAYERS[k];if(!e)continue;
+      var sides=[[e.home,e.hN],[e.away,e.aN]],s;
+      for(s=0;s<2;s++){var rows=sides[s][0],team=sides[s][1];if(!rows||!team)continue;
+        for(var i=0;i<rows.length;i++){var r=rows[i],nm=r[0];if(!nm)continue;
+          var id=team+'|'+nm,p=out[id]||(out[id]={name:nm,team:team,pos:r[2],ap:0,g:0,a:0,sv:0,dw:0,rtSum:0,rtN:0});
+          if(r[2])p.pos=r[2];p.ap++;
+          p.g+=r[4]||0;p.a+=r[5]||0;p.sv+=r[15]||0;p.dw+=r[14]||0;
+          if(r[16]!=null){p.rtSum+=r[16];p.rtN++;}}}}
+    var arr=[],n;for(n in out)if(out.hasOwnProperty(n))arr.push(out[n]);return arr;
+  }
+  function cerAwards(){
+    var pl=cerAllPlayers();if(pl.length<5)return null;
+    function top(score,filt){var b=null,i;for(i=0;i<pl.length;i++){var p=pl[i];if(filt&&!filt(p))continue;
+      var v=score(p);if(v==null)continue;if(!b||v>b.v)b={p:p,v:v};}return b;}
+    var boot=top(function(p){return p.g+p.a/1000;});             // goals, tiebreak assists
+    var play=top(function(p){return p.a+p.g/1000;});
+    var rate=top(function(p){return p.rtN?(p.rtSum/p.rtN):null;},function(p){return p.rtN>=4;});
+    var glove=top(function(p){return p.sv+ (p.rtN?p.rtSum/p.rtN/100:0);},function(p){return p.pos==='G';});
+    var duel=top(function(p){return p.dw;});
+    return {boot:boot,play:play,rate:rate,glove:glove,duel:duel};
+  }
+
+  // ── the model's own report card: final Brier vs the 0.67 no-skill line, best call & worst miss ──
+  function cerModel(){
+    var br=wpBrier();if(!br)return null;
+    var byNum=koByNum(),best=null,worst=null,i;
+    for(i=0;i<matches.length;i++){var m=matches[i],O=afOddsEntry(m.a,m.b);if(!O||!O.imp)continue;
+      var st=statusOf(m),sc=scoreOf(m);if(st.k!=='ft'||!sc||sc.ga==null||sc.gb==null)continue;
+      var res=sc.ga>sc.gb?'home':(sc.ga<sc.gb?'away':'draw');
+      if(!isGroup(m)){var mn=/M(\d+)/.exec(m.s),am=mn?byNum[+mn[1]]:null;
+        if(am&&(am.ResultType===2||am.ResultType===3))res='draw';}
+      var pAct=O.imp[res];if(pAct==null)continue;
+      if(!best||pAct>best.p)best={p:pAct,m:m,sc:sc,res:res};
+      if(!worst||pAct<worst.p)worst={p:pAct,m:m,sc:sc,res:res};}
+    return {brier:br.b,n:br.n,best:best,worst:worst};
+  }
+
+  // ── countdown to the next tournament (provisional dates, clearly labelled) ──
+  var CER_NEXT=[
+    {name:'UEFA Euro 2028',host:'United Kingdom &amp; Ireland',ko:Date.UTC(2028,5,9,0,0)},
+    {name:'FIFA World Cup 2030',host:'Spain · Portugal · Morocco',ko:Date.UTC(2030,5,8,0,0)}
+  ];
+  function cerNextUp(){var now=Date.now(),i;for(i=0;i<CER_NEXT.length;i++)if(CER_NEXT[i].ko>now)return CER_NEXT[i];return null;}
+
+  function cerConfetti(){
+    if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    var cv=document.getElementById('cerConfetti');if(!cv)return;var ctx=cv.getContext('2d');
+    var W=cv.width=cv.offsetWidth,H=cv.height=cv.offsetHeight;
+    if(!W||!H)return;
+    var cols=['#f5c542','#16d96a','#ff2d55','#ffffff','#2f6bff'],N=Math.min(150,Math.round(W*H/8500)),ps=[],i;
+    for(i=0;i<N;i++)ps.push({x:Math.random()*W,y:-20-Math.random()*H*0.6,vx:(Math.random()-0.5)*1.6,
+      vy:2+Math.random()*3.2,sz:5+Math.random()*7,rot:Math.random()*6.28,vr:(Math.random()-0.5)*0.32,
+      c:cols[i%cols.length],sq:Math.random()<0.55});
+    var start=null,DUR=4400;
+    function frame(ts){if(start==null)start=ts;var t=ts-start,fade=t>DUR-1000?Math.max(0,(DUR-t)/1000):1;
+      ctx.clearRect(0,0,W,H);
+      for(i=0;i<ps.length;i++){var p=ps[i];p.x+=p.vx;p.y+=p.vy;p.vy+=0.022;p.rot+=p.vr;
+        ctx.save();ctx.globalAlpha=fade;ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.c;
+        if(p.sq)ctx.fillRect(-p.sz/2,-p.sz/2,p.sz,p.sz*0.52);
+        else{ctx.beginPath();ctx.arc(0,0,p.sz*0.42,0,6.283);ctx.fill();}ctx.restore();}
+      if(t<DUR)cerConfettiRAF=requestAnimationFrame(frame);else{ctx.clearRect(0,0,W,H);cerConfettiRAF=null;}}
+    cerConfettiRAF=requestAnimationFrame(frame);
+  }
+
+  function cerPct(x){return Math.round((x||0)*100);}
+  function renderCeremony(){
+    var ci=champInfo();if(!ci)return;
+    // awards + heart-rate need the lazy per-player file; load it once, then re-render when it lands
+    if(!plLoaded){playersFetch(function(){if(document.getElementById('cerOverlay').classList.contains('open'))renderCeremony();},true);}
+    var h='';
+    // 1 — champion takeover
+    h+='<div class="cer-sec"><div class="cer-champ">'+
+      '<div class="fl">'+(F[ci.champ]||'🏆')+'</div>'+
+      '<div class="lbl">World Champions · 2026</div>'+
+      '<div class="nm">'+escapeHtml(ci.champ)+'</div>'+
+      '<div class="fin">beat <b>'+escapeHtml(ci.runner)+'</b> in the final · <b>'+ci.cs+'–'+ci.rs+'</b></div>'+
+      (ci.pens?'<div class="via">after a penalty shootout ('+ci.cp+'–'+ci.rp+')</div>':(ci.aet?'<div class="via">after extra time</div>':''))+
+      '</div></div>';
+    // 2 — your tournament, wrapped
+    var w=cerWrapped(FOLLOW);
+    if(w){
+      h+='<div class="cer-sec"><div class="cer-card">'+
+        '<div class="cer-h"><span class="em">📺</span> Your tournament</div>'+
+        '<div class="cer-sub">You followed <b>'+(F[w.team]||'')+' '+escapeHtml(w.team)+'</b>. Here’s how it went, in your time zone.</div>'+
+        '<div class="cer-grid">'+
+        '<div class="cer-tile"><div class="v">'+w.played+'</div><div class="k">matches followed</div></div>'+
+        '<div class="cer-tile"><div class="v">'+w.goals+'</div><div class="k">goals you watched</div></div>'+
+        '<div class="cer-tile"><div class="v">'+w.gf+'<small>–'+w.ga+'</small></div><div class="k">'+escapeHtml(w.team)+' scored – conceded</div></div>'+
+        '<div class="cer-tile"><div class="v">'+w.late+'</div><div class="k">after-midnight kick-offs</div></div>'+
+        '</div></div></div>';
+    }
+    // 3 — the heart-rate moment (async; placeholder now, filled by cerHeartRate)
+    if(w){
+      h+='<div class="cer-sec"><div class="cer-hr" id="cerHR">'+
+        '<div class="cer-h" style="color:var(--live)"><span class="em">💓</span> The heart-rate moment</div>'+
+        '<div class="cer-sub" id="cerHRbody">Reliving '+escapeHtml(FOLLOW)+'’s biggest swing…</div></div></div>';
+    }
+    // 4 — awards
+    var aw=cerAwards();
+    if(aw){
+      function awardRow(med,label,b,fmt){if(!b)return '';
+        return '<div class="cer-awd" data-pp="'+escapeHtml(b.p.name)+'" data-pp-t="'+escapeHtml(b.p.team)+'">'+
+          '<span class="med">'+med+'</span>'+
+          '<span class="who"><span class="n">'+escapeHtml(ppDecode(b.p.name))+'</span>'+
+          '<span class="t">'+label+' · '+(F[b.p.team]||'')+' '+escapeHtml(b.p.team)+'</span></span>'+
+          '<span class="val">'+fmt(b)+'</span></div>';}
+      h+='<div class="cer-sec"><div class="cer-card">'+
+        '<div class="cer-h"><span class="em">🏅</span> The winners</div>'+
+        '<div class="cer-sub">Tournament awards from the official player feed — tap anyone for their full numbers.</div>'+
+        awardRow('👟','Golden Boot',aw.boot,function(b){return b.p.g+'<small> gls</small>';})+
+        awardRow('🎯','Playmaker',aw.play,function(b){return b.p.a+'<small> ast</small>';})+
+        awardRow('⭐','Best rated',aw.rate,function(b){return (Math.round(b.v*10)/10).toFixed(1);})+
+        awardRow('🧤','Golden Glove',aw.glove,function(b){return b.p.sv+'<small> sv</small>';})+
+        awardRow('💪','Most duels won',aw.duel,function(b){return b.p.dw+'';})+
+        '</div></div>';
+    }
+    // 5 — the model's report card
+    var mo=cerModel();
+    if(mo){
+      var lo=0.30,hi=0.67,pos=Math.max(0,Math.min(1,(mo.brier-lo)/(hi-lo)))*100;
+      function verdict(x,cls,lbl){if(!x)return '';
+        return '<div class="vc '+cls+'"><div class="lb">'+lbl+'</div><div class="m">'+cerMatchLabel(x.m,x.sc)+
+          '<br><span style="color:#8b96bd;font-weight:600">market gave the result '+cerPct(x.p)+'%</span></div></div>';}
+      h+='<div class="cer-sec"><div class="cer-card">'+
+        '<div class="cer-h"><span class="em">🧠</span> The model’s report card</div>'+
+        '<div class="cer-sub">We published a win-probability every match and graded it honestly. Final multiclass Brier score across '+mo.n+' games:</div>'+
+        '<div class="cer-brier"><div class="big">'+mo.brier.toFixed(3)+'</div><div class="cap">lower is better</div></div>'+
+        '<div class="cer-scale"><div class="track"></div>'+
+        '<div class="tick" style="left:'+pos.toFixed(1)+'%"></div><div class="tag" style="left:'+pos.toFixed(1)+'%">us '+mo.brier.toFixed(2)+'</div>'+
+        '<div class="noskill" style="left:100%">0.67 no-skill</div></div>'+
+        '<div class="cer-verdict">'+verdict(mo.best,'best','Most confident, and right')+verdict(mo.worst,'worst','Biggest upset it underrated')+'</div>'+
+        '<div class="cer-sub" style="margin:12px 0 0">0.67 is a coin-flip guess every game. The market (and our blend on top of it) beat that all tournament.</div>'+
+        '</div></div>';
+    }
+    // 6 — countdown to what's next
+    var nx=cerNextUp();
+    if(nx){
+      h+='<div class="cer-sec"><div class="cer-card cer-next">'+
+        '<div class="cer-kick" style="margin-bottom:8px">The wait begins</div>'+
+        '<div class="cer-nextname">'+nx.name+'</div><div class="cer-nexthost">'+nx.host+'</div>'+
+        '<div class="cer-cd" id="cerCd" data-ko="'+nx.ko+'">'+
+        '<div class="u"><div class="n" id="cerCdD">–</div><div class="l">Days</div></div>'+
+        '<div class="u"><div class="n" id="cerCdH">–</div><div class="l">Hrs</div></div>'+
+        '<div class="u"><div class="n" id="cerCdM">–</div><div class="l">Min</div></div>'+
+        '</div><div class="cer-prov">Provisional — kick-off dates to be confirmed</div>'+
+        '</div></div>';
+    }
+    // footer
+    h+='<div class="cer-sec"><div class="cer-foot">Thanks for spending the summer here.<br>'+
+      'This page stays live as a permanent archive of every game.<br>'+
+      '<span class="again" id="cerReplay">↻ Replay the ceremony</span></div></div>';
+    document.getElementById('cerBody').innerHTML=h;
+    cerCdTick();
+    // fill the async heart-rate moment
+    var hb=document.getElementById('cerHRbody');
+    if(hb){cerHeartRate(FOLLOW,function(s){
+      var box=document.getElementById('cerHR');if(!box)return;
+      if(!s){box.parentNode.style.display='none';return;}
+      var toWin=s.rose,pFrom=cerPct(s.from),pTo=cerPct(s.to);
+      var forName=escapeHtml(mapTeam(s.mm.a)); // placeholder; below builds the real line
+      var scorerTeam=s.scoredForA?s.mm.a:s.mm.b;
+      var line=(s.min?escapeHtml(s.min)+' — ':'')+escapeHtml(ppDecode(s.scorer||'Goal'))+' for '+(F[scorerTeam]||'')+' '+escapeHtml(scorerTeam);
+      box.innerHTML='<div class="cer-h" style="color:var(--live)"><span class="em">💓</span> The heart-rate moment</div>'+
+        '<div class="min">'+escapeHtml(s.min||'')+'</div>'+
+        '<div class="desc">'+line+'</div>'+
+        '<div class="cer-swing"><span class="from">'+escapeHtml(FOLLOW)+' '+pFrom+'%</span>'+
+        '<span class="arw">'+(toWin?'↗':'↘')+'</span><span class="to">'+pTo+'%</span> to win</div>'+
+        '<div class="cer-swbar"><i class="fillA" style="width:'+pFrom+'%"></i><i class="fillB" style="left:'+Math.min(pFrom,pTo)+'%;width:'+Math.abs(pTo-pFrom)+'%"></i></div>'+
+        '<div class="cer-sub" style="margin:12px 0 0">One kick, '+Math.round(s.swing*100)+' points of win probability. That’s the moment the room went quiet.</div>';
+    });}
+  }
+  function cerCdTick(){
+    var cd=document.getElementById('cerCd');if(!cd)return;
+    var ko=parseInt(cd.getAttribute('data-ko'),10),diff=ko-Date.now();if(diff<0)diff=0;
+    var d=Math.floor(diff/86400000),hh=Math.floor((diff%86400000)/3600000),mm=Math.floor((diff%3600000)/60000);
+    var eD=document.getElementById('cerCdD'),eH=document.getElementById('cerCdH'),eM=document.getElementById('cerCdM');
+    if(eD)eD.textContent=d;if(eH)eH.textContent=pad(hh);if(eM)eM.textContent=pad(mm);
+  }
+  function openCeremony(){
+    var ov=document.getElementById('cerOverlay');if(!ov)return;
+    renderCeremony();
+    ov.classList.add('open');ov.setAttribute('aria-hidden','false');
+    document.body.classList.add('cer-open');
+    var ci=champInfo();if(ci)save('wc26_cer_seen',afCanon(ci.champ));
+    document.getElementById('cerScroll').scrollTop=0;
+    setTimeout(cerConfetti,200);
+    if(!cerCdTimer)cerCdTimer=setInterval(cerCdTick,30000);
+  }
+  var cerCdTimer=null;
+  function closeCeremony(){
+    var ov=document.getElementById('cerOverlay');if(!ov)return;
+    ov.classList.remove('open');ov.setAttribute('aria-hidden','true');
+    document.body.classList.remove('cer-open');
+    if(cerConfettiRAF){cancelAnimationFrame(cerConfettiRAF);cerConfettiRAF=null;}
+    if(cerCdTimer){clearInterval(cerCdTimer);cerCdTimer=null;}
+  }
+  // paint the hero as a champion banner (+ a button into the ceremony); auto-open the ceremony once
+  function renderChampionHero(hero,ci){
+    hero.classList.remove('live');hero.classList.add('champ');
+    document.getElementById('cdown').style.display='none';
+    setHtml(document.getElementById('heroBadge'),'🏆 World Champions');
+    setHtml(document.getElementById('heroLine'),'<span class="flag">'+(F[ci.champ]||'')+'</span> '+escapeHtml(ci.champ));
+    setText(document.getElementById('heroWhen'),'Champions of the World · beat '+ci.runner+' '+ci.cs+'-'+ci.rs+(ci.pens?' (pens)':(ci.aet?' (AET)':'')));
+    hero.removeAttribute('data-n');hero.classList.remove('tapable');hero.removeAttribute('role');hero.removeAttribute('tabindex');
+    if(!document.getElementById('cerOpenBtn')){
+      var b=document.createElement('button');b.id='cerOpenBtn';b.type='button';b.className='cer-open-btn';
+      b.innerHTML='🏆 View the closing ceremony';
+      b.addEventListener('click',function(e){e.stopPropagation();openCeremony();});
+      hero.appendChild(b);
+    }
+    if(!cerAuto&&load('wc26_cer_seen')!==afCanon(ci.champ)){cerAuto=true;openCeremony();}
+  }
+
   function openGroupsForMatch(num){
     if(!calCache)return;
     var byNum=koByNum(),am=byNum[num];if(!am)return;
@@ -4513,6 +4935,8 @@
   // Escape closes whichever overlay is open
   document.addEventListener('keydown',function(e){
     if(e.key!=='Escape')return;
+    if(document.getElementById('ppOverlay').classList.contains('open')&&document.getElementById('cerOverlay').classList.contains('open')){closeOverlay('ppOverlay');return;} // player card stacked over the ceremony
+    if(document.getElementById('cerOverlay').classList.contains('open')){closeCeremony();return;}
     if(document.getElementById('ppOverlay').classList.contains('open'))closeOverlay('ppOverlay'); // stacked on md/pl — close first
     else if(document.getElementById('plOverlay').classList.contains('open'))closeOverlay('plOverlay');
     else if(document.getElementById('cpOverlay').classList.contains('open'))closeOverlay('cpOverlay');
@@ -4601,6 +5025,14 @@
     if(e.key!=='Enter'&&e.key!==' ')return;var t=e.target;
     if(!(t.classList&&t.classList.contains('cp-row')))return;
     e.preventDefault();closeOverlay('cpOverlay');openMatchDetail(parseInt(t.getAttribute('data-n'),10));
+  });
+  // Closing ceremony: X closes; award rows open the player card on top; "replay" re-runs it
+  document.getElementById('cerClose').addEventListener('click',closeCeremony);
+  document.getElementById('cerBody').addEventListener('click',function(e){
+    var t=e.target;
+    if(t&&t.id==='cerReplay'){renderCeremony();document.getElementById('cerScroll').scrollTop=0;setTimeout(cerConfetti,120);return;}
+    var a=e.target;while(a&&a!==this&&!(a.classList&&a.classList.contains('cer-awd')))a=a.parentNode;
+    if(a&&a.getAttribute&&a.getAttribute('data-pp'))openPlayerCard(a.getAttribute('data-pp'),a.getAttribute('data-pp-t'),null,null);
   });
   document.getElementById('stTeam').addEventListener('change',function(){
     if(F[this.value]){stViewTeam=this.value;renderStats(null);}
