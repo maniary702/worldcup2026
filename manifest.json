@@ -1,0 +1,11 @@
+{
+  "name": "AFC Asian Cup 2027",
+  "short_name": "Asian Cup 27",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#081410",
+  "theme_color": "#0a1410",
+  "icons": [
+    {"src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}
+  ]
+}

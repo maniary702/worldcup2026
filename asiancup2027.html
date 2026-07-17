@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>AFC Asian Cup 2027 · Saudi Arabia</title>
+<meta name="description" content="AFC Asian Cup 2027 in Saudi Arabia — fixtures, groups, the full schedule and your team, in your time zone. One tap, no app."/>
+<meta property="og:title" content="AFC Asian Cup 2027 · Saudi Arabia"/>
+<meta property="og:description" content="Fixtures, groups and your team for the 2027 Asian Cup — in your time zone. One tap, no app."/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Asian Cup 2027"/>
+<meta property="og:url" content="https://maniary702.github.io/asiancup2027/"/>
+<meta name="theme-color" content="#0a1410"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230a5c36'/%3E%3Ctext x='50' y='70' font-size='52' text-anchor='middle' fill='%23e0b64e' font-family='Arial' font-weight='bold'%3E27%3C/text%3E%3C/svg%3E"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon.svg"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Asian Cup 27"/>
+<style>
+  :root{
+    --bg:#081410;--card:#0e1d16;--card2:#12271d;--line:#1e3a2b;--line2:#2a5340;
+    --ink:#eaf3ee;--mut:#8fae9e;--low:#6b8a79;
+    --grn:#0a6b3f;--grn2:#0a5c36;--acc:#e0b64e;--acc2:#c9932e;--acc-ink:#e8c66a;
+    --win:#1db571;--draw:#8a9a90;--loss:#e0605f;--live:#ff5a5f;
+    --seg:rgba(255,255,255,.06);--shadow:rgba(0,0,0,.5);
+    --heroA:#0a5c36;--heroB:#062b1c;
+  }
+  html.light{
+    --bg:#f2efe4;--card:#ffffff;--card2:#f7f4ea;--line:#e6e0cf;--line2:#d6cdb4;
+    --ink:#122019;--mut:#5c6f64;--low:#7d8f83;
+    --grn:#0a6b3f;--grn2:#0a5c36;--acc:#b8892b;--acc2:#9a7020;--acc-ink:#8a6410;
+    --win:#0e9c5f;--draw:#9ca79f;--loss:#d0433f;--live:#d83c40;
+    --seg:rgba(0,0,0,.05);--shadow:rgba(30,40,30,.14);
+    --heroA:#0a6b3f;--heroB:#064e2f;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:15px;line-height:1.4}
+  img{display:block}
+  .wrap{max-width:640px;margin:0 auto;padding:0 12px 96px}
+  /* header */
+  header{background:linear-gradient(135deg,var(--heroA),var(--heroB));color:#fff;
+    padding:12px 12px 10px;position:sticky;top:0;z-index:30;box-shadow:0 3px 16px var(--shadow);
+    border-bottom:2px solid var(--acc)}
+  .hd{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:11px}
+  .crest{width:42px;height:42px;flex:0 0 auto}
+  .hd h1{font-size:15.5px;margin:0;font-weight:900;line-height:1.02;letter-spacing:.3px}
+  .hd .sub{font-size:10.5px;font-weight:700;color:var(--acc-ink);letter-spacing:.4px;text-transform:uppercase;margin-top:2px}
+  .hd .tools{margin-left:auto;display:flex;gap:7px}
+  .hbtn{background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:20px;width:36px;height:36px;
+    font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .hbtn:active{transform:scale(.94)}
+  .teambar{max-width:640px;margin:9px auto 0;display:flex;align-items:center;gap:8px}
+  .teambar label{font-size:10px;font-weight:800;color:var(--acc-ink);text-transform:uppercase;letter-spacing:.5px}
+  .teambar select{flex:1;border:0;border-radius:10px;padding:9px 11px;font-weight:800;font-size:14px;
+    background:rgba(255,255,255,.95);color:var(--grn2)}
+  /* nav */
+  nav.tabs{position:sticky;top:112px;z-index:20;background:var(--bg);max-width:640px;margin:0 auto;
+    display:flex;gap:6px;padding:10px 12px 7px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none}
+  nav.tabs::-webkit-scrollbar{display:none}
+  nav.tabs button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--mut);
+    border-radius:20px;padding:8px 15px;font-weight:800;font-size:13px;cursor:pointer;transition:.15s}
+  nav.tabs button.on{background:var(--grn);color:#fff;border-color:var(--grn)}
+  .view{display:none}.view.on{display:block}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:14px;margin:11px 0;
+    box-shadow:0 2px 8px -4px var(--shadow)}
+  .card h2{font-size:11.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--mut);
+    margin:0 0 11px;font-weight:800}
+  .empty{color:var(--low);font-size:13px;text-align:center;padding:22px 10px;font-weight:600;line-height:1.6}
+  /* hero countdown */
+  .hero{background:radial-gradient(120% 90% at 50% -10%,rgba(224,182,78,.14),transparent 60%),var(--card);
+    border:1px solid var(--line2);border-radius:18px;padding:20px 16px;margin:12px 0;text-align:center}
+  .hero .kick{font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--acc);margin-bottom:6px}
+  .hero .htitle{font-size:24px;font-weight:900;letter-spacing:.3px;line-height:1.05}
+  .hero .hhost{font-size:13px;color:var(--mut);font-weight:700;margin-top:4px}
+  .cd{display:flex;justify-content:center;gap:9px;margin:16px 0 4px}
+  .cd .u{background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:11px 8px;min-width:66px}
+  .cd .u b{font-size:29px;font-weight:900;display:block;line-height:1;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .cd .u span{font-size:9.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--mut);font-weight:800;margin-top:5px;display:block}
+  .hero .opener{font-size:12.5px;color:var(--mut);font-weight:600;margin-top:12px}
+  .hero .opener b{color:var(--ink);font-weight:800}
+  /* your team hero */
+  .yourteam{background:var(--card);border:2px solid var(--grn);border-radius:16px;padding:14px;margin:12px 0}
+  .yourteam .top{display:flex;align-items:center;gap:12px}
+  .yourteam .top img{width:46px;height:46px;object-fit:contain}
+  .yourteam .tn{font-size:19px;font-weight:900;line-height:1}
+  .yourteam .grp{font-size:11.5px;color:var(--acc-ink);font-weight:800;margin-top:3px;text-transform:uppercase;letter-spacing:.4px}
+  .yourteam .next{margin-left:auto;text-align:right;font-size:11px;color:var(--mut);font-weight:700}
+  /* fixture rows */
+  .daygroup{margin:16px 0 4px}
+  .dayhead{font-size:12.5px;font-weight:900;color:var(--acc-ink);text-transform:uppercase;letter-spacing:.6px;
+    padding:2px 2px 8px;display:flex;justify-content:space-between;align-items:baseline}
+  .dayhead .cnt{font-size:10px;color:var(--low);font-weight:700;letter-spacing:.3px}
+  .fx{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:10px 11px;margin:7px 0;cursor:pointer;transition:.12s}
+  .fx:active{transform:scale(.99)}
+  .fx.live{border-color:var(--live);box-shadow:0 0 0 1px var(--live) inset}
+  .fx .tm{width:52px;flex:0 0 auto;text-align:center;font-size:10.5px;font-weight:800;color:var(--mut);line-height:1.25}
+  .fx .tm .st{color:var(--live);font-weight:900}
+  .fx .tm .ft{color:var(--low)}
+  .fx .mid{flex:1;min-width:0}
+  .fx .side{display:flex;align-items:center;gap:8px;padding:2px 0}
+  .fx .side img{width:22px;height:22px;object-fit:contain;flex:0 0 auto}
+  .fx .side .n{font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+  .fx .side .g{font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .fx .side.win .n{color:var(--ink)}.fx .side.lose .n{color:var(--low)}
+  .fx .vn{font-size:10px;color:var(--low);font-weight:600;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fx .chev{color:var(--low);font-size:16px;flex:0 0 auto}
+  .fx .grp-b{flex:0 0 auto;font-size:9.5px;font-weight:900;color:var(--acc-ink);background:var(--seg);
+    border-radius:6px;padding:2px 6px;align-self:flex-start}
+  /* group tables */
+  .gtitle{font-size:14px;font-weight:900;color:var(--ink);margin:2px 0 8px;display:flex;align-items:center;gap:8px}
+  .gtitle .b{background:var(--grn);color:#fff;border-radius:7px;width:24px;height:24px;display:flex;
+    align-items:center;justify-content:center;font-size:12px;font-weight:900}
+  table.gt{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.gt th{font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;color:var(--low);font-weight:800;
+    text-align:center;padding:0 0 7px}
+  table.gt th.l{text-align:left}
+  table.gt td{padding:7px 0;border-top:1px solid var(--line);text-align:center;font-variant-numeric:tabular-nums}
+  table.gt td.l{text-align:left}
+  table.gt td.pos{color:var(--low);font-weight:800;width:16px}
+  table.gt .tcell{display:flex;align-items:center;gap:7px}
+  table.gt .tcell img{width:19px;height:19px;object-fit:contain}
+  table.gt .tcell .n{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  table.gt td.pts{font-weight:900;color:var(--acc-ink)}
+  table.gt tr.q td{border-top-color:var(--line)}
+  table.gt tr.q2 td{border-bottom:2px solid var(--acc)}
+  .gform{display:flex;gap:3px;justify-content:center}
+  .gform i{width:15px;height:15px;border-radius:4px;font-style:normal;font-size:9px;font-weight:800;color:#fff;
+    display:flex;align-items:center;justify-content:center}
+  .gform i.W{background:var(--win)}.gform i.D{background:var(--draw)}.gform i.L{background:var(--loss)}
+  .qnote{font-size:10.5px;color:var(--low);margin-top:9px;font-weight:600}
+  .qnote .dot{color:var(--acc)}
+  /* teams grid */
+  .tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .tcard{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px 8px;text-align:center;cursor:pointer;transition:.12s}
+  .tcard:active{transform:scale(.97)}
+  .tcard img{width:42px;height:42px;object-fit:contain;margin:0 auto 8px}
+  .tcard .n{font-size:12px;font-weight:800;line-height:1.2}
+  .tcard .g{font-size:9.5px;color:var(--acc-ink);font-weight:800;margin-top:3px;text-transform:uppercase;letter-spacing:.3px}
+  /* bracket placeholder */
+  .brk-empty{text-align:center;padding:26px 14px}
+  .brk-empty .ico{font-size:40px;margin-bottom:10px}
+  .brk-empty .t{font-size:15px;font-weight:900;margin-bottom:5px}
+  .brk-empty .s{font-size:12.5px;color:var(--mut);font-weight:600;line-height:1.6;max-width:340px;margin:0 auto}
+  /* modal */
+  .ovl{position:fixed;inset:0;background:rgba(4,10,7,.7);z-index:60;display:none;align-items:flex-end;
+    justify-content:center;backdrop-filter:blur(4px)}
+  .ovl.open{display:flex}
+  .sheet{background:var(--bg);width:100%;max-width:640px;max-height:88vh;overflow-y:auto;border-radius:20px 20px 0 0;
+    border-top:2px solid var(--acc);padding:16px 14px calc(28px + env(safe-area-inset-bottom))}
+  .sheet .sh{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .sheet .sh img{width:44px;height:44px;object-fit:contain}
+  .sheet .sh .n{font-size:20px;font-weight:900;line-height:1}
+  .sheet .sh .g{font-size:11.5px;color:var(--acc-ink);font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+  .sheet .sh .x{margin-left:auto;background:var(--card2);border:1px solid var(--line);color:var(--mut);
+    width:34px;height:34px;border-radius:50%;font-size:15px;cursor:pointer}
+  .footnote{font-size:11px;color:var(--low);text-align:center;padding:16px 8px 4px;line-height:1.6;font-weight:600}
+  .footnote a{color:var(--acc-ink);text-decoration:none;font-weight:800}
+  .tznote{font-size:11px;color:var(--mut);text-align:center;padding:8px 4px 0;font-weight:600}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+  @media(max-width:380px){.tgrid{grid-template-columns:repeat(2,1fr)}.cd .u{min-width:58px}.cd .u b{font-size:25px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hd">
+    <svg class="crest" viewBox="0 0 100 100" aria-hidden="true">
+      <rect width="100" height="100" rx="22" fill="rgba(255,255,255,.1)"/>
+      <path d="M50 20 L58 40 L80 40 L62 54 L69 76 L50 62 L31 76 L38 54 L20 40 L42 40 Z" fill="#e0b64e"/>
+    </svg>
+    <div>
+      <h1>Asian Cup 2027</h1>
+      <div class="sub">Saudi Arabia &middot; Jan 2027</div>
+    </div>
+    <div class="tools">
+      <button class="hbtn" id="themeBtn" aria-label="Toggle light or dark theme">&#9789;</button>
+      <button class="hbtn" id="shareBtn" aria-label="Share">&#8599;</button>
+    </div>
+  </div>
+  <div class="teambar">
+    <label for="teamSel">Follow</label>
+    <select id="teamSel" aria-label="Follow a team"></select>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-v="home" class="on">Matchday</button>
+  <button data-v="schedule">Schedule</button>
+  <button data-v="groups">Groups</button>
+  <button data-v="teams">Teams</button>
+  <button data-v="bracket">Bracket</button>
+</nav>
+
+<div class="wrap">
+  <div class="view on" id="v-home"></div>
+  <div class="view" id="v-schedule"></div>
+  <div class="view" id="v-groups"></div>
+  <div class="view" id="v-teams"></div>
+  <div class="view" id="v-bracket"></div>
+  <div class="tznote" id="tznote"></div>
+  <div class="footnote">
+    Data from API-Football &middot; times shown in your device&rsquo;s zone.<br>
+    Live scores, line-ups &amp; stats switch on when the tournament kicks off.
+  </div>
+</div>
+
+<div class="ovl" id="teamOvl"><div class="sheet" id="teamSheet"></div></div>
+
+<script>
+(function(){
+  "use strict";
+  var DATA=null, FOLLOW=lsGet('asc_follow')||'', VIEW='home', builtStamp='';
+  var TZ=(function(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone;}catch(e){return 'UTC';}})();
+
+  function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+  function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function el(id){return document.getElementById(id);}
+  function pad(n){return n<10?'0'+n:''+n;}
+
+  // ── time helpers (device zone) ──
+  var DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function koDate(f){return new Date(f.ts*1000);}
+  function parts(d){
+    try{
+      var o={},f=new Intl.DateTimeFormat('en-GB',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',
+        hour:'2-digit',minute:'2-digit',weekday:'short',hour12:false});
+      f.formatToParts(d).forEach(function(p){o[p.type]=p.value;});
+      return o;
+    }catch(e){return null;}
+  }
+  function dayKey(f){var p=parts(koDate(f));return p?(p.year+'-'+p.month+'-'+p.day):f.date.slice(0,10);}
+  function dayLabel(f){var p=parts(koDate(f));if(!p)return f.date.slice(0,10);
+    return p.weekday+' '+parseInt(p.day,10)+' '+MON[parseInt(p.month,10)-1];}
+  function clock(f){var p=parts(koDate(f));if(!p)return '';
+    var h=parseInt(p.hour,10),ap=h<12?'am':'pm',hh=((h+11)%12)+1;return hh+':'+p.minute+ap;}
+  function tzOffsetLabel(){
+    try{var s=new Intl.DateTimeFormat('en-GB',{timeZone:TZ,timeZoneName:'shortOffset'}).formatToParts(new Date());
+      var z=s.filter(function(p){return p.type==='timeZoneName';})[0];
+      return (z?z.value:'')+' · '+TZ.split('/').pop().replace(/_/g,' ');}catch(e){return TZ;}
+  }
+
+  // ── status helpers ──
+  var LIVE_ST={'1H':1,'2H':1,'HT':1,'ET':1,'BT':1,'P':1,'LIVE':1};
+  var DONE_ST={'FT':1,'AET':1,'PEN':1};
+  function isLive(f){return !!LIVE_ST[f.status];}
+  function isDone(f){return !!DONE_ST[f.status];}
+  function scoreStr(f){return (f.hg==null?'':f.hg)+' - '+(f.ag==null?'':f.ag);}
+
+  function teamLogo(name){var t=DATA.teams[name];return t?t.logo:'';}
+  function teamCode(name){var t=DATA.teams[name];return t?t.code:name.slice(0,3).toUpperCase();}
+  function teamGroup(name){for(var i=0;i<DATA.groups.length;i++){if(DATA.groups[i].teams.indexOf(name)>=0)return DATA.groups[i].letter;}return '';}
+
+  // ── fixture row ──
+  function fxRow(f,showGrp){
+    var live=isLive(f),done=isDone(f);
+    var tm;
+    if(live)tm='<span class="st">'+esc(f.elapsed?f.elapsed+"'":'LIVE')+'</span>';
+    else if(done)tm='<span class="ft">FT</span>';
+    else tm=clock(f);
+    function side(name,g,otherG){
+      var w=done&&g!=null&&otherG!=null&&g>otherG, l=done&&g!=null&&otherG!=null&&g<otherG;
+      return '<div class="side'+(w?' win':'')+(l?' lose':'')+'">'+
+        '<img src="'+esc(teamLogo(name))+'" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"/>'+
+        '<span class="n">'+esc(name)+'</span>'+
+        ((live||done)?'<span class="g">'+(g==null?'-':g)+'</span>':'')+'</div>';
+    }
+    var pens='';
+    if(f.status==='PEN'&&f.hp!=null&&f.ap!=null)pens='<div class="vn">Penalties '+f.hp+'-'+f.ap+'</div>';
+    return '<div class="fx'+(live?' live':'')+'" data-fx="'+f.id+'">'+
+      '<div class="tm">'+tm+'</div>'+
+      '<div class="mid">'+side(f.home,f.hg,f.ag)+side(f.away,f.ag,f.hg)+
+        '<div class="vn">'+esc([f.venue,f.city].filter(Boolean).join(' · '))+'</div>'+pens+'</div>'+
+      (showGrp&&f.grp?'<span class="grp-b">'+f.grp+'</span>':'<span class="chev">›</span>')+
+    '</div>';
+  }
+
+  // group fixtures by local day
+  function byDay(list){
+    var order=[],map={};
+    list.forEach(function(f){var k=dayKey(f);if(!map[k]){map[k]=[];order.push(k);}map[k].push(f);});
+    return order.map(function(k){return {key:k,label:dayLabel(map[k][0]),items:map[k]};});
+  }
+
+  // ── views ──
+  function renderHome(){
+    var now=Date.now();
+    var upcoming=DATA.fixtures.filter(function(f){return !isDone(f);});
+    var live=DATA.fixtures.filter(isLive);
+    var firstKo=DATA.fixtures.length?DATA.fixtures[0]:null;
+    var h='';
+    // your team block
+    if(FOLLOW&&DATA.teams[FOLLOW]){
+      var mine=DATA.fixtures.filter(function(f){return f.home===FOLLOW||f.away===FOLLOW;});
+      var next=mine.filter(function(f){return !isDone(f);})[0]||mine[mine.length-1];
+      h+='<div class="yourteam"><div class="top">'+
+        '<img src="'+esc(teamLogo(FOLLOW))+'" alt="" onerror="this.style.visibility=\'hidden\'"/>'+
+        '<div><div class="tn">'+esc(FOLLOW)+'</div><div class="grp">Group '+teamGroup(FOLLOW)+'</div></div>'+
+        (next?'<div class="next">'+(isDone(next)?'Last':'Next')+'<br><b style="color:var(--ink);font-size:13px">'+
+          (next.home===FOLLOW?'v '+esc(teamCode(next.away)):'v '+esc(teamCode(next.home)))+'</b><br>'+
+          (isDone(next)?'FT':dayLabel(next)+' '+clock(next))+'</div>':'')+
+      '</div></div>';
+    }
+    // live now, else countdown to kickoff
+    if(live.length){
+      h+='<div class="card"><h2>&#128308; Live now</h2>'+live.map(function(f){return fxRow(f,true);}).join('')+'</div>';
+    }else if(firstKo){
+      var diff=Math.max(0,koDate(firstKo).getTime()-now);
+      var d=Math.floor(diff/864e5),hh=Math.floor(diff%864e5/36e5),mm=Math.floor(diff%36e5/6e4);
+      h+='<div class="hero"><div class="kick">The countdown is on</div>'+
+        '<div class="htitle">AFC Asian Cup 2027</div><div class="hhost">Saudi Arabia</div>'+
+        '<div class="cd" id="cd">'+
+        '<div class="u"><b id="cdD">'+d+'</b><span>Days</span></div>'+
+        '<div class="u"><b id="cdH">'+pad(hh)+'</b><span>Hrs</span></div>'+
+        '<div class="u"><b id="cdM">'+pad(mm)+'</b><span>Min</span></div></div>'+
+        '<div class="opener">First match &middot; <b>'+esc(firstKo.home)+' v '+esc(firstKo.away)+'</b><br>'+
+        dayLabel(firstKo)+' &middot; '+clock(firstKo)+'</div></div>';
+    }
+    // next matches
+    var nextFew=upcoming.slice(0,6);
+    if(nextFew.length){
+      h+='<div class="card"><h2>Up next</h2>'+nextFew.map(function(f){return fxRow(f,true);}).join('')+'</div>';
+    }
+    if(!h)h='<div class="card"><div class="empty">Fixtures load here.</div></div>';
+    el('v-home').innerHTML=h;
+    tickCd();
+  }
+
+  function renderSchedule(){
+    var days=byDay(DATA.fixtures);
+    var h=days.map(function(D){
+      return '<div class="daygroup"><div class="dayhead">'+esc(D.label)+
+        '<span class="cnt">'+D.items.length+' match'+(D.items.length>1?'es':'')+'</span></div>'+
+        D.items.map(function(f){return fxRow(f,true);}).join('')+'</div>';
+    }).join('');
+    el('v-schedule').innerHTML=h||'<div class="card"><div class="empty">Schedule loads here.</div></div>';
+  }
+
+  function renderGroups(){
+    var h=DATA.groups.map(function(g){
+      var tbl=DATA.tables[g.letter]||[];
+      var rows=tbl.map(function(r,i){
+        var form=(r.form||[]).slice(-5).map(function(x){return '<i class="'+x+'">'+x+'</i>';}).join('');
+        return '<tr class="'+(i<2?'q':'')+(i===1?' q2':'')+'">'+
+          '<td class="pos">'+(i+1)+'</td>'+
+          '<td class="l"><div class="tcell"><img src="'+esc(teamLogo(r.name))+'" alt="" onerror="this.style.visibility=\'hidden\'"/><span class="n">'+esc(r.name)+'</span></div></td>'+
+          '<td>'+r.p+'</td><td>'+r.w+'</td><td>'+r.d+'</td><td>'+r.l+'</td>'+
+          '<td>'+(r.gd>0?'+':'')+r.gd+'</td><td class="pts">'+r.pts+'</td>'+
+          '<td><div class="gform">'+(form||'<span style="color:var(--low);font-size:10px">&mdash;</span>')+'</div></td>'+
+        '</tr>';
+      }).join('');
+      return '<div class="card"><div class="gtitle"><span class="b">'+g.letter+'</span> Group '+g.letter+'</div>'+
+        '<table class="gt"><tr><th>#</th><th class="l">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th><th>Form</th></tr>'+
+        rows+'</table></div>';
+    }).join('');
+    h+='<div class="qnote"><span class="dot">&#9679;</span> Top 2 of each group advance, plus the 4 best third-placed teams &mdash; 16 into the knockouts. Tables update live once games kick off.</div>';
+    el('v-groups').innerHTML=h;
+  }
+
+  function renderTeams(){
+    var all=[];
+    DATA.groups.forEach(function(g){g.teams.forEach(function(n){all.push({n:n,g:g.letter});});});
+    all.sort(function(a,b){return a.n<b.n?-1:1;});
+    var h='<div class="card"><h2>'+all.length+' teams &middot; tap for fixtures &amp; group</h2><div class="tgrid">'+
+      all.map(function(t){
+        return '<div class="tcard" data-team="'+esc(t.n)+'">'+
+          '<img src="'+esc(teamLogo(t.n))+'" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"/>'+
+          '<div class="n">'+esc(t.n)+'</div><div class="g">Group '+t.g+'</div></div>';
+      }).join('')+'</div></div>';
+    el('v-teams').innerHTML=h;
+  }
+
+  function renderBracket(){
+    var ko=DATA.fixtures.filter(function(f){return !f.isGroup;});
+    if(!ko.length){
+      el('v-bracket').innerHTML='<div class="card"><div class="brk-empty">'+
+        '<div class="ico">&#127942;</div><div class="t">The knockouts are still to be drawn</div>'+
+        '<div class="s">16 teams reach the last 16 &mdash; the top two from each group plus the four best third-placed sides. '+
+        'The bracket fills in here automatically as the group stage finishes (from 20 Jan 2027).</div></div></div>';
+      return;
+    }
+    var byRound={};ko.forEach(function(f){(byRound[f.round]=byRound[f.round]||[]).push(f);});
+    var order=['Round of 16','8th Finals','Quarter-finals','Semi-finals','3rd Place Final','Final'];
+    var seen={},h='';
+    order.concat(Object.keys(byRound)).forEach(function(rn){
+      if(seen[rn]||!byRound[rn])return;seen[rn]=1;
+      h+='<div class="card"><h2>'+esc(rn)+'</h2>'+byRound[rn].map(function(f){return fxRow(f,false);}).join('')+'</div>';
+    });
+    el('v-bracket').innerHTML=h;
+  }
+
+  function openTeam(name){
+    var t=DATA.teams[name];if(!t)return;
+    var mine=DATA.fixtures.filter(function(f){return f.home===name||f.away===name;});
+    var g=teamGroup(name);
+    var groupTeams=(DATA.groups.filter(function(x){return x.letter===g;})[0]||{teams:[]}).teams;
+    var h='<div class="sh"><img src="'+esc(t.logo)+'" alt="" onerror="this.style.visibility=\'hidden\'"/>'+
+      '<div><div class="n">'+esc(name)+'</div><div class="g">Group '+g+'</div></div>'+
+      '<button class="x" id="teamX" aria-label="Close">&#10005;</button></div>';
+    h+='<div class="card"><h2>Group '+g+' opponents</h2>'+groupTeams.filter(function(x){return x!==name;}).map(function(x){
+      return '<div class="fx" data-team="'+esc(x)+'"><div class="tm"></div><div class="mid"><div class="side">'+
+        '<img src="'+esc(teamLogo(x))+'" alt="" onerror="this.style.visibility=\'hidden\'"/><span class="n">'+esc(x)+'</span></div></div><span class="chev">›</span></div>';
+    }).join('')+'</div>';
+    h+='<div class="card"><h2>'+esc(name)+' fixtures</h2>'+mine.map(function(f){return fxRow(f,true);}).join('')+'</div>';
+    el('teamSheet').innerHTML=h;
+    el('teamOvl').classList.add('open');
+  }
+  function closeTeam(){el('teamOvl').classList.remove('open');}
+
+  // ── countdown tick ──
+  var cdTimer=null;
+  function tickCd(){
+    var D=el('cdD');if(!D){if(cdTimer){clearInterval(cdTimer);cdTimer=null;}return;}
+    var first=DATA.fixtures[0];if(!first)return;
+    var diff=Math.max(0,koDate(first).getTime()-Date.now());
+    el('cdD').textContent=Math.floor(diff/864e5);
+    el('cdH').textContent=pad(Math.floor(diff%864e5/36e5));
+    el('cdM').textContent=pad(Math.floor(diff%36e5/6e4));
+    if(!cdTimer)cdTimer=setInterval(tickCd,30000);
+  }
+
+  // ── view switching ──
+  function renderView(v){
+    if(v==='home')renderHome();
+    else if(v==='schedule')renderSchedule();
+    else if(v==='groups')renderGroups();
+    else if(v==='teams')renderTeams();
+    else if(v==='bracket')renderBracket();
+  }
+  function switchView(v){
+    VIEW=v;
+    var tabs=el('tabs').children,i;
+    for(i=0;i<tabs.length;i++)tabs[i].classList.toggle('on',tabs[i].getAttribute('data-v')===v);
+    var views=document.querySelectorAll('.view');
+    for(i=0;i<views.length;i++)views[i].classList.toggle('on',views[i].id==='v-'+v);
+    renderView(v);
+    window.scrollTo(0,0);
+  }
+
+  // ── boot / data ──
+  function buildTeamSelect(){
+    var names=Object.keys(DATA.teams).sort();
+    var opt='<option value="">Follow a team…</option>'+names.map(function(n){
+      return '<option value="'+esc(n)+'"'+(n===FOLLOW?' selected':'')+'>'+esc(n)+'</option>';}).join('');
+    el('teamSel').innerHTML=opt;
+  }
+  function applyData(d){
+    var changed=(d.meta.built!==builtStamp);
+    DATA=d;builtStamp=d.meta.built;
+    if(changed){buildTeamSelect();renderView(VIEW);}
+    el('tznote').textContent='Times shown in '+tzOffsetLabel();
+  }
+  function loadData(cb){
+    var x=new XMLHttpRequest();x.open('GET','asc_data.json',true);
+    x.setRequestHeader('Cache-Control','no-cache');
+    x.onreadystatechange=function(){if(x.readyState!==4)return;
+      if(x.status>=200&&x.status<300){try{applyData(JSON.parse(x.responseText));if(cb)cb(true);}catch(e){if(cb)cb(false);}}
+      else if(cb)cb(false);};
+    x.send();
+  }
+
+  // theme
+  function applyTheme(t){document.documentElement.classList.toggle('light',t==='light');
+    el('themeBtn').innerHTML=(t==='light')?'☀':'☽';
+    var mt=document.querySelector('meta[name=theme-color]');if(mt)mt.setAttribute('content',t==='light'?'#0a6b3f':'#0a1410');}
+
+  // wiring
+  el('tabs').addEventListener('click',function(e){var b=e.target.closest('button');if(b)switchView(b.getAttribute('data-v'));});
+  el('teamSel').addEventListener('change',function(){FOLLOW=this.value;lsSet('asc_follow',FOLLOW);if(VIEW==='home')renderHome();});
+  el('themeBtn').addEventListener('click',function(){var t=document.documentElement.classList.contains('light')?'dark':'light';lsSet('asc_theme',t);applyTheme(t);});
+  el('shareBtn').addEventListener('click',function(){
+    var url=location.origin+location.pathname,data={title:'AFC Asian Cup 2027',text:'Fixtures, groups & your team for the 2027 Asian Cup',url:url};
+    if(navigator.share){navigator.share(data).catch(function(){});}
+    else if(navigator.clipboard){navigator.clipboard.writeText(url);this.innerHTML='✓';var b=this;setTimeout(function(){b.innerHTML='↙';},1500);}
+  });
+  document.addEventListener('click',function(e){
+    var t=e.target.closest('[data-team]');if(t){openTeam(t.getAttribute('data-team'));return;}
+    var f=e.target.closest('[data-fx]');if(f){/* match centre placeholder — live view arrives with coverage */ return;}
+    if(e.target.id==='teamX'||e.target===el('teamOvl'))closeTeam();
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeTeam();});
+
+  applyTheme(lsGet('asc_theme')==='light'?'light':'dark');
+  loadData(function(ok){if(!ok)el('v-home').innerHTML='<div class="card"><div class="empty">Couldn’t load the tournament data. Refresh in a moment.</div></div>';});
+  // live refresh during the tournament (the baked file updates server-side); cheap no-op otherwise
+  setInterval(function(){loadData(null);},60000);
+})();
+</script>
+</body>
+</html>
