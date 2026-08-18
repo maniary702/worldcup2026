@@ -377,8 +377,8 @@ var BUILD_TAG='Build 14 Jul 2026 v12 (squad photos 92% — diacritic/entity + lo
   function badge(c){return 'https://resources.premierleague.com/premierleague/badges/50/t'+c+'.png';}
   var PH="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='140'%3E%3Crect width='110' height='140' fill='%23e6e7eb'/%3E%3Ccircle cx='55' cy='52' r='24' fill='%23c4c8cf'/%3E%3Crect x='22' y='84' width='66' height='52' rx='26' fill='%23c4c8cf'/%3E%3C/svg%3E";
   function photo(code){return 'https://resources.premierleague.com/premierleague/photos/players/110x140/p'+code+'.png';}
-  // squad photo: prefer SofaScore headshot baked as p[6]; else the PL CDN photo
-  function sqPhoto(p){return (p[6]!=null)?('https://api.sofascore.app/api/v1/player/'+p[6]+'/image'):photo(p[0]);}
+  // squad photo: PL CDN primary; onerror falls back to grey silhouette
+  function sqPhoto(p){return photo(p[0]);}
   function imgErr(){return "this.onerror=null;this.src='"+PH+"'";}
   function bErr(){return "this.style.visibility='hidden'";}
 
