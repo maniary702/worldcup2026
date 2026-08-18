@@ -380,6 +380,7 @@ var BUILD_TAG='Build 14 Jul 2026 v12 (squad photos 92% — diacritic/entity + lo
   // squad photo: PL CDN primary; onerror falls back to grey silhouette
   function sqPhoto(p){return photo(p[0]);}
   function imgErr(){return "this.onerror=null;this.src='"+PH+"'";}
+  function imgChk(){return "if(this.naturalWidth<2&&this.src.indexOf('data:')<0){this.src='"+PH+"';}";}
   function bErr(){return "this.style.visibility='hidden'";}
 
   // followed team (code), persisted
@@ -538,7 +539,7 @@ var BUILD_TAG='Build 14 Jul 2026 v12 (squad photos 92% — diacritic/entity + lo
     for(var p=1;p<=4;p++){if(!by[p].length)continue;h+='<div class="posh">'+POS[p]+'</div><div class="grid">';
       for(var j=0;j<by[p].length;j++){var s=by[p][j]; // [code,name,pos,g,a,shirt]
         var st=(s[5]?'#'+s[5]:'')+(s[3]?(s[5]?' · ':'')+'<b>'+s[3]+'</b>⚽':'')+(s[4]?' <b>'+s[4]+'</b>🅰':'');
-        h+='<div class="pl"><img src="'+sqPhoto(s)+'" onerror="'+imgErr()+'" alt=""/><div class="nm">'+esc(s[1])+'</div>'+
+        h+='<div class="pl"><img src="'+sqPhoto(s)+'" onerror="'+imgErr()+'" onload="'+imgChk()+'" alt=""/><div class="nm">'+esc(s[1])+'</div>'+
            '<div class="st">'+(st||'&nbsp;')+'</div></div>';
       }h+='</div>';
     }
@@ -558,7 +559,7 @@ var BUILD_TAG='Build 14 Jul 2026 v12 (squad photos 92% — diacritic/entity + lo
     el('v-stats').innerHTML=h;
   }
   function scrRow(rk,pcode,tcode,name,big,sub){
-    return '<div class="scr"><span class="rk">'+rk+'</span><img class="pp" src="'+photo(pcode)+'" onerror="'+imgErr()+'" alt=""/>'+
+    return '<div class="scr"><span class="rk">'+rk+'</span><img class="pp" src="'+photo(pcode)+'" onerror="'+imgErr()+'" onload="'+imgChk()+'" alt=""/>'+
       '<img class="bb" src="'+badge(tcode)+'" data-team="'+tcode+'" onerror="'+bErr()+'" alt=""/><span class="nm">'+esc(name)+'</span>'+
       '<span class="g">'+big+'</span><span class="a">'+esc(sub)+'</span></div>';
   }
