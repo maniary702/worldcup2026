@@ -375,7 +375,7 @@ var BUILD_TAG='Build 14 Jul 2026 v12 (squad photos 92% — diacritic/entity + lo
   function tName(c){return (T[c]&&T[c][0])||'TBD';}
   function tShort(c){return (T[c]&&T[c][1])||'TBD';}
   function badge(c){return 'https://resources.premierleague.com/premierleague/badges/50/t'+c+'.png';}
-  var PH="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='140'%3E%3Crect width='110' height='140' fill='%23e6e7eb'/%3E%3Ccircle cx='55' cy='52' r='24' fill='%23c4c8cf'/%3E%3Crect x='22' y='84' width='66' height='52' rx='26' fill='%23c4c8cf'/%3E%3C/svg%3E";
+  var PH="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27110%27 height=%27140%27%3E%3Crect width=%27110%27 height=%27140%27 fill=%27%23e6e7eb%27/%3E%3Ccircle cx=%2755%27 cy=%2752%27 r=%2724%27 fill=%27%23c4c8cf%27/%3E%3Crect x=%2722%27 y=%2784%27 width=%2766%27 height=%2752%27 rx=%2726%27 fill=%27%23c4c8cf%27/%3E%3C/svg%3E";
   function photo(code){return 'https://resources.premierleague.com/premierleague/photos/players/110x140/p'+code+'.png';}
   // squad photo: prefer the API-Football headshot (full coverage) baked as p[6]; else the PL photo
   function sqPhoto(p){return (p[6]!=null)?('https://media.api-sports.io/football/players/'+p[6]+'.png'):photo(p[0]);}
@@ -538,7 +538,7 @@ var BUILD_TAG='Build 14 Jul 2026 v12 (squad photos 92% — diacritic/entity + lo
     for(var p=1;p<=4;p++){if(!by[p].length)continue;h+='<div class="posh">'+POS[p]+'</div><div class="grid">';
       for(var j=0;j<by[p].length;j++){var s=by[p][j]; // [code,name,pos,g,a,shirt]
         var st=(s[5]?'#'+s[5]:'')+(s[3]?(s[5]?' · ':'')+'<b>'+s[3]+'</b>⚽':'')+(s[4]?' <b>'+s[4]+'</b>🅰':'');
-        h+='<div class="pl"><img src="'+sqPhoto(s)+'" onerror="'+imgErr()+'" alt=""/><div class="nm">'+esc(s[1])+'</div>'+
+        h+='<div class="pl"><img src="'+sqPhoto(s)+'" referrerpolicy="no-referrer" loading="lazy" onerror="'+imgErr()+'" alt=""/><div class="nm">'+esc(s[1])+'</div>'+
            '<div class="st">'+(st||'&nbsp;')+'</div></div>';
       }h+='</div>';
     }
@@ -558,7 +558,7 @@ var BUILD_TAG='Build 14 Jul 2026 v12 (squad photos 92% — diacritic/entity + lo
     el('v-stats').innerHTML=h;
   }
   function scrRow(rk,pcode,tcode,name,big,sub){
-    return '<div class="scr"><span class="rk">'+rk+'</span><img class="pp" src="'+photo(pcode)+'" onerror="'+imgErr()+'" alt=""/>'+
+    return '<div class="scr"><span class="rk">'+rk+'</span><img class="pp" src="'+photo(pcode)+'" referrerpolicy="no-referrer" loading="lazy" onerror="'+imgErr()+'" alt=""/>'+
       '<img class="bb" src="'+badge(tcode)+'" data-team="'+tcode+'" onerror="'+bErr()+'" alt=""/><span class="nm">'+esc(name)+'</span>'+
       '<span class="g">'+big+'</span><span class="a">'+esc(sub)+'</span></div>';
   }
