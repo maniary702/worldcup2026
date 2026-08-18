@@ -380,7 +380,6 @@ var BUILD_TAG='Build 14 Jul 2026 v12 (squad photos 92% — diacritic/entity + lo
   // squad photo: prefer the API-Football headshot (full coverage) baked as p[6]; else the PL photo
   function sqPhoto(p){return (p[6]!=null)?('https://media.api-sports.io/football/players/'+p[6]+'.png'):photo(p[0]);}
   function imgErr(){return "this.onerror=null;this.src='"+PH+"'";}
-  function imgChk(){return "if(this.naturalWidth<2&&this.src.indexOf('data:')<0){this.src='"+PH+"';}";}
   function bErr(){return "this.style.visibility='hidden'";}
 
   // followed team (code), persisted
@@ -539,14 +538,12 @@ var BUILD_TAG='Build 14 Jul 2026 v12 (squad photos 92% — diacritic/entity + lo
     for(var p=1;p<=4;p++){if(!by[p].length)continue;h+='<div class="posh">'+POS[p]+'</div><div class="grid">';
       for(var j=0;j<by[p].length;j++){var s=by[p][j]; // [code,name,pos,g,a,shirt]
         var st=(s[5]?'#'+s[5]:'')+(s[3]?(s[5]?' · ':'')+'<b>'+s[3]+'</b>⚽':'')+(s[4]?' <b>'+s[4]+'</b>🅰':'');
-        h+='<div class="pl"><img src="'+PH+'" data-photo="'+sqPhoto(s)+'" alt=""/><div class="nm">'+esc(s[1])+'</div>'+
+        h+='<div class="pl"><img src="'+sqPhoto(s)+'" onerror="'+imgErr()+'" alt=""/><div class="nm">'+esc(s[1])+'</div>'+
            '<div class="st">'+(st||'&nbsp;')+'</div></div>';
       }h+='</div>';
     }
     h+='<div class="note" style="margin-top:10px">Current squad (official Premier League) — updates as transfers are confirmed. Any goals/assists shown are '+esc(M.fplSeason)+'; new signings have no tally yet.</div></div>';
     el('v-squad').innerHTML=h;
-    // Load real photos in background; only swap on success
-    el('v-squad').querySelectorAll('img[data-photo]').forEach(function(img){var t=new Image();t.onload=function(){img.src=t.src;};t.src=img.getAttribute('data-photo');});
   }
 
   // ===== STATS =====
@@ -559,10 +556,9 @@ var BUILD_TAG='Build 14 Jul 2026 v12 (squad photos 92% — diacritic/entity + lo
     for(var k=0;k<D.assisters.length;k++){var a=D.assisters[k];h+=scrRow(k+1,a[0],a[1],a[2],a[3],plur(a[4],'goal'));}
     h+='</div>';
     el('v-stats').innerHTML=h;
-    el('v-stats').querySelectorAll('img.pp[data-photo]').forEach(function(img){var t=new Image();t.onload=function(){img.src=t.src;};t.src=img.getAttribute('data-photo');});
   }
   function scrRow(rk,pcode,tcode,name,big,sub){
-    return '<div class="scr"><span class="rk">'+rk+'</span><img class="pp" src="'+PH+'" data-photo="'+photo(pcode)+'" alt=""/>'+
+    return '<div class="scr"><span class="rk">'+rk+'</span><img class="pp" src="'+photo(pcode)+'" onerror="'+imgErr()+'" alt=""/>'+
       '<img class="bb" src="'+badge(tcode)+'" data-team="'+tcode+'" onerror="'+bErr()+'" alt=""/><span class="nm">'+esc(name)+'</span>'+
       '<span class="g">'+big+'</span><span class="a">'+esc(sub)+'</span></div>';
   }
