@@ -79,7 +79,14 @@ def main():
             "firstName": p.get("first_name", ""), "lastName": p.get("second_name", ""),
             "position": p["element_type"], "goals": p.get("goals_scored", 0),
             "assists": p.get("assists", 0), "points": p.get("total_points", 0),
-            "shirt": p.get("squad_number"), "status": p.get("status", "a")
+            "shirt": p.get("squad_number"), "status": p.get("status", "a"),
+            "price": p.get("now_cost", 0) / 10,
+            "ownership": float(p.get("selected_by_percent") or 0),
+            "form": float(p.get("form") or 0),
+            "minutes": p.get("minutes", 0),
+            "pointsPerGame": float(p.get("points_per_game") or 0),
+            "ict": float(p.get("ict_index") or 0),
+            "chanceNext": p.get("chance_of_playing_next_round")
         }
         for p in bootstrap["elements"]
     ]
