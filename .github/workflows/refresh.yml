@@ -1,0 +1,33 @@
+name: Refresh PL Data
+
+on:
+  schedule:
+    # Every 2 hours during typical match windows (Sat/Sun), every 6 hours otherwise
+    - cron: '15 */2 * * 6,0'   # Sat & Sun every 2h
+    - cron: '15 */6 * * 1-5'   # Mon-Fri every 6h
+  workflow_dispatch:            # Manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Refresh data from FPL API
+        run: python refresh_prem.py prem.html
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git diff --quiet && echo "No changes" && exit 0
+          git add prem.html
+          git commit -m "auto-refresh: $(date -u '+%Y-%m-%d %H:%M') UTC"
+          git push
