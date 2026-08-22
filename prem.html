@@ -1,105 +1,865 @@
-<!doctype html>
-<html lang="en" data-theme="dark">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#080b12">
-  <title>Premier League Score Command</title>
-  <meta name="description" content="A premium Premier League scores, fixtures and table dashboard.">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap');
-    :root{--bg:#080b12;--panel:#10151f;--panel2:#151b27;--ink:#f7f8fb;--muted:#8f98a8;--line:#242b39;--lime:#c8ff35;--red:#ef3340;--blue:#45a5ff;--shadow:0 26px 80px rgba(0,0,0,.34);--radius:20px}
-    [data-theme="light"]{--bg:#f2f3f6;--panel:#fff;--panel2:#e9ebef;--ink:#11141b;--muted:#687081;--line:#dce0e7;--shadow:0 20px 60px rgba(28,35,50,.12)}
-    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh}button,select{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}
-    body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 86% -5%,rgba(200,255,53,.12),transparent 34%),radial-gradient(circle at -5% 48%,rgba(69,165,255,.08),transparent 28%);z-index:-1}
-    .shell{max-width:1520px;margin:auto;padding:0 30px 50px}.topline{height:5px;background:var(--lime)}
-    header{height:88px;display:grid;grid-template-columns:290px 1fr auto;align-items:center;border-bottom:1px solid var(--line);position:sticky;top:0;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(18px);z-index:50}
-    .brand{display:flex;gap:13px;align-items:center}.mark{width:44px;height:44px;background:var(--lime);color:#080b12;display:grid;place-items:center;border-radius:13px;transform:rotate(-5deg);font:900 22px 'Arial Narrow',Arial,sans-serif}.brand b{font:800 24px 'Arial Narrow',Arial,sans-serif;letter-spacing:.02em}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:-2px}
-    .nav{display:flex;gap:8px;justify-content:center}.nav button{border:0;background:transparent;color:var(--muted);padding:12px 14px;border-radius:10px;font-size:13px;font-weight:700}.nav button:hover,.nav button.active{color:var(--ink);background:var(--panel2)}.nav button.active:after{content:"";display:block;height:2px;background:var(--lime);margin-top:7px;border-radius:2px}
-    .actions{display:flex;align-items:center;gap:10px}.club-select,.icon-btn{height:42px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:11px}.club-select{padding:0 36px 0 13px;font-weight:700}.icon-btn{width:42px;display:grid;place-items:center;font-size:17px}
-    main{padding-top:30px}.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.2em;font-weight:800;color:var(--lime)}.page-head{display:flex;align-items:end;justify-content:space-between;margin:10px 0 24px}.page-head h1{font:900 clamp(42px,6vw,90px)/.84 'Arial Narrow',Arial,sans-serif;letter-spacing:-.035em;text-transform:uppercase;margin:0;max-width:850px}.page-head .meta{text-align:right;color:var(--muted);font-size:13px}.live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 6px rgba(239,51,64,.12);margin-right:9px}
-    .hero-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.72fr);gap:18px}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}.featured{min-height:405px;padding:30px;position:relative;display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow)}.featured:before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(200,255,53,.08),transparent 43%),repeating-linear-gradient(100deg,transparent 0 76px,rgba(255,255,255,.017) 77px 78px);pointer-events:none}.match-label{display:flex;align-items:center;justify-content:space-between;position:relative}.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 11px;background:var(--panel2);border-radius:999px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em}.venue{font-size:12px;color:var(--muted)}
-    .scoreboard{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;position:relative}.team{text-align:center}.crest{width:96px;height:96px;margin:0 auto 12px;border-radius:26px;display:grid;place-items:center;font:900 31px 'Arial Narrow',Arial,sans-serif;border:1px solid rgba(255,255,255,.1);box-shadow:inset 0 0 0 5px rgba(255,255,255,.04)}.crest.liv{background:#c8102e}.crest.new{background:linear-gradient(90deg,#fff 0 20%,#111 20% 40%,#fff 40% 60%,#111 60% 80%,#fff 80%);color:#111;text-shadow:0 1px #fff}.team-name{font:800 24px 'Arial Narrow',Arial,sans-serif;text-transform:uppercase}.score{text-align:center}.score strong{display:block;font:900 clamp(66px,8vw,116px)/.7 'Arial Narrow',Arial,sans-serif;letter-spacing:-.04em}.score small{display:block;color:var(--muted);margin-top:22px;font-size:12px}.match-footer{display:flex;justify-content:space-between;align-items:center;position:relative}.countdown{font-weight:700;font-size:13px}.countdown b{color:var(--lime)}.primary{border:0;background:var(--lime);color:#0b0e13;border-radius:11px;padding:12px 17px;font-weight:900}
-    .side-stack{display:grid;grid-template-rows:1fr 1fr;gap:18px}.mini{padding:23px}.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.section-title h2{font:800 22px 'Arial Narrow',Arial,sans-serif;text-transform:uppercase;margin:0}.section-title button{border:0;background:none;color:var(--lime);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.form-row{display:flex;gap:8px}.form{width:39px;height:39px;display:grid;place-items:center;border-radius:10px;font-size:12px;font-weight:900}.form.w{background:var(--lime);color:#091006}.form.d{background:#576071;color:#fff}.form.l{background:#ef4c57;color:#fff}.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}.stat{padding:12px;background:var(--panel2);border-radius:12px}.stat b{display:block;font:800 25px 'Arial Narrow',Arial,sans-serif}.stat small{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.news-card{height:100%;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(135deg,var(--panel2),var(--panel));transition:border-color .2s,transform .2s}.news-card:hover{border-color:var(--lime);transform:translateY(-2px)}.news-card p{font:700 21px/1.18 'Arial Narrow',Arial,sans-serif;margin:10px 0 0}.news-card small{color:var(--muted);font-size:11px}
-    .content-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,.75fr);gap:18px;margin-top:18px}.panel{padding:24px}.fixture-list{display:grid}.fixture{display:grid;grid-template-columns:105px 1fr 56px 1fr 110px;align-items:center;gap:15px;padding:16px 0;border-top:1px solid var(--line)}.fixture:first-child{border-top:0}.date{color:var(--muted);font-size:12px}.fixture-team{display:flex;align-items:center;gap:10px;font-weight:700}.badge{width:34px;height:34px;border-radius:10px;background:var(--panel2);display:grid;place-items:center;font:800 12px 'Arial Narrow',Arial,sans-serif}.kick{text-align:center;font:800 17px 'Arial Narrow',Arial,sans-serif;background:var(--panel2);padding:7px;border-radius:8px}.comp{text-align:right;font-size:11px;color:var(--muted)}
-    table{width:100%;border-collapse:collapse;font-size:12px}th{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.1em;text-align:right;padding:0 8px 12px}th:nth-child(2){text-align:left}td{padding:11px 8px;text-align:right;border-top:1px solid var(--line)}td:nth-child(2){text-align:left;font-weight:700}.pos{width:24px;text-align:center!important;color:var(--muted)}tr.focus{background:color-mix(in srgb,var(--lime) 9%,transparent)}tr.focus td{color:var(--ink)}.club-cell{display:flex;gap:8px;align-items:center}.tiny{width:25px;height:25px;border-radius:7px;background:var(--panel2);display:grid;place-items:center;font:800 9px 'Arial Narrow',Arial,sans-serif}.pts{font-weight:900;color:var(--lime)}
-    .view{display:none}.view.active{display:block}.simple-page{min-height:570px}.score-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.score-card{padding:22px}.score-card .teams{display:flex;align-items:center;justify-content:space-between;margin-top:16px}.score-card .big-score{font:900 42px 'Arial Narrow',Arial,sans-serif}.score-card .status{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}.story-link{display:block}.story-link h2{margin:14px 0 12px;font:800 25px/1.05 'Arial Narrow',Arial,sans-serif}.story-link .story-desc{color:var(--muted);font-size:12px;line-height:1.5}.story-link .read{display:block;color:var(--lime);font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;margin-top:18px}.squad-groups{display:grid;gap:18px}.position-block{padding:22px}.position-head{display:flex;align-items:end;justify-content:space-between;margin-bottom:15px}.position-head h2{margin:0;font:900 27px 'Arial Narrow',Arial,sans-serif;text-transform:uppercase}.position-head span{color:var(--muted);font-size:11px}.player-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.player-tile{display:grid;grid-template-columns:48px 1fr;align-items:center;gap:12px;background:var(--panel2);border:1px solid var(--line);padding:13px;border-radius:13px}.shirt{width:48px;height:48px;display:grid;place-items:center;border-radius:11px;background:var(--panel);font:900 24px 'Arial Narrow',Arial,sans-serif;color:var(--lime)}.player-tile b{display:block;font-size:13px}.player-tile small{color:var(--muted);font-size:10px}.fpl-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}.fpl-callout{padding:22px}.fpl-callout h2{font:900 27px/1 'Arial Narrow',Arial,sans-serif;margin:12px 0 8px}.fpl-callout p{margin:0;color:var(--muted);font-size:12px}.fpl-board{display:grid;grid-template-columns:1fr 1fr;gap:18px}.fpl-list{padding:22px}.fpl-player{display:grid;grid-template-columns:1fr repeat(4,58px);align-items:center;gap:8px;padding:13px 0;border-top:1px solid var(--line)}.fpl-player:first-of-type{border-top:0}.fpl-player b{font-size:13px}.fpl-player small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.fpl-metric{text-align:right}.fpl-metric strong{display:block;font:800 17px 'Arial Narrow',Arial,sans-serif}.fpl-metric span{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.mobile-nav,.mobile-team-bar{display:none}
-    footer{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-top:28px;padding:20px 0;border-top:1px solid var(--line)}
-    @media(max-width:1050px){header{grid-template-columns:230px 1fr auto}.nav button:nth-child(n+5){display:none}.hero-grid,.content-grid{grid-template-columns:1fr}.side-stack{grid-template-columns:1fr 1fr;grid-template-rows:auto}.score-strip{grid-template-columns:1fr 1fr}.player-grid{grid-template-columns:repeat(2,1fr)}.fpl-board{grid-template-columns:1fr}}
-    @media(max-width:720px){body{overflow-x:hidden}.shell{padding:0 16px 92px}header{height:72px;grid-template-columns:1fr auto}.brand b{font-size:20px}.nav,.club-select{display:none}.mobile-team-bar{display:block;padding:12px 0 0}.mobile-team-bar select{width:100%;height:43px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:11px;padding:0 13px;font-weight:800}.page-head{align-items:start;gap:15px}.page-head h1{font-size:52px}.page-head .meta{display:none}.featured{padding:20px;min-height:370px}.scoreboard{gap:6px}.crest{width:68px;height:68px;border-radius:19px;font-size:23px}.team-name{font-size:17px}.score strong{font-size:62px}.venue{display:none}.side-stack{grid-template-columns:1fr}.content-grid{display:block}.table-panel{margin-top:16px}.fixture{grid-template-columns:70px minmax(0,1fr) 42px minmax(0,1fr);gap:8px}.comp{display:none}.fixture-team{font-size:11px;min-width:0;overflow:hidden;white-space:nowrap}.badge{width:28px;height:28px;flex:0 0 auto}.score-strip,.player-grid,.fpl-summary{grid-template-columns:1fr}.position-block{padding:17px}.fpl-player{grid-template-columns:1fr repeat(3,46px)}.fpl-player .ownership{display:none}.mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(7,1fr);bottom:0;left:0;right:0;background:color-mix(in srgb,var(--panel) 94%,transparent);backdrop-filter:blur(16px);border-top:1px solid var(--line);z-index:80;padding:8px 3px 10px}.mobile-nav button{border:0;background:none;color:var(--muted);font-size:7px;font-weight:700;padding:2px 0}.mobile-nav button span{display:block;font-size:16px;margin-bottom:3px}.mobile-nav button.active{color:var(--lime)}footer{display:block;line-height:1.8}}
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Follow your Premier League team</title>
+<meta name="description" content="Pick your Premier League club — fixtures, results, the full table, cups, squad and top scorers. One tap, no app."/>
+<meta property="og:title" content="Follow your Premier League team"/>
+<meta property="og:description" content="Pick your club — 2026/27 fixtures, table, cups, squad & scorers. One tap, no app."/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Follow your Premier League team"/>
+<meta property="og:url" content="https://maniary702.github.io/worldcup2026/prem.html"/>
+<meta property="og:image" content="https://maniary702.github.io/worldcup2026/prem_og.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Follow your Premier League team"/>
+<meta name="twitter:description" content="Pick your club — 2026/27 fixtures, table, cups, squad & scorers. One tap, no app."/>
+<meta name="twitter:image" content="https://maniary702.github.io/worldcup2026/prem_og.png"/>
+<meta name="theme-color" content="#0b0708"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%2337003c'/%3E%3Ctext x='50' y='72' font-size='58' text-anchor='middle' fill='%2300ff85' font-family='Arial' font-weight='bold'%3E%E2%9A%BD%3C/text%3E%3C/svg%3E"/>
+<link rel="apple-touch-icon" href="prem_icon_180.png"/>
+<link rel="manifest" href="prem_manifest.json"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="PL Team"/>
+<style>
+  :root{--pur:#37003c;--pur2:#2a002e;--pink:#e90052;--grn:#00c46a;--ink:#1a1a1a;--mut:#6b7280;--line:#e6e7eb;--bg:#f4f5f7;--card:#fff;--w:#16a34a;--d:#9ca3af;--l:#dc2626}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:15px;line-height:1.4}
+  img{display:block}
+  .wrap{max-width:680px;margin:0 auto;padding:0 12px 80px}
+  header{background:linear-gradient(135deg,var(--pur),var(--pur2));color:#fff;padding:12px;position:sticky;top:0;z-index:30;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+  .hd{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:10px}
+  .hd .crest{width:40px;height:40px;flex:0 0 auto;background:#fff;border-radius:9px;padding:3px}
+  .hd .crest img{width:100%;height:100%;object-fit:contain}
+  .hd h1{font-size:15px;margin:0;font-weight:800;line-height:1.05}
+  .hd .sub{font-size:11px;opacity:.85;font-weight:600}
+  .hd .share{margin-left:auto;background:var(--pink);color:#fff;border:0;border-radius:20px;padding:8px 14px;font-weight:800;font-size:12px;cursor:pointer}
+  .teambar{max-width:680px;margin:8px auto 0;display:flex;align-items:center;gap:8px}
+  .teambar label{font-size:11px;font-weight:700;opacity:.85;color:#fff}
+  .teambar select{flex:1;border:0;border-radius:10px;padding:9px 10px;font-weight:800;font-size:14px;background:#fff;color:var(--pur)}
+  nav.tabs{position:sticky;top:108px;z-index:20;background:var(--bg);max-width:680px;margin:0 auto;display:flex;gap:6px;padding:10px 12px 6px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  nav.tabs button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:20px;padding:7px 13px;font-weight:700;font-size:13px;cursor:pointer}
+  nav.tabs button.on{background:var(--pur);color:#fff;border-color:var(--pur)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px;margin:10px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut);margin:0 0 10px}
+  .view{display:none}.view.on{display:block}
+  .hero{background:var(--card);border:2px solid var(--pur);border-radius:16px;padding:14px;margin:12px 0}
+  .hero .top{display:flex;align-items:center;gap:12px}
+  .hero .top img{width:52px;height:52px;object-fit:contain}
+  .hero .tn{font-size:20px;font-weight:900;line-height:1}
+  .hero .ssub{font-size:12px;color:var(--mut);font-weight:700;margin-top:3px}
+  .cdbig{margin-left:auto;text-align:center;background:var(--pur);color:#fff;border-radius:12px;padding:8px 12px}
+  .cdbig b{font-size:22px;font-weight:900;display:block;line-height:1}
+  .cdbig span{font-size:10px;text-transform:uppercase;letter-spacing:.5px;opacity:.85}
+  .pos{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .posnum{font-size:34px;font-weight:900;color:var(--pur);line-height:1}
+  .poslab{font-size:12px;color:var(--mut);font-weight:700}
+  .ptsb{margin-left:auto;text-align:right}.ptsb b{font-size:26px;font-weight:900}
+  .form{display:flex;gap:5px;margin-top:8px}
+  .fp{width:22px;height:22px;border-radius:6px;color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center}
+  .fp.W{background:var(--w)}.fp.D{background:var(--d)}.fp.L{background:var(--l)}
+  .lab{font-size:11px;color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+  .fixrow{display:flex;align-items:center;gap:8px;padding:6px 0}
+  .fixrow img.b{width:24px;height:24px;object-fit:contain;flex:0 0 auto}
+  .fixrow .tn{font-weight:700;font-size:13px;flex:1}
+  .fixrow .tn.r{text-align:right}
+  .fixrow .sc{font-weight:900;font-size:15px;white-space:nowrap;padding:0 4px}
+  .fixrow .vs{color:var(--mut);font-weight:700;padding:0 4px}
+  .fmeta{font-size:11px;color:var(--mut);font-weight:600;margin:-2px 0 6px 32px}
+  .cd{color:var(--pink);font-weight:800}
+  table.lg{width:100%;border-collapse:collapse;font-size:13px}
+  table.lg th{font-size:10px;text-transform:uppercase;color:var(--mut);text-align:center;padding:6px 3px;font-weight:800}
+  table.lg td{padding:7px 3px;text-align:center;border-top:1px solid var(--line)}
+  table.lg td.tm{text-align:left;font-weight:700;white-space:nowrap}
+  table.lg td.tm img{width:20px;height:20px;object-fit:contain;display:inline-block;vertical-align:middle;margin-right:6px}
+  table.lg tr.eu td{box-shadow:inset 3px 0 0 var(--grn)}
+  table.lg tr.rel td{box-shadow:inset 3px 0 0 var(--l)}
+  table.lg tr.me{background:#faf0fb;font-weight:800}
+  table.lg td.pt{font-weight:900}
+  .miniform{display:inline-flex;gap:2px;margin-left:4px}
+  .miniform i{width:7px;height:7px;border-radius:2px;display:inline-block}
+  .miniform i.W{background:var(--w)}.miniform i.D{background:var(--d)}.miniform i.L{background:var(--l)}
+  .legend{font-size:11px;color:var(--mut);margin-top:8px;display:flex;gap:12px;flex-wrap:wrap}
+  .legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:middle}
+  .legend .eu::before{background:var(--grn)}.legend .rel::before{background:var(--l)}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:6px}
+  .chips button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);border-radius:18px;padding:6px 12px;font-weight:700;font-size:12px;cursor:pointer;color:var(--ink)}
+  .chips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .gw{font-size:11px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 2px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+  .pl{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 6px;text-align:center}
+  .pl img{width:62px;height:79px;object-fit:cover;object-position:top;margin:0 auto 4px;border-radius:8px;background:#eef0f3}
+  .pl .nm{font-weight:800;font-size:12px;line-height:1.15;min-height:28px;display:flex;align-items:center;justify-content:center}
+  .pl .st{font-size:11px;color:var(--mut);margin-top:2px}.pl .st b{color:var(--pink)}
+  .posh{font-size:12px;font-weight:800;color:var(--pur);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.5px}
+  .scr{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+  .scr:first-child{border-top:0}
+  .scr .rk{width:20px;text-align:center;font-weight:800;color:var(--mut)}
+  .scr img.pp{width:34px;height:43px;object-fit:cover;object-position:top;border-radius:7px;background:#eef0f3}
+  .scr img.bb{width:18px;height:18px;object-fit:contain}
+  .scr .nm{font-weight:700}
+  .scr .g{margin-left:auto;font-weight:900;font-size:16px;color:var(--pink)}
+  .scr .a{font-size:11px;color:var(--mut);font-weight:700;width:54px;text-align:right}
+  .cup{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .cup .ic{width:38px;height:38px;border-radius:9px;background:var(--pur);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto}
+  .cup .cn{font-weight:800}
+  .note{font-size:12px;color:var(--mut);font-weight:600;line-height:1.5}
+  .banner{background:linear-gradient(135deg,var(--pink),#b8003f);color:#fff;border-radius:12px;padding:12px;font-weight:700;font-size:13px;margin:10px 0}
+  footer{max-width:680px;margin:18px auto 0;text-align:center;color:var(--mut);font-size:11px;line-height:1.6}
+  .empty{text-align:center;color:var(--mut);padding:22px 10px;font-weight:600}
+  /* ===== match-stat click-through ===== */
+  .fixwrap{border-radius:10px;padding:2px 4px;margin:2px -4px}
+  .fixwrap.clk{cursor:pointer}
+  .fixwrap.clk:hover{background:#faf5fb}
+  .fixwrap.clk:active{background:#f3e8f5}
+  .mstat{float:right;color:var(--pur);font-weight:800;font-size:11px}
+  .mm{position:fixed;inset:0;z-index:60;background:rgba(20,10,25,.55);display:none;align-items:flex-end;justify-content:center}
+  .mm.on{display:flex}
+  .mmcard{background:var(--card);width:100%;max-width:680px;max-height:92vh;overflow-y:auto;border-radius:18px 18px 0 0;padding:16px 14px 26px;position:relative;-webkit-overflow-scrolling:touch}
+  @media(min-width:560px){.mm{align-items:center}.mmcard{border-radius:18px}}
+  .mmx{position:absolute;top:10px;right:10px;border:0;background:var(--bg);color:var(--ink);width:30px;height:30px;border-radius:50%;font-size:15px;font-weight:800;cursor:pointer;z-index:2}
+  .mmhd{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:6px 0 2px}
+  .mmt{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
+  .mmt img{width:46px;height:46px;object-fit:contain}
+  .mmt span{font-weight:800;font-size:12px;line-height:1.15}
+  .mmsc{font-size:30px;font-weight:900;text-align:center;line-height:1;white-space:nowrap}
+  .mmsc .dash{font-size:18px;color:var(--mut);margin:0 3px;vertical-align:middle;font-weight:800}
+  .mmst{font-size:10px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:6px}
+  .mmst.live{color:var(--pink)}
+  .mmdate{text-align:center;color:var(--mut);font-size:11px;font-weight:700;margin:2px 0 12px}
+  .mmsec{border-top:1px solid var(--line);padding-top:10px}
+  .mmempty{border-top:1px solid var(--line);padding:18px 4px;text-align:center;color:var(--mut);font-weight:600;font-size:13px}
+  .srow{margin:10px 0}
+  .srow .tp{display:flex;justify-content:space-between;align-items:baseline}
+  .srow .tp b{font-size:13px;font-weight:900}
+  .srow .tp .lab{color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.4px;font-size:10px}
+  .srow .bar{display:flex;height:7px;border-radius:4px;overflow:hidden;background:var(--line);margin-top:4px}
+  .srow .bar i{display:block;height:100%}
+  .srow .bar i.h{background:var(--pink)}.srow .bar i.a{background:var(--pur)}
+  .mmh{font-size:11px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px;border-top:1px solid var(--line);padding-top:12px}
+  .tml{display:flex;flex-direction:column;gap:6px}
+  .te{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;width:82%}
+  .te .min{color:var(--mut);font-weight:800;font-size:11px;min-width:26px}
+  .te .ic{font-size:13px}
+  .te .pl em{color:var(--mut);font-style:normal;font-weight:600;font-size:11px}
+  .te.a{flex-direction:row-reverse;align-self:flex-end;text-align:right}
+  .lus{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .luf{display:inline-block;background:var(--pur);color:#fff;font-weight:800;font-size:11px;padding:2px 8px;border-radius:10px;margin-bottom:6px}
+  .lul{list-style:none;margin:0;padding:0}
+  .lul li{font-size:12px;padding:3px 0;border-bottom:1px solid var(--line)}
+  .lul li b{display:inline-block;min-width:20px;color:var(--mut);font-weight:800}
+  .lusb{font-size:11px;color:var(--mut);margin-top:7px;line-height:1.5}
+  .luco{font-size:11px;color:var(--mut);margin-top:5px;font-weight:700}
+  /* ===== first-run team picker ===== */
+  .pick{position:fixed;inset:0;z-index:70;background:linear-gradient(135deg,var(--pur),var(--pur2));color:#fff;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px 22px}
+  .pick.on{display:flex}
+  .pick .ball{width:74px;height:74px;margin-bottom:14px}
+  .pick h2{font-size:22px;font-weight:900;margin:0 0 6px;line-height:1.15}
+  .pick p{font-size:13px;opacity:.85;margin:0 0 22px;font-weight:600;max-width:320px}
+  .pick select{width:100%;max-width:320px;border:0;border-radius:12px;padding:14px 12px;font-weight:800;font-size:16px;background:#fff;color:var(--pur);margin-bottom:14px}
+  .pick button{width:100%;max-width:320px;border:0;border-radius:24px;padding:14px;font-weight:900;font-size:16px;background:var(--grn);color:var(--pur);cursor:pointer}
+  /* ================= ANFIELD DARK — premium reskin (v5) ================= */
+  :root{  /* DARK is the default — no class needed = the currently-deployed look */
+    --pur:#E51B39; --pur2:#B0122C; --pink:#E51B39; --grn:#33D27F;
+    --ink:#F6EEEF; --mut:#AD939A; --line:rgba(255,255,255,.08); --bg:#0b0708; --card:#160e11;
+    --w:#33D27F; --d:#8C7A55; --l:#C33048;
+    --red:#E51B39; --red-deep:#C8102E; --gold:#F4C868; --live:#33D27F;
+    --text:#F6EEEF; --faint:#7d666c; --line2:rgba(255,255,255,.14); --card2:#20141a;
+    --sel:rgba(229,27,57,.14); --glow:rgba(229,27,57,.16); --shadow:rgba(0,0,0,.6);
+    --header-bg:linear-gradient(180deg,rgba(14,9,10,.93),rgba(14,9,10,.64));
+    --nav-bg:linear-gradient(0deg,rgba(9,5,6,.98),rgba(9,5,6,.85));
+    --field:rgba(255,255,255,.06); --hover:rgba(255,255,255,.05); --ph:#241016; --track:rgba(255,255,255,.08); --bar-a:#4a353b;
+  }
+  html.light{  /* LIGHT theme — same design, light palette */
+    --pur:#C8102E; --pur2:#9c0c22; --pink:#C8102E; --grn:#12a150;
+    --ink:#1b1216; --mut:#6f6169; --line:rgba(20,10,16,.10); --bg:#f2f0f2; --card:#ffffff;
+    --w:#12a150; --d:#b08a2e; --l:#d0263f;
+    --red:#D01330; --red-deep:#A50E26; --gold:#a9770d; --live:#12a150;
+    --text:#1b1216; --faint:#9a8f96; --line2:rgba(20,10,16,.16); --card2:#ffffff;
+    --sel:rgba(200,16,46,.08); --glow:rgba(200,16,46,.10); --shadow:rgba(0,0,0,.14);
+    --header-bg:linear-gradient(180deg,rgba(255,255,255,.94),rgba(255,255,255,.74));
+    --nav-bg:linear-gradient(0deg,rgba(255,255,255,.98),rgba(255,255,255,.9));
+    --field:rgba(20,10,16,.05); --hover:rgba(20,10,16,.04); --ph:#e8eaf0; --track:rgba(20,10,16,.10); --bar-a:#d7c7cc;
+  }
+  html,body{background:var(--bg);color:var(--text);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+  body{background:radial-gradient(120% 55% at 50% -8%,var(--glow),transparent 60%),var(--bg);background-attachment:fixed}
+  .wrap{padding-bottom:110px}
+  /* header → dark glass */
+  header{background:var(--header-bg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);box-shadow:none;color:var(--text)}
+  .hd h1{color:var(--text);letter-spacing:-.01em}
+  .hd .sub{color:var(--mut);opacity:1}
+  .hd .crest{background:#fff;box-shadow:0 2px 12px rgba(229,27,57,.4)}
+  .hd .share{background:linear-gradient(180deg,var(--red),var(--red-deep));color:#fff;box-shadow:0 8px 20px -10px rgba(229,27,57,.6)}
+  .hd .tmode{flex:0 0 auto;width:34px;height:34px;padding:0;border-radius:50%;background:var(--field);border:1px solid var(--line2);color:var(--text);font-size:15px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .teambar label{color:var(--mut);opacity:1}
+  .teambar select{background:var(--field);color:var(--text);border:1px solid var(--line2)}
+  /* cards */
+  .card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);box-shadow:0 18px 40px -26px var(--shadow);border-radius:16px}
+  .card h2{color:var(--mut)}
+  /* hero */
+  .hero{background:radial-gradient(120% 90% at 0 0,var(--glow),transparent 55%),linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line2);border-radius:18px;box-shadow:0 22px 46px -26px var(--shadow)}
+  .hero .tn{color:var(--text)}.hero .ssub{color:var(--mut)}
+  .cdbig{background:linear-gradient(180deg,var(--red),var(--red-deep));box-shadow:0 10px 22px -12px rgba(229,27,57,.7)}
+  .posnum{color:var(--red)}.poslab{color:var(--mut)}
+  .lab{color:var(--mut);border-top-color:var(--line)}
+  /* fixture rows */
+  .fixwrap.clk:hover{background:var(--hover)}
+  .fixwrap.clk:active{background:var(--field)}
+  .mstat{color:var(--red)}.fixrow .sc{color:var(--text)}.fmeta{color:var(--mut)}.cd{color:var(--red)}
+  /* table */
+  table.lg th{color:var(--faint)}
+  table.lg td{border-top-color:var(--line)}
+  table.lg tr.me{background:var(--sel)}
+  table.lg tr.me td{color:var(--text)}
+  .miniform i.D{background:var(--d)}
+  .legend{color:var(--mut)}
+  .xg{color:var(--mut);font-weight:700}
+  /* fixtures filter chips */
+  .chips button{background:var(--field);border:1px solid var(--line2);color:var(--text)}
+  .chips button.on{background:var(--red);border-color:var(--red);color:#fff}
+  .gw{color:var(--mut)}
+  /* squad + scorers */
+  .pl{background:var(--card);border-color:var(--line)}
+  .pl img{background:var(--ph)}.pl .st{color:var(--mut)}
+  .posh{color:var(--red)}
+  .scr{border-top-color:var(--line)}.scr img.pp{background:var(--ph)}
+  .scr .g{color:var(--red)}.scr .a{color:var(--mut)}
+  /* cups + notes + footer */
+  .cup .ic{background:linear-gradient(180deg,var(--red),var(--red-deep))}
+  .note{color:var(--mut)}
+  footer{color:var(--faint)}.empty{color:var(--mut)}
+  /* match modal → dark */
+  .mm{background:rgba(6,3,4,.74);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+  .mmcard{background:linear-gradient(180deg,var(--card2),var(--card));box-shadow:0 -20px 60px -18px var(--shadow)}
+  .mmx{background:var(--field);color:var(--text)}
+  .mmsc{color:var(--text)}.mmst.live{color:var(--live)}
+  .mmsec{border-top-color:var(--line)}.mmempty{border-top-color:var(--line);color:var(--mut)}
+  .srow .bar{background:var(--track)}
+  .srow .bar i.h{background:linear-gradient(90deg,var(--red-deep),var(--red))}
+  .srow .bar i.a{background:var(--bar-a)}
+  .mmh{color:var(--mut);border-top-color:var(--line)}
+  .lul li{border-bottom-color:var(--line)}
+  .luf{background:linear-gradient(180deg,var(--red),var(--red-deep))}
+  .te .pl em{color:var(--mut)}
+  /* player ratings + POTM (modal) */
+  .potm{display:flex;align-items:center;gap:13px;margin-top:12px;background:linear-gradient(120deg,var(--glow),rgba(244,200,104,.06));border:1px solid var(--line2);border-radius:14px;padding:12px}
+  .potm .rt{font-size:26px;font-weight:900;color:var(--gold);line-height:1;background:var(--field);border-radius:11px;padding:11px 12px;min-width:58px;text-align:center}
+  .potm .nm{font-size:14px;font-weight:900}
+  .potm .role{font-size:11px;color:var(--mut);font-weight:700;margin-top:2px}
+  .potm .tp2{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:800;margin-bottom:3px}
+  .rtabs{display:flex;gap:6px;margin:8px 0 2px}
+  .rtabs button{flex:1;background:var(--field);border:1px solid var(--line);color:var(--mut);border-radius:9px;padding:7px;font-weight:800;font-size:12px;cursor:pointer}
+  .rtabs button.on{background:var(--red);border-color:var(--red);color:#fff}
+  .rr{display:flex;align-items:center;gap:9px;padding:8px 2px;border-top:1px solid var(--line);font-size:13px}
+  .rr .rnum{color:var(--faint);font-weight:800;font-size:11px;min-width:20px;text-align:center}
+  .rr .rnm{font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rr .rga{color:var(--mut);font-size:11px;font-weight:700}
+  .rr .rv{font-weight:900;font-size:13px;color:#0b0708;border-radius:7px;padding:2px 8px;min-width:36px;text-align:center}
+  .rr .rv.hi{background:#25c26b;color:#04240f}.rr .rv.mid{background:#e3a52c;color:#2a1c00}.rr .rv.lo{background:#9aa0a6;color:#161616}
+  /* bottom app nav (restyle of the existing #tabs) */
+  nav.tabs{position:fixed;top:auto;bottom:0;left:0;right:0;margin:0 auto;max-width:680px;gap:0;padding:6px 4px calc(6px + env(safe-area-inset-bottom));background:var(--nav-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);overflow:visible;z-index:45}
+  nav.tabs button{flex:1;background:none;border:0;border-radius:12px;padding:6px 0 4px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--mut);min-width:0;font-size:inherit}
+  nav.tabs button .ni{font-size:18px;line-height:1;opacity:.8;filter:grayscale(.35)}
+  nav.tabs button .nl{font-size:9.5px;font-weight:800;letter-spacing:.02em}
+  nav.tabs button.on{background:none;color:var(--red);border:0}
+  nav.tabs button.on .ni{opacity:1;filter:none;transform:translateY(-1px);transition:transform .2s}
+  @media(min-width:560px){nav.tabs{bottom:14px;max-width:520px;border-radius:20px;border:1px solid var(--line2);box-shadow:0 22px 54px -20px var(--shadow)}}
+  /* ===== team hub (tap any crest / name) ===== */
+  [data-team]{cursor:pointer}
+  table.lg tr[data-team]{cursor:pointer}
+  .tmhd{display:flex;align-items:center;gap:13px;margin:2px 0 8px}
+  .tmhd .tmcr{width:54px;height:54px;object-fit:contain;flex:0 0 auto;filter:drop-shadow(0 2px 8px var(--glow))}
+  .tmn{font-size:20px;font-weight:900;line-height:1.05}
+  .tmsub{font-size:12px;color:var(--mut);font-weight:700;margin-top:3px}
+  .tmpos{margin-left:auto;text-align:center;background:linear-gradient(180deg,var(--red),var(--red-deep));color:#fff;border-radius:12px;padding:7px 11px;flex:0 0 auto}
+  .tmpos b{display:block;font-size:20px;font-weight:900;line-height:1}
+  .tmpos span{font-size:9px;text-transform:uppercase;letter-spacing:.5px;opacity:.85}
+  .tmnote{font-size:12.5px;color:var(--mut);font-weight:600;line-height:1.5;background:var(--field);border:1px solid var(--line);border-radius:12px;padding:12px}
+  .tmgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:2px 0 4px}
+  .tmcell{background:var(--field);border:1px solid var(--line);border-radius:12px;padding:9px 3px;text-align:center}
+  .tmcell b{display:block;font-size:19px;font-weight:900;line-height:1}
+  .tmcell span{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:800;margin-top:4px;display:block}
+  .tmcell.hl b{color:var(--red)}
+  .tmsplit{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .tmha{background:var(--field);border:1px solid var(--line);border-radius:12px;padding:9px 11px}
+  .tmha .t{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:800}
+  .tmha .v{font-size:14px;font-weight:900;margin-top:3px}
+  .tmxg{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:10px 12px;background:var(--field);border:1px solid var(--line);border-radius:12px}
+  .tmxg .lab{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);font-weight:800}
+  .tmxg b{font-size:17px;font-weight:900}
+  /* ===== news ===== */
+  .nw{display:block;text-decoration:none;color:inherit;padding:11px 2px;border-top:1px solid var(--line)}
+  .nw:first-of-type{border-top:0}
+  .nw:hover{background:var(--hover)}
+  .nw:active{background:var(--field)}
+  .nwt{font-weight:800;font-size:14px;line-height:1.3}
+  .nwd{font-size:12px;color:var(--mut);margin-top:4px;line-height:1.45}
+  .nwm{font-size:11px;color:var(--faint);font-weight:700;margin-top:6px}
+  .nws{color:var(--red)}
+  /* big story hero (top of your club's section) */
+  .nh{display:block;text-decoration:none;color:inherit;border:1px solid var(--line2);border-radius:14px;overflow:hidden;background:var(--field);margin-bottom:2px}
+  .nh:hover{background:var(--hover)}
+  .nhi{width:100%;aspect-ratio:16/9;background:var(--ph);overflow:hidden}
+  .nhi img{width:100%;height:100%;object-fit:cover;display:block}
+  .nhb{padding:12px}
+  .nhk{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:800;margin-bottom:5px}
+  .nht{font-weight:900;font-size:17px;line-height:1.25;letter-spacing:-.01em}
+  .nhd{font-size:12.5px;color:var(--mut);margin-top:6px;line-height:1.45}
+</style>
 </head>
 <body>
-  <div class="topline"></div>
-  <div class="shell">
-    <header>
-      <a class="brand" href="#hub" data-view="hub"><div class="mark">SC</div><div><b>SCORE COMMAND</b><small>Premier League 2026/27</small></div></a>
-      <nav class="nav" aria-label="Main navigation">
-        <button class="active" data-view="hub">Matchday</button><button data-view="scores">Scores</button><button data-view="fixtures">Fixtures</button><button data-view="table">Table</button><button data-view="news">News</button><button data-view="squad">Squad</button><button data-view="fpl">FPL</button>
-      </nav>
-      <div class="actions"><select class="club-select" aria-label="Following club"><option>Liverpool</option><option>Arsenal</option><option>Manchester City</option><option>Manchester United</option><option>Chelsea</option></select><button class="icon-btn" id="theme" aria-label="Switch theme">☼</button></div>
-    </header>
-    <div class="mobile-team-bar"><select class="mobile-club-select" aria-label="Choose club"></select></div>
-
-    <main>
-      <section class="view active" id="hub">
-        <div class="eyebrow">Your matchday</div>
-        <div class="page-head"><h1 id="heroHeadline">Ready for the<br>new campaign.</h1><div class="meta"><span class="live-dot"></span><span id="updatedAt">Connecting to live data</span><br>All times shown locally</div></div>
-        <div class="hero-grid">
-          <article class="card featured">
-            <div class="match-label"><span class="pill" id="matchState">Opening weekend</span><span class="venue" id="matchVenue">Premier League</span></div>
-            <div class="scoreboard"><div class="team"><div class="crest" id="homeCrest">NEW</div><div class="team-name" id="homeName">Newcastle</div></div><div class="score"><strong id="heroScore">VS</strong><small id="heroKickoff">Sun 23 Aug · 19:30</small></div><div class="team"><div class="crest" id="awayCrest">LIV</div><div class="team-name" id="awayName">Liverpool</div></div></div>
-            <div class="match-footer"><div class="countdown" id="countdownWrap">Kick-off in <b id="countdown">Loading</b></div><button class="primary" data-view="scores">Match centre →</button></div>
-          </article>
-          <aside class="side-stack">
-            <article class="card mini"><div class="section-title"><h2>Last five</h2><button id="formLabel">League</button></div><div class="form-row" id="formRow"></div><div class="stat-grid"><div class="stat"><b id="statPoints">0</b><small>Points</small></div><div class="stat"><b id="statGF">0</b><small>Goals</small></div><div class="stat"><b id="statGD">0</b><small>Goal diff</small></div></div></article>
-            <a class="card mini news-card" id="topStoryLink" href="#news" data-view="news"><div><span class="eyebrow">Top story</span><p id="topStory">Loading the latest club news</p></div><small id="topStoryMeta">Live news feed</small></a>
-          </aside>
-        </div>
-        <div class="content-grid">
-          <section class="card panel"><div class="section-title"><h2>Next up</h2><button data-view="fixtures">Full calendar →</button></div><div class="fixture-list" id="fixtureList"></div></section>
-          <section class="card panel table-panel"><div class="section-title"><h2>Premier League</h2><button data-view="table">Full table →</button></div><div id="miniTable"></div></section>
-        </div>
-      </section>
-
-      <section class="view simple-page" id="scores"><div class="eyebrow">Matchday one</div><div class="page-head"><h1>Scores.</h1><div class="meta">Season starts 21 Aug 2026</div></div><div class="score-strip" id="scoreCards"></div></section>
-      <section class="view simple-page" id="fixtures"><div class="eyebrow">Liverpool · 2026/27</div><div class="page-head"><h1>Fixtures.</h1><div class="meta">38 league matches<br>All times local</div></div><div class="card panel"><div class="fixture-list" id="allFixtures"></div></div></section>
-      <section class="view simple-page" id="table"><div class="eyebrow">Premier League · 2026/27</div><div class="page-head"><h1>The table.</h1><div class="meta">Pre-season standings<br>Alphabetical before kick-off</div></div><div class="card panel" id="fullTable"></div></section>
-      <section class="view simple-page" id="news"><div class="eyebrow">Latest updates</div><div class="page-head"><h1>Newsroom.</h1><div class="meta">Open any story at its original source</div></div><div class="score-strip" id="newsCards"></div></section>
-      <section class="view simple-page" id="squad"><div class="eyebrow" id="squadClub">Liverpool FC</div><div class="page-head"><h1>The squad.</h1><div class="meta">Grouped by playing position<br>No fantasy metrics</div></div><div class="squad-groups" id="squadGroups"></div></section>
-      <section class="view simple-page" id="fpl"><div class="eyebrow">Optional fantasy analysis</div><div class="page-head"><h1>FPL lab.</h1><div class="meta">Price, ownership and form<br>Official Fantasy Premier League data</div></div><div class="fpl-summary" id="fplSummary"></div><div class="fpl-board"><section class="card fpl-list"><div class="section-title"><h2 id="clubPicksTitle">Club picks</h2><button>Selected club</button></div><div id="clubPicks"></div></section><section class="card fpl-list"><div class="section-title"><h2>League leaders</h2><button>All clubs</button></div><div id="leaguePicks"></div></section></div></section>
-    </main>
-    <footer><span>Score Command · Designed for matchday</span><span>Premier League data refreshes automatically every 15 minutes</span></footer>
+<header>
+  <div class="hd">
+    <div class="crest"><img id="hcrest" src="" alt=""/></div>
+    <div>
+      <h1 id="htitle">Premier League</h1>
+      <div class="sub" id="hsub">2026/27</div>
+    </div>
+    <button class="share" id="shareBtn">Share</button>
+    <button class="tmode" id="themeBtn" aria-label="Switch light/dark theme" title="Light / dark">🌙</button>
   </div>
-  <nav class="mobile-nav" aria-label="Mobile navigation"><button class="active" data-view="hub"><span>⌂</span>Home</button><button data-view="scores"><span>●</span>Scores</button><button data-view="fixtures"><span>▦</span>Fixtures</button><button data-view="table"><span>≡</span>Table</button><button data-view="news"><span>◫</span>News</button><button data-view="squad"><span>◉</span>Squad</button><button data-view="fpl"><span>◆</span>FPL</button></nav>
-  <script>
-    const state={data:null,teamId:Number(localStorage.getItem('scoreCommandTeam'))||0,timer:null};
-    const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    const team=id=>state.data.teams.find(t=>t.id===id), badge=t=>`<span class="badge">${esc(t.short)}</span>`;
-    const formatDate=iso=>new Intl.DateTimeFormat(undefined,{weekday:'short',day:'2-digit',month:'short'}).format(new Date(iso)).toUpperCase();
-    const formatTime=iso=>new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit'}).format(new Date(iso));
-    const matchStatus=f=>f.finished?'FT':f.started?(f.minutes?`${f.minutes}'`:'LIVE'):'Upcoming';
-    const scoreText=f=>f.started||f.finished?`${f.homeScore??0}-${f.awayScore??0}`:'VS';
-    function fixtureRow(f){const h=team(f.home),a=team(f.away);return `<div class="fixture"><span class="date">${formatDate(f.kickoff)}</span><span class="fixture-team">${badge(h)}${esc(h.name)}</span><span class="kick">${f.started||f.finished?scoreText(f):formatTime(f.kickoff)}</span><span class="fixture-team">${badge(a)}${esc(a.name)}</span><span class="comp">${matchStatus(f)}</span></div>`}
-    function tableMarkup(limit=20){const selected=state.teamId;return `<table><thead><tr><th>#</th><th>Club</th><th>P</th><th>GD</th><th>Pts</th></tr></thead><tbody>${state.data.table.slice(0,limit).map(r=>{const t=team(r.team);return `<tr class="${r.team===selected?'focus':''}"><td class="pos">${r.position}</td><td><span class="club-cell"><span class="tiny">${esc(t.short)}</span>${esc(t.name)}</span></td><td>${r.played}</td><td>${r.gd>0?'+':''}${r.gd}</td><td class="pts">${r.points}</td></tr>`}).join('')}</tbody></table>`}
-    function relevantFixtures(){return state.data.fixtures.filter(f=>f.home===state.teamId||f.away===state.teamId).sort((a,b)=>new Date(a.kickoff)-new Date(b.kickoff))}
-    function currentMatch(){const now=Date.now(),list=relevantFixtures();return list.find(f=>f.started&&!f.finished)||list.find(f=>new Date(f.kickoff).getTime()>now)||list.at(-1)}
-    function renderHero(){const f=currentMatch();if(!f)return;const h=team(f.home),a=team(f.away),live=f.started&&!f.finished;$('#homeCrest').textContent=h.short;$('#homeCrest').style.background=h.name==='Liverpool'?'#c8102e':'var(--panel2)';$('#awayCrest').textContent=a.short;$('#awayCrest').style.background=a.name==='Liverpool'?'#c8102e':'var(--panel2)';$('#homeName').textContent=h.name;$('#awayName').textContent=a.name;$('#heroScore').textContent=scoreText(f);$('#heroKickoff').textContent=`${formatDate(f.kickoff)} · ${formatTime(f.kickoff)}`;$('#matchState').textContent=live?'Live now':f.finished?'Latest result':`Matchweek ${f.event||''}`;$('#matchVenue').textContent='Premier League';updateCountdown(f)}
-    function updateCountdown(f=currentMatch()){clearTimeout(state.timer);if(!f)return;const el=$('#countdown'),wrap=$('#countdownWrap');if(f.started&&!f.finished){wrap.firstChild.textContent='Match status ';el.textContent=f.minutes?`${f.minutes} minutes`:'LIVE';return}if(f.finished){wrap.firstChild.textContent='Match status ';el.textContent='Full time';return}const diff=Math.max(0,new Date(f.kickoff)-Date.now()),days=Math.floor(diff/864e5),hours=Math.floor(diff%864e5/36e5),mins=Math.floor(diff%36e5/6e4);wrap.firstChild.textContent='Kick-off in ';el.textContent=`${days}d ${String(hours).padStart(2,'0')}h ${String(mins).padStart(2,'0')}m`;state.timer=setTimeout(()=>updateCountdown(f),60000)}
-    function renderTeam(){const selected=team(state.teamId),row=state.data.table.find(r=>r.team===state.teamId),now=Date.now(),all=relevantFixtures(),next=all.filter(f=>new Date(f.kickoff)>now).slice(0,8),event=currentMatch()?.event;$('#heroHeadline').innerHTML=event?`Matchweek ${event}.<br>${esc(selected.name)}.`:'Ready for the<br>new campaign.';$('#fixtureList').innerHTML=next.slice(0,4).map(fixtureRow).join('')||'<p class="date">No upcoming fixtures.</p>';$('#allFixtures').innerHTML=all.map(fixtureRow).join('');$('#miniTable').innerHTML=tableMarkup(6);$('#fullTable').innerHTML=tableMarkup();$('#formRow').innerHTML=(row.form.length?row.form:['D','D','D','D','D']).map(x=>`<span class="form ${x.toLowerCase()}">${x}</span>`).join('');$('#statPoints').textContent=row.points;$('#statGF').textContent=row.gf;$('#statGD').textContent=(row.gd>0?'+':'')+row.gd;renderHero();renderSquad();renderFPL();renderScores()}
-    function renderScores(){const event=currentMatch()?.event||state.data.currentEvent||state.data.nextEvent||1,matches=state.data.fixtures.filter(f=>f.event===event);$('#scoreCards').innerHTML=matches.map(f=>{const h=team(f.home),a=team(f.away);return `<article class="card score-card"><span class="status">${formatDate(f.kickoff)} · ${f.started||f.finished?matchStatus(f):formatTime(f.kickoff)}</span><div class="teams"><span class="fixture-team">${badge(h)}${esc(h.short)}</span><span class="big-score">${scoreText(f)}</span><span class="fixture-team">${esc(a.short)}${badge(a)}</span></div></article>`}).join('')}
-    function renderSquad(){const club=team(state.teamId),labels={1:'Goalkeepers',2:'Defenders',3:'Midfielders',4:'Forwards'},players=state.data.players.filter(p=>p.team===state.teamId);$('#squadClub').textContent=club.name;$('#squadGroups').innerHTML=[1,2,3,4].map(position=>{const group=players.filter(p=>p.position===position).sort((a,b)=>(a.shirt??999)-(b.shirt??999)||a.lastName.localeCompare(b.lastName));return `<section class="card position-block"><div class="position-head"><h2>${labels[position]}</h2><span>${group.length} players</span></div><div class="player-grid">${group.map(p=>`<article class="player-tile"><span class="shirt">${p.shirt?String(p.shirt).padStart(2,'0'):'•'}</span><div><b>${esc(p.firstName)} ${esc(p.lastName)}</b><small>${p.status==='a'?'Available':'Squad status '+esc(p.status.toUpperCase())}</small></div></article>`).join('')}</div></section>`}).join('')}
-    function fplPlayerRow(p){const club=team(p.team);return `<div class="fpl-player"><div><b>${esc(p.name)}</b><small>${esc(club.short)} · ${p.minutes||0} mins</small></div><div class="fpl-metric"><strong>£${Number(p.price||0).toFixed(1)}</strong><span>Price</span></div><div class="fpl-metric"><strong>${p.points||0}</strong><span>Points</span></div><div class="fpl-metric"><strong>${Number(p.form||0).toFixed(1)}</strong><span>Form</span></div><div class="fpl-metric ownership"><strong>${Number(p.ownership||0).toFixed(1)}%</strong><span>Owned</span></div></div>`}
-    function renderFPL(){const available=state.data.players.filter(p=>p.status!=='u'),rank=(a,b)=>(b.points-a.points)||(b.form-a.form)||(b.ownership-a.ownership),clubPlayers=available.filter(p=>p.team===state.teamId).sort(rank),league=available.slice().sort(rank),clubLead=clubPlayers[0],leagueLead=league[0],differential=league.filter(p=>p.ownership<10).sort(rank)[0]||leagueLead,callout=(label,p,note)=>`<article class="card fpl-callout"><span class="eyebrow">${label}</span><h2>${esc(p?.name||'Not available')}</h2><p>${p?`£${Number(p.price||0).toFixed(1)}m · ${p.points||0} points · ${Number(p.ownership||0).toFixed(1)}% owned`:note}</p></article>`;$('#fplSummary').innerHTML=callout('Selected club leader',clubLead)+callout('Differential watch',differential)+callout('Overall leader',leagueLead);$('#clubPicksTitle').textContent=`${team(state.teamId).short} picks`;$('#clubPicks').innerHTML=clubPlayers.slice(0,8).map(fplPlayerRow).join('');$('#leaguePicks').innerHTML=league.slice(0,10).map(fplPlayerRow).join('')}
-    function newsFields(item){return Array.isArray(item)?{title:item[0],url:item[1],date:item[2],source:item[3],description:item[4]}:{title:item.title||item.headline,url:item.url||item.link,date:item.pubDate||item.date,source:item.source,description:item.description||item.summary}}
-    function renderNews(items){$('#newsCards').innerHTML=items.slice(0,12).map(item=>{const n=newsFields(item);return `<a class="card score-card story-link" href="${esc(n.url||'#')}" target="_blank" rel="noopener noreferrer"><span class="status">${esc(n.source||'Premier League')} · ${n.date?formatDate(n.date):'Latest'}</span><h2>${esc(n.title||'Premier League update')}</h2><p class="story-desc">${esc(n.description||'Open the full story from the original publisher.')}</p><span class="read">Read full story ↗</span></a>`}).join('')||'<p class="date">No current stories for this club.</p>'}
-    async function loadNews(){try{const r=await fetch('prem_news.json',{cache:'no-store'}),news=await r.json(),newsIds={'Arsenal':3,'Aston Villa':7,'Bournemouth':91,'Brentford':94,'Brighton':36,'Chelsea':8,'Coventry':9,'Crystal Palace':31,'Everton':11,'Fulham':54,'Hull City':88,'Ipswich':40,'Leeds':2,'Liverpool':14,'Man City':43,'Man Utd':1,'Newcastle':4,'Nott\'m Forest':17,'Sunderland':56,'Spurs':6},club=team(state.teamId),key=Object.entries(newsIds).find(([name])=>club.name.includes(name)||name.includes(club.name))?.[1],items=news.team?.[String(key)]||news.league||news.items||[],story=items[0];renderNews(items);if(story){const n=newsFields(story),link=$('#topStoryLink');$('#topStory').textContent=n.title||'Latest Premier League news';$('#topStoryMeta').textContent=`${n.source||'News'} · ${n.date?formatDate(n.date):'Latest'}`;if(n.url){link.href=n.url;link.target='_blank';link.rel='noopener noreferrer';link.removeAttribute('data-view')}}}catch(e){$('#topStory').textContent='Latest Premier League updates';$('#topStoryMeta').textContent='News feed temporarily unavailable';$('#newsCards').innerHTML='<p class="date">News feed temporarily unavailable.</p>'}}
-    function populateTeams(){const selects=document.querySelectorAll('.club-select,.mobile-club-select'),options=state.data.teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');if(!state.teamId||!team(state.teamId))state.teamId=state.data.teams.find(t=>t.name==='Liverpool')?.id||state.data.teams[0].id;selects.forEach(select=>{select.innerHTML=options;select.value=state.teamId;select.onchange=()=>{state.teamId=Number(select.value);localStorage.setItem('scoreCommandTeam',state.teamId);selects.forEach(s=>s.value=state.teamId);renderTeam();loadNews()}})}
-    async function loadData(){try{const response=await fetch(`prem_live.json?t=${Date.now()}`,{cache:'no-store'});if(!response.ok)throw new Error('feed unavailable');state.data=await response.json();populateTeams();renderTeam();loadNews();$('#updatedAt').textContent=`Updated ${new Intl.DateTimeFormat(undefined,{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(state.data.generatedAt))}`;setTimeout(loadData,60000)}catch(error){$('#updatedAt').textContent='Live feed reconnecting';setTimeout(loadData,30000)}}
-    function show(id){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===id));history.replaceState(null,'','#'+id);scrollTo({top:0})}
-    document.addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b){e.preventDefault();show(b.dataset.view)}});$('#theme').onclick=()=>{const root=document.documentElement;root.dataset.theme=root.dataset.theme==='dark'?'light':'dark'};const initial=location.hash.slice(1);if(document.getElementById(initial))show(initial);window.addEventListener('load',()=>setTimeout(()=>scrollTo(0,0),100),{once:true});loadData();
-  </script>
+  <div class="teambar">
+    <label for="teamSel">Following</label>
+    <select id="teamSel"></select>
+  </div>
+</header>
+<nav class="tabs" id="tabs">
+  <button data-v="hub" class="on"><span class="ni">⚽</span><span class="nl">My team</span></button>
+  <button data-v="news"><span class="ni">📰</span><span class="nl">News</span></button>
+  <button data-v="table"><span class="ni">📊</span><span class="nl">Table</span></button>
+  <button data-v="fixtures"><span class="ni">📅</span><span class="nl">Fixtures</span></button>
+  <button data-v="cups"><span class="ni">🏆</span><span class="nl">Cups</span></button>
+  <button data-v="squad"><span class="ni">👥</span><span class="nl">Squad</span></button>
+  <button data-v="stats"><span class="ni">🥇</span><span class="nl">Scorers</span></button>
+</nav>
+<div class="wrap">
+  <section class="view on" id="v-hub"></section>
+  <section class="view" id="v-news"></section>
+  <section class="view" id="v-table"></section>
+  <section class="view" id="v-fixtures"></section>
+  <section class="view" id="v-cups"></section>
+  <section class="view" id="v-squad"></section>
+  <section class="view" id="v-stats"></section>
+  <footer>
+    <div id="built"></div>
+    <div style="margin-top:6px">PL fixtures: official Premier League • squads/scorers: Fantasy PL • updates automatically • times shown in your local timezone.</div>
+    <div style="margin-top:6px" id="buildtag"></div>
+  </footer>
+</div>
+<div id="mm" class="mm"><div class="mmcard"><button class="mmx" id="mmClose" aria-label="Close">✕</button><div id="mmBody"></div></div></div>
+<div id="tm" class="mm"><div class="mmcard"><button class="mmx" id="tmClose" aria-label="Close">✕</button><div id="tmBody"></div></div></div>
+<div id="pick" class="pick">
+  <svg class="ball" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#00ff85" stroke-width="4"/><polygon points="50,30 68,43 61,64 39,64 32,43" fill="#37003c"/></svg>
+  <h2>Follow your Premier League team</h2>
+  <p>Pick your club to get started — fixtures, table, cups, squad &amp; scorers.</p>
+  <select id="pickSel" aria-label="Choose your club"></select>
+  <button id="pickGo">Follow this club</button>
+</div>
+
+<script>
+/*BAKE_START*/
+  var LFC_DATA={"meta":{"season":"2026/27","built":"2026-08-17T08:08:19Z","startDate":"2026-08-21T19:00:00Z","plTotal":380,"plPlayed":0,"fplSeason":"2026/27"},"defaultTeam":14,"teams":{"3":["Arsenal","ARS"],"7":["Aston Villa","AVL"],"91":["Bournemouth","BOU"],"94":["Brentford","BRE"],"36":["Brighton & Hove Albion","BHA"],"8":["Chelsea","CHE"],"9":["Coventry City","COV"],"31":["Crystal Palace","CRY"],"11":["Everton","EVE"],"54":["Fulham","FUL"],"88":["Hull City","HUL"],"40":["Ipswich Town","IPS"],"2":["Leeds United","LEE"],"14":["Liverpool","LIV"],"43":["Manchester City","MCI"],"1":["Manchester United","MUN"],"4":["Newcastle United","NEW"],"17":["Nottingham Forest","NFO"],"56":["Sunderland","SUN"],"6":["Tottenham Hotspur","TOT"]},"table":[[1,3,0,0,0,0,0,0,""],[2,7,0,0,0,0,0,0,""],[3,91,0,0,0,0,0,0,""],[4,94,0,0,0,0,0,0,""],[5,36,0,0,0,0,0,0,""],[6,8,0,0,0,0,0,0,""],[7,9,0,0,0,0,0,0,""],[8,31,0,0,0,0,0,0,""],[9,11,0,0,0,0,0,0,""],[10,54,0,0,0,0,0,0,""],[11,88,0,0,0,0,0,0,""],[12,40,0,0,0,0,0,0,""],[13,2,0,0,0,0,0,0,""],[14,14,0,0,0,0,0,0,""],[15,43,0,0,0,0,0,0,""],[16,1,0,0,0,0,0,0,""],[17,4,0,0,0,0,0,0,""],[18,17,0,0,0,0,0,0,""],[19,56,0,0,0,0,0,0,""],[20,6,0,0,0,0,0,0,""]],"lastTable":[],"fixtures":[[1,"2026-08-21T19:00:00Z",3,9,null,null,"U"],[1,"2026-08-22T11:30:00Z",88,1,null,null,"U"],[1,"2026-08-22T14:00:00Z",11,31,null,null,"U"],[1,"2026-08-22T14:00:00Z",40,56,null,null,"U"],[1,"2026-08-22T14:00:00Z",17,2,null,null,"U"],[1,"2026-08-22T16:30:00Z",94,6,null,null,"U"],[1,"2026-08-23T13:00:00Z",36,7,null,null,"U"],[1,"2026-08-23T13:00:00Z",43,91,null,null,"U"],[1,"2026-08-23T15:30:00Z",4,14,null,null,"U"],[1,"2026-08-24T19:00:00Z",54,8,null,null,"U"],[2,"2026-08-28T19:00:00Z",31,43,null,null,"U"],[2,"2026-08-29T11:30:00Z",14,17,null,null,"U"],[2,"2026-08-29T14:00:00Z",91,11,null,null,"U"],[2,"2026-08-29T14:00:00Z",9,88,null,null,"U"],[2,"2026-08-29T16:30:00Z",6,4,null,null,"U"],[2,"2026-08-30T13:00:00Z",8,36,null,null,"U"],[2,"2026-08-30T13:00:00Z",2,94,null,null,"U"],[2,"2026-08-30T13:00:00Z",56,54,null,null,"U"],[2,"2026-08-30T15:30:00Z",1,40,null,null,"U"],[2,"2026-08-31T19:00:00Z",7,3,null,null,"U"],[3,"2026-09-04T19:00:00Z",40,14,null,null,"U"],[3,"2026-09-05T11:30:00Z",4,91,null,null,"U"],[3,"2026-09-05T14:00:00Z",94,56,null,null,"U"],[3,"2026-09-05T14:00:00Z",36,2,null,null,"U"],[3,"2026-09-05T14:00:00Z",54,31,null,null,"U"],[3,"2026-09-05T14:00:00Z",43,9,null,null,"U"],[3,"2026-09-05T14:00:00Z",17,6,null,null,"U"],[3,"2026-09-05T16:30:00Z",88,7,null,null,"U"],[3,"2026-09-06T13:00:00Z",11,1,null,null,"U"],[3,"2026-09-06T15:30:00Z",3,8,null,null,"U"],[4,"2026-09-12T14:00:00Z",7,17,null,null,"U"],[4,"2026-09-12T14:00:00Z",91,94,null,null,"U"],[4,"2026-09-12T14:00:00Z",8,88,null,null,"U"],[4,"2026-09-12T14:00:00Z",31,40,null,null,"U"],[4,"2026-09-12T14:00:00Z",14,54,null,null,"U"],[4,"2026-09-12T16:30:00Z",6,11,null,null,"U"],[4,"2026-09-12T19:00:00Z",56,3,null,null,"U"],[4,"2026-09-13T13:00:00Z",9,36,null,null,"U"],[4,"2026-09-13T15:30:00Z",1,43,null,null,"U"],[4,"2026-09-14T19:00:00Z",2,4,null,null,"U"],[5,"2026-09-18T19:00:00Z",94,8,null,null,"U"],[5,"2026-09-19T11:30:00Z",6,7,null,null,"U"],[5,"2026-09-19T14:00:00Z",36,3,null,null,"U"],[5,"2026-09-19T14:00:00Z",11,40,null,null,"U"],[5,"2026-09-19T14:00:00Z",2,31,null,null,"U"],[5,"2026-09-19T14:00:00Z",43,56,null,null,"U"],[5,"2026-09-19T14:00:00Z",4,88,null,null,"U"],[5,"2026-09-19T16:30:00Z",17,9,null,null,"U"],[5,"2026-09-20T13:00:00Z",91,14,null,null,"U"],[5,"2026-09-20T15:30:00Z",54,1,null,null,"U"],[6,"2026-10-10T14:00:00Z",3,2,null,null,"U"],[6,"2026-10-10T14:00:00Z",7,94,null,null,"U"],[6,"2026-10-10T14:00:00Z",8,91,null,null,"U"],[6,"2026-10-10T14:00:00Z",9,4,null,null,"U"],[6,"2026-10-10T14:00:00Z",31,17,null,null,"U"],[6,"2026-10-10T14:00:00Z",88,11,null,null,"U"],[6,"2026-10-10T14:00:00Z",40,54,null,null,"U"],[6,"2026-10-10T14:00:00Z",14,43,null,null,"U"],[6,"2026-10-10T14:00:00Z",1,6,null,null,"U"],[6,"2026-10-10T14:00:00Z",56,36,null,null,"U"],[7,"2026-10-17T14:00:00Z",91,56,null,null,"U"],[7,"2026-10-17T14:00:00Z",94,14,null,null,"U"],[7,"2026-10-17T14:00:00Z",36,31,null,null,"U"],[7,"2026-10-17T14:00:00Z",11,8,null,null,"U"],[7,"2026-10-17T14:00:00Z",54,88,null,null,"U"],[7,"2026-10-17T14:00:00Z",2,1,null,null,"U"],[7,"2026-10-17T14:00:00Z",43,40,null,null,"U"],[7,"2026-10-17T14:00:00Z",4,7,null,null,"U"],[7,"2026-10-17T14:00:00Z",17,3,null,null,"U"],[7,"2026-10-17T14:00:00Z",6,9,null,null,"U"],[8,"2026-10-24T14:00:00Z",3,11,null,null,"U"],[8,"2026-10-24T14:00:00Z",7,43,null,null,"U"],[8,"2026-10-24T14:00:00Z",8,6,null,null,"U"],[8,"2026-10-24T14:00:00Z",9,54,null,null,"U"],[8,"2026-10-24T14:00:00Z",31,4,null,null,"U"],[8,"2026-10-24T14:00:00Z",88,94,null,null,"U"],[8,"2026-10-24T14:00:00Z",40,17,null,null,"U"],[8,"2026-10-24T14:00:00Z",14,36,null,null,"U"],[8,"2026-10-24T14:00:00Z",1,91,null,null,"U"],[8,"2026-10-24T14:00:00Z",56,2,null,null,"U"],[9,"2026-10-31T15:00:00Z",7,54,null,null,"U"],[9,"2026-10-31T15:00:00Z",91,2,null,null,"U"],[9,"2026-10-31T15:00:00Z",94,17,null,null,"U"],[9,"2026-10-31T15:00:00Z",8,1,null,null,"U"],[9,"2026-10-31T15:00:00Z",9,56,null,null,"U"],[9,"2026-10-31T15:00:00Z",88,40,null,null,"U"],[9,"2026-10-31T15:00:00Z",14,3,null,null,"U"],[9,"2026-10-31T15:00:00Z",43,36,null,null,"U"],[9,"2026-10-31T15:00:00Z",4,11,null,null,"U"],[9,"2026-10-31T15:00:00Z",6,31,null,null,"U"],[10,"2026-11-07T15:00:00Z",3,88,null,null,"U"],[10,"2026-11-07T15:00:00Z",36,94,null,null,"U"],[10,"2026-11-07T15:00:00Z",31,14,null,null,"U"],[10,"2026-11-07T15:00:00Z",11,9,null,null,"U"],[10,"2026-11-07T15:00:00Z",54,4,null,null,"U"],[10,"2026-11-07T15:00:00Z",40,91,null,null,"U"],[10,"2026-11-07T15:00:00Z",2,6,null,null,"U"],[10,"2026-11-07T15:00:00Z",1,7,null,null,"U"],[10,"2026-11-07T15:00:00Z",17,43,null,null,"U"],[10,"2026-11-07T15:00:00Z",56,8,null,null,"U"],[11,"2026-11-21T15:00:00Z",7,56,null,null,"U"],[11,"2026-11-21T15:00:00Z",91,17,null,null,"U"],[11,"2026-11-21T15:00:00Z",94,11,null,null,"U"],[11,"2026-11-21T15:00:00Z",8,2,null,null,"U"],[11,"2026-11-21T15:00:00Z",9,31,null,null,"U"],[11,"2026-11-21T15:00:00Z",88,36,null,null,"U"],[11,"2026-11-21T15:00:00Z",14,1,null,null,"U"],[11,"2026-11-21T15:00:00Z",43,54,null,null,"U"],[11,"2026-11-21T15:00:00Z",4,3,null,null,"U"],[11,"2026-11-21T15:00:00Z",6,40,null,null,"U"],[12,"2026-11-28T15:00:00Z",3,43,null,null,"U"],[12,"2026-11-28T15:00:00Z",36,4,null,null,"U"],[12,"2026-11-28T15:00:00Z",31,88,null,null,"U"],[12,"2026-11-28T15:00:00Z",11,14,null,null,"U"],[12,"2026-11-28T15:00:00Z",54,91,null,null,"U"],[12,"2026-11-28T15:00:00Z",40,7,null,null,"U"],[12,"2026-11-28T15:00:00Z",2,9,null,null,"U"],[12,"2026-11-28T15:00:00Z",1,94,null,null,"U"],[12,"2026-11-28T15:00:00Z",17,8,null,null,"U"],[12,"2026-11-28T15:00:00Z",56,6,null,null,"U"],[13,"2026-12-02T20:00:00Z",7,11,null,null,"U"],[13,"2026-12-02T20:00:00Z",91,36,null,null,"U"],[13,"2026-12-02T20:00:00Z",94,3,null,null,"U"],[13,"2026-12-02T20:00:00Z",8,31,null,null,"U"],[13,"2026-12-02T20:00:00Z",9,40,null,null,"U"],[13,"2026-12-02T20:00:00Z",88,17,null,null,"U"],[13,"2026-12-02T20:00:00Z",14,56,null,null,"U"],[13,"2026-12-02T20:00:00Z",43,2,null,null,"U"],[13,"2026-12-02T20:00:00Z",4,1,null,null,"U"],[13,"2026-12-02T20:00:00Z",6,54,null,null,"U"],[14,"2026-12-05T15:00:00Z",7,31,null,null,"U"],[14,"2026-12-05T15:00:00Z",91,88,null,null,"U"],[14,"2026-12-05T15:00:00Z",94,43,null,null,"U"],[14,"2026-12-05T15:00:00Z",8,14,null,null,"U"],[14,"2026-12-05T15:00:00Z",11,54,null,null,"U"],[14,"2026-12-05T15:00:00Z",2,40,null,null,"U"],[14,"2026-12-05T15:00:00Z",1,9,null,null,"U"],[14,"2026-12-05T15:00:00Z",4,56,null,null,"U"],[14,"2026-12-05T15:00:00Z",17,36,null,null,"U"],[14,"2026-12-05T15:00:00Z",6,3,null,null,"U"],[15,"2026-12-12T15:00:00Z",3,91,null,null,"U"],[15,"2026-12-12T15:00:00Z",36,11,null,null,"U"],[15,"2026-12-12T15:00:00Z",9,7,null,null,"U"],[15,"2026-12-12T15:00:00Z",31,1,null,null,"U"],[15,"2026-12-12T15:00:00Z",54,94,null,null,"U"],[15,"2026-12-12T15:00:00Z",88,6,null,null,"U"],[15,"2026-12-12T15:00:00Z",40,4,null,null,"U"],[15,"2026-12-12T15:00:00Z",14,2,null,null,"U"],[15,"2026-12-12T15:00:00Z",43,8,null,null,"U"],[15,"2026-12-12T15:00:00Z",56,17,null,null,"U"],[16,"2026-12-19T15:00:00Z",3,1,null,null,"U"],[16,"2026-12-19T15:00:00Z",91,9,null,null,"U"],[16,"2026-12-19T15:00:00Z",94,4,null,null,"U"],[16,"2026-12-19T15:00:00Z",36,40,null,null,"U"],[16,"2026-12-19T15:00:00Z",8,7,null,null,"U"],[16,"2026-12-19T15:00:00Z",2,54,null,null,"U"],[16,"2026-12-19T15:00:00Z",14,6,null,null,"U"],[16,"2026-12-19T15:00:00Z",43,88,null,null,"U"],[16,"2026-12-19T15:00:00Z",17,11,null,null,"U"],[16,"2026-12-19T15:00:00Z",56,31,null,null,"U"],[17,"2026-12-26T15:00:00Z",7,2,null,null,"U"],[17,"2026-12-26T15:00:00Z",9,8,null,null,"U"],[17,"2026-12-26T15:00:00Z",31,3,null,null,"U"],[17,"2026-12-26T15:00:00Z",11,56,null,null,"U"],[17,"2026-12-26T15:00:00Z",54,36,null,null,"U"],[17,"2026-12-26T15:00:00Z",88,14,null,null,"U"],[17,"2026-12-26T15:00:00Z",40,94,null,null,"U"],[17,"2026-12-26T15:00:00Z",1,17,null,null,"U"],[17,"2026-12-26T15:00:00Z",4,43,null,null,"U"],[17,"2026-12-26T15:00:00Z",6,91,null,null,"U"],[18,"2026-12-30T20:00:00Z",7,14,null,null,"U"],[18,"2026-12-30T20:00:00Z",9,94,null,null,"U"],[18,"2026-12-30T20:00:00Z",31,91,null,null,"U"],[18,"2026-12-30T20:00:00Z",11,43,null,null,"U"],[18,"2026-12-30T20:00:00Z",54,3,null,null,"U"],[18,"2026-12-30T20:00:00Z",88,2,null,null,"U"],[18,"2026-12-30T20:00:00Z",40,8,null,null,"U"],[18,"2026-12-30T20:00:00Z",1,56,null,null,"U"],[18,"2026-12-30T20:00:00Z",4,17,null,null,"U"],[18,"2026-12-30T20:00:00Z",6,36,null,null,"U"],[19,"2027-01-02T15:00:00Z",3,40,null,null,"U"],[19,"2027-01-02T15:00:00Z",91,7,null,null,"U"],[19,"2027-01-02T15:00:00Z",94,31,null,null,"U"],[19,"2027-01-02T15:00:00Z",36,1,null,null,"U"],[19,"2027-01-02T15:00:00Z",8,4,null,null,"U"],[19,"2027-01-02T15:00:00Z",2,11,null,null,"U"],[19,"2027-01-02T15:00:00Z",14,9,null,null,"U"],[19,"2027-01-02T15:00:00Z",43,6,null,null,"U"],[19,"2027-01-02T15:00:00Z",17,54,null,null,"U"],[19,"2027-01-02T15:00:00Z",56,88,null,null,"U"],[20,"2027-01-06T20:00:00Z",3,94,null,null,"U"],[20,"2027-01-06T20:00:00Z",36,91,null,null,"U"],[20,"2027-01-06T20:00:00Z",31,8,null,null,"U"],[20,"2027-01-06T20:00:00Z",11,7,null,null,"U"],[20,"2027-01-06T20:00:00Z",54,6,null,null,"U"],[20,"2027-01-06T20:00:00Z",40,9,null,null,"U"],[20,"2027-01-06T20:00:00Z",2,43,null,null,"U"],[20,"2027-01-06T20:00:00Z",1,4,null,null,"U"],[20,"2027-01-06T20:00:00Z",17,88,null,null,"U"],[20,"2027-01-06T20:00:00Z",56,14,null,null,"U"],[21,"2027-01-16T15:00:00Z",7,1,null,null,"U"],[21,"2027-01-16T15:00:00Z",91,40,null,null,"U"],[21,"2027-01-16T15:00:00Z",94,36,null,null,"U"],[21,"2027-01-16T15:00:00Z",8,56,null,null,"U"],[21,"2027-01-16T15:00:00Z",9,11,null,null,"U"],[21,"2027-01-16T15:00:00Z",88,3,null,null,"U"],[21,"2027-01-16T15:00:00Z",14,31,null,null,"U"],[21,"2027-01-16T15:00:00Z",43,17,null,null,"U"],[21,"2027-01-16T15:00:00Z",4,54,null,null,"U"],[21,"2027-01-16T15:00:00Z",6,2,null,null,"U"],[22,"2027-01-23T15:00:00Z",3,4,null,null,"U"],[22,"2027-01-23T15:00:00Z",36,43,null,null,"U"],[22,"2027-01-23T15:00:00Z",31,6,null,null,"U"],[22,"2027-01-23T15:00:00Z",11,94,null,null,"U"],[22,"2027-01-23T15:00:00Z",54,7,null,null,"U"],[22,"2027-01-23T15:00:00Z",40,88,null,null,"U"],[22,"2027-01-23T15:00:00Z",2,8,null,null,"U"],[22,"2027-01-23T15:00:00Z",1,14,null,null,"U"],[22,"2027-01-23T15:00:00Z",17,91,null,null,"U"],[22,"2027-01-23T15:00:00Z",56,9,null,null,"U"],[23,"2027-01-30T15:00:00Z",7,40,null,null,"U"],[23,"2027-01-30T15:00:00Z",91,54,null,null,"U"],[23,"2027-01-30T15:00:00Z",94,1,null,null,"U"],[23,"2027-01-30T15:00:00Z",8,17,null,null,"U"],[23,"2027-01-30T15:00:00Z",9,2,null,null,"U"],[23,"2027-01-30T15:00:00Z",88,31,null,null,"U"],[23,"2027-01-30T15:00:00Z",14,11,null,null,"U"],[23,"2027-01-30T15:00:00Z",43,3,null,null,"U"],[23,"2027-01-30T15:00:00Z",4,36,null,null,"U"],[23,"2027-01-30T15:00:00Z",6,56,null,null,"U"],[24,"2027-02-06T15:00:00Z",3,14,null,null,"U"],[24,"2027-02-06T15:00:00Z",36,88,null,null,"U"],[24,"2027-02-06T15:00:00Z",31,9,null,null,"U"],[24,"2027-02-06T15:00:00Z",11,4,null,null,"U"],[24,"2027-02-06T15:00:00Z",54,43,null,null,"U"],[24,"2027-02-06T15:00:00Z",40,6,null,null,"U"],[24,"2027-02-06T15:00:00Z",2,91,null,null,"U"],[24,"2027-02-06T15:00:00Z",1,8,null,null,"U"],[24,"2027-02-06T15:00:00Z",17,94,null,null,"U"],[24,"2027-02-06T15:00:00Z",56,7,null,null,"U"],[25,"2027-02-10T20:00:00Z",7,91,null,null,"U"],[25,"2027-02-10T20:00:00Z",9,14,null,null,"U"],[25,"2027-02-10T20:00:00Z",31,94,null,null,"U"],[25,"2027-02-10T20:00:00Z",11,2,null,null,"U"],[25,"2027-02-10T20:00:00Z",54,17,null,null,"U"],[25,"2027-02-10T20:00:00Z",88,56,null,null,"U"],[25,"2027-02-10T20:00:00Z",40,3,null,null,"U"],[25,"2027-02-10T20:00:00Z",1,36,null,null,"U"],[25,"2027-02-10T20:00:00Z",4,8,null,null,"U"],[25,"2027-02-10T20:00:00Z",6,43,null,null,"U"],[26,"2027-02-20T15:00:00Z",3,54,null,null,"U"],[26,"2027-02-20T15:00:00Z",91,31,null,null,"U"],[26,"2027-02-20T15:00:00Z",94,9,null,null,"U"],[26,"2027-02-20T15:00:00Z",36,6,null,null,"U"],[26,"2027-02-20T15:00:00Z",8,40,null,null,"U"],[26,"2027-02-20T15:00:00Z",2,7,null,null,"U"],[26,"2027-02-20T15:00:00Z",14,88,null,null,"U"],[26,"2027-02-20T15:00:00Z",43,4,null,null,"U"],[26,"2027-02-20T15:00:00Z",17,1,null,null,"U"],[26,"2027-02-20T15:00:00Z",56,11,null,null,"U"],[27,"2027-02-27T15:00:00Z",7,8,null,null,"U"],[27,"2027-02-27T15:00:00Z",9,91,null,null,"U"],[27,"2027-02-27T15:00:00Z",31,56,null,null,"U"],[27,"2027-02-27T15:00:00Z",11,17,null,null,"U"],[27,"2027-02-27T15:00:00Z",54,2,null,null,"U"],[27,"2027-02-27T15:00:00Z",88,43,null,null,"U"],[27,"2027-02-27T15:00:00Z",40,36,null,null,"U"],[27,"2027-02-27T15:00:00Z",1,3,null,null,"U"],[27,"2027-02-27T15:00:00Z",4,94,null,null,"U"],[27,"2027-02-27T15:00:00Z",6,14,null,null,"U"],[28,"2027-03-03T20:00:00Z",3,31,null,null,"U"],[28,"2027-03-03T20:00:00Z",91,6,null,null,"U"],[28,"2027-03-03T20:00:00Z",94,40,null,null,"U"],[28,"2027-03-03T20:00:00Z",36,54,null,null,"U"],[28,"2027-03-03T20:00:00Z",8,9,null,null,"U"],[28,"2027-03-03T20:00:00Z",2,88,null,null,"U"],[28,"2027-03-03T20:00:00Z",14,7,null,null,"U"],[28,"2027-03-03T20:00:00Z",43,11,null,null,"U"],[28,"2027-03-03T20:00:00Z",17,4,null,null,"U"],[28,"2027-03-03T20:00:00Z",56,1,null,null,"U"],[29,"2027-03-13T15:00:00Z",7,88,null,null,"U"],[29,"2027-03-13T15:00:00Z",91,4,null,null,"U"],[29,"2027-03-13T15:00:00Z",8,3,null,null,"U"],[29,"2027-03-13T15:00:00Z",9,43,null,null,"U"],[29,"2027-03-13T15:00:00Z",31,54,null,null,"U"],[29,"2027-03-13T15:00:00Z",2,36,null,null,"U"],[29,"2027-03-13T15:00:00Z",14,40,null,null,"U"],[29,"2027-03-13T15:00:00Z",1,11,null,null,"U"],[29,"2027-03-13T15:00:00Z",56,94,null,null,"U"],[29,"2027-03-13T15:00:00Z",6,17,null,null,"U"],[30,"2027-03-20T15:00:00Z",3,56,null,null,"U"],[30,"2027-03-20T15:00:00Z",94,91,null,null,"U"],[30,"2027-03-20T15:00:00Z",36,9,null,null,"U"],[30,"2027-03-20T15:00:00Z",11,6,null,null,"U"],[30,"2027-03-20T15:00:00Z",54,14,null,null,"U"],[30,"2027-03-20T15:00:00Z",88,8,null,null,"U"],[30,"2027-03-20T15:00:00Z",40,31,null,null,"U"],[30,"2027-03-20T15:00:00Z",43,1,null,null,"U"],[30,"2027-03-20T15:00:00Z",4,2,null,null,"U"],[30,"2027-03-20T15:00:00Z",17,7,null,null,"U"],[31,"2027-04-10T14:00:00Z",7,36,null,null,"U"],[31,"2027-04-10T14:00:00Z",91,43,null,null,"U"],[31,"2027-04-10T14:00:00Z",8,54,null,null,"U"],[31,"2027-04-10T14:00:00Z",9,3,null,null,"U"],[31,"2027-04-10T14:00:00Z",31,11,null,null,"U"],[31,"2027-04-10T14:00:00Z",2,17,null,null,"U"],[31,"2027-04-10T14:00:00Z",14,4,null,null,"U"],[31,"2027-04-10T14:00:00Z",1,88,null,null,"U"],[31,"2027-04-10T14:00:00Z",56,40,null,null,"U"],[31,"2027-04-10T14:00:00Z",6,94,null,null,"U"],[32,"2027-04-17T14:00:00Z",3,7,null,null,"U"],[32,"2027-04-17T14:00:00Z",94,2,null,null,"U"],[32,"2027-04-17T14:00:00Z",36,8,null,null,"U"],[32,"2027-04-17T14:00:00Z",11,91,null,null,"U"],[32,"2027-04-17T14:00:00Z",54,56,null,null,"U"],[32,"2027-04-17T14:00:00Z",88,9,null,null,"U"],[32,"2027-04-17T14:00:00Z",40,1,null,null,"U"],[32,"2027-04-17T14:00:00Z",43,31,null,null,"U"],[32,"2027-04-17T14:00:00Z",4,6,null,null,"U"],[32,"2027-04-17T14:00:00Z",17,14,null,null,"U"],[33,"2027-04-24T14:00:00Z",7,9,null,null,"U"],[33,"2027-04-24T14:00:00Z",91,3,null,null,"U"],[33,"2027-04-24T14:00:00Z",94,54,null,null,"U"],[33,"2027-04-24T14:00:00Z",8,43,null,null,"U"],[33,"2027-04-24T14:00:00Z",11,36,null,null,"U"],[33,"2027-04-24T14:00:00Z",2,14,null,null,"U"],[33,"2027-04-24T14:00:00Z",1,31,null,null,"U"],[33,"2027-04-24T14:00:00Z",4,40,null,null,"U"],[33,"2027-04-24T14:00:00Z",17,56,null,null,"U"],[33,"2027-04-24T14:00:00Z",6,88,null,null,"U"],[34,"2027-05-01T14:00:00Z",3,6,null,null,"U"],[34,"2027-05-01T14:00:00Z",36,17,null,null,"U"],[34,"2027-05-01T14:00:00Z",9,1,null,null,"U"],[34,"2027-05-01T14:00:00Z",31,7,null,null,"U"],[34,"2027-05-01T14:00:00Z",54,11,null,null,"U"],[34,"2027-05-01T14:00:00Z",88,91,null,null,"U"],[34,"2027-05-01T14:00:00Z",40,2,null,null,"U"],[34,"2027-05-01T14:00:00Z",14,8,null,null,"U"],[34,"2027-05-01T14:00:00Z",43,94,null,null,"U"],[34,"2027-05-01T14:00:00Z",56,4,null,null,"U"],[35,"2027-05-08T14:00:00Z",91,1,null,null,"U"],[35,"2027-05-08T14:00:00Z",94,7,null,null,"U"],[35,"2027-05-08T14:00:00Z",36,56,null,null,"U"],[35,"2027-05-08T14:00:00Z",11,88,null,null,"U"],[35,"2027-05-08T14:00:00Z",54,40,null,null,"U"],[35,"2027-05-08T14:00:00Z",2,3,null,null,"U"],[35,"2027-05-08T14:00:00Z",43,14,null,null,"U"],[35,"2027-05-08T14:00:00Z",4,9,null,null,"U"],[35,"2027-05-08T14:00:00Z",17,31,null,null,"U"],[35,"2027-05-08T14:00:00Z",6,8,null,null,"U"],[36,"2027-05-15T14:00:00Z",3,17,null,null,"U"],[36,"2027-05-15T14:00:00Z",7,4,null,null,"U"],[36,"2027-05-15T14:00:00Z",8,11,null,null,"U"],[36,"2027-05-15T14:00:00Z",9,6,null,null,"U"],[36,"2027-05-15T14:00:00Z",31,36,null,null,"U"],[36,"2027-05-15T14:00:00Z",88,54,null,null,"U"],[36,"2027-05-15T14:00:00Z",40,43,null,null,"U"],[36,"2027-05-15T14:00:00Z",14,94,null,null,"U"],[36,"2027-05-15T14:00:00Z",1,2,null,null,"U"],[36,"2027-05-15T14:00:00Z",56,91,null,null,"U"],[37,"2027-05-23T14:00:00Z",91,8,null,null,"U"],[37,"2027-05-23T14:00:00Z",94,88,null,null,"U"],[37,"2027-05-23T14:00:00Z",36,14,null,null,"U"],[37,"2027-05-23T14:00:00Z",11,3,null,null,"U"],[37,"2027-05-23T14:00:00Z",54,9,null,null,"U"],[37,"2027-05-23T14:00:00Z",2,56,null,null,"U"],[37,"2027-05-23T14:00:00Z",43,7,null,null,"U"],[37,"2027-05-23T14:00:00Z",4,31,null,null,"U"],[37,"2027-05-23T14:00:00Z",17,40,null,null,"U"],[37,"2027-05-23T14:00:00Z",6,1,null,null,"U"],[38,"2027-05-30T15:00:00Z",3,36,null,null,"U"],[38,"2027-05-30T15:00:00Z",7,6,null,null,"U"],[38,"2027-05-30T15:00:00Z",8,94,null,null,"U"],[38,"2027-05-30T15:00:00Z",9,17,null,null,"U"],[38,"2027-05-30T15:00:00Z",31,2,null,null,"U"],[38,"2027-05-30T15:00:00Z",88,4,null,null,"U"],[38,"2027-05-30T15:00:00Z",40,11,null,null,"U"],[38,"2027-05-30T15:00:00Z",14,91,null,null,"U"],[38,"2027-05-30T15:00:00Z",1,54,null,null,"U"],[38,"2027-05-30T15:00:00Z",56,43,null,null,"U"]],"squads":{"3":[[154561,"David Raya",1,0,0,1,null],[109745,"Kepa Arrizabalaga",1,0,0,13,null],[437495,"Illan Meslier",1,11,0,30,null],[551221,"Tommy Setford",1,0,0,35,356539],[462424,"William Saliba",2,1,0,2,null],[500040,"Cristhian Mosquera",2,0,0,3,284537],[198869,"Ben White",2,0,1,4,null],[448104,"Piero Hincapié",2,1,2,5,2722],[226597,"Gabriel Magalhães",2,3,5,6,null],[445122,"Jurriën Timber",2,3,6,12,null],[466075,"Riccardo Calafiori",2,1,2,33,null],[499169,"Myles Lewis-Skelly",2,0,0,49,null],[184029,"Martin Ødegaard",3,1,7,8,null],[232413,"Eberechi Eze",3,7,3,10,null],[438098,"Fábio Vieira",3,0,0,21,null],[499175,"Ethan Nwaneri",3,0,0,22,null],[195384,"Mikel Merino",3,4,3,23,null],[481655,"Martín Zubimendi",3,5,1,36,19297],[208706,"Bruno Guimarães",3,9,7,39,null],[204480,"Declan Rice",3,4,9,41,null],[616077,"Max Dowman",3,1,1,56,415271],[223340,"Bukayo Saka",4,7,10,7,null],[205651,"Gabriel Jesus",4,3,0,9,null],[444145,"Gabriel Martinelli",4,1,5,11,null],[224117,"Viktor Gyökeres",4,14,1,14,null],[439509,"Christos Tzolis",4,0,0,17,null],[248857,"Noni Madueke",4,3,1,20,null],[200641,"Reiss Nelson",4,0,1,24,null],[219847,"Kai Havertz",4,2,3,29,null]],"7":[[98980,"Emiliano Martínez",1,0,1,23,null],[72147,"Marco Bizot",1,0,0,40,1163],[481283,"James Wright",1,0,0,42,284619],[616076,"Owen Asemota",1,0,0,60,415270],[199796,"Matty Cash",2,3,3,2,null],[184667,"Victor Lindelöf",2,0,1,3,null],[199798,"Ezri Konsa",2,0,1,4,null],[149484,"Tyrone Mings",2,0,1,5,null],[244954,"Pau Torres",2,0,2,14,null],[578545,"Kosta Nedeljkovic",2,0,0,20,null],[441302,"Ian Maatsen",2,0,1,22,null],[569577,"Triston Rowe",2,0,0,45,407538],[671103,"Modou Kéba Cissé",2,0,0,48,429440],[88894,"Ross Barkley",3,3,2,6,null],[122806,"John McGinn",3,5,4,7,null],[226944,"Boubacar Kamara",3,1,3,8,null],[195546,"Emiliano Buendía",3,6,2,10,null],[449871,"Amadou Onana",3,2,0,24,null],[515597,"Lamare Bogarde",3,0,0,26,null],[448089,"João Gomes",3,1,1,35,null],[614071,"Johan Manzambi",3,0,0,44,429439],[577285,"George Hemmings",3,0,0,53,413400],[576767,"Aidan Borland",3,0,0,54,415269],[645618,"Bradley Burrowes",3,0,0,83,429438],[178301,"Ollie Watkins",4,16,4,11,null],[493105,"Alejandro Garnacho",4,1,4,17,374243],[173879,"Tammy Abraham",4,2,0,18,null],[215711,"Leon Bailey",4,0,2,31,null],[690838,"Brian Madjo",4,0,0,39,465792],[653481,"Alysson Edward",4,0,0,47,429436]],"91":[[457569,"Djordje Petrovic",1,0,0,1,null],[40383,"Fraser Forster",1,0,0,17,null],[444172,"Will Dennis",1,0,0,40,null],[436893,"Julián Araujo",2,0,0,2,null],[494521,"Adrien Truffert",2,1,6,3,284522],[575901,"Julio Soler",2,0,0,6,413393],[483067,"António Silva",2,0,0,14,286015],[54469,"Adam Smith",2,0,2,15,null],[242882,"Bafodé Diakité",2,0,0,18,2048],[463981,"James Hill",2,0,3,23,null],[232980,"Max Aarons",2,0,0,37,null],[620487,"Veljko Milosavljevic",2,0,0,44,429444],[541462,"Matai Akinmboni",2,0,0,45,378023],[155408,"Lewis Cook",3,0,1,4,null],[111317,"David Brooks",3,1,3,7,null],[503139,"Alex Scott",3,3,2,8,null],[158499,"Ryan Christie",3,2,1,10,null],[200785,"Tyler Adams",3,2,2,12,null],[201658,"Marcus Tavernier",3,7,4,16,null],[494928,"Juanlu Sánchez",3,0,0,24,310485],[614574,"Alex Tóth",3,0,0,27,429443],[606775,"Ben Winterburn",3,0,0,47,null],[444102,"Evanilson",4,6,7,9,null],[496208,"Ben Gannon-Doak",4,0,1,11,null],[222683,"Justin Kluivert",4,2,0,19,null],[489888,"Amine Adli",4,3,2,21,284515],[523700,"Daniel Jebbison",4,0,0,21,null],[561245,"Álvaro Rodríguez",4,0,0,30,356535],[499604,"Rayan",4,5,2,37,310484],[606774,"Remy Rees-Dottin",4,0,0,50,415277]],"94":[[200720,"Caoimhín Kelleher",1,0,0,1,161923],[507433,"Hákon Valdimarsson",1,0,0,12,310467],[235448,"Ellery Balcombe",1,0,0,31,195950],[472713,"Aaron Hickey",2,0,0,2,null],[194010,"Rico Henry",2,0,2,3,null],[444765,"Sepp van den Berg",2,0,3,4,null],[231065,"Ethan Pinnock",2,0,0,5,null],[191866,"Kristoffer Ajer",2,0,2,20,null],[499717,"Jayden Meghoma",2,0,0,21,null],[432830,"Nathan Collins",2,1,2,22,null],[516873,"Caelan Avenell",2,0,0,33,356533],[607464,"Michael Kayode",2,1,2,33,310476],[570241,"Kim Ji-Soo",2,0,0,36,413395],[612534,"Benjamin Fredrick",2,0,0,44,429441],[513086,"Jannik Schuster",2,0,0,44,310469],[494556,"Ollie Shield",2,0,0,49,310470],[649240,"Joshua Stephenson",2,0,0,50,429442],[628204,"Yunus Konak",3,0,0,6,null],[513418,"Kevin Schade",3,8,5,7,278784],[207283,"Mathias Jensen",3,3,2,8,null],[183656,"Josh Dasilva",3,0,0,10,null],[244858,"Fábio Carvalho",3,1,0,14,null],[543295,"Antoni Milambo",3,0,0,17,382610],[508395,"Yehor Yarmoliuk",3,1,3,18,null],[440089,"Mikkel Damsgaard",3,4,4,24,null],[669058,"Andre Grey",3,0,0,26,429446],[204580,"Vitaly Janelt",3,1,4,27,null],[612659,"Luca Picotto",3,0,0,39,429479],[559610,"Luka Bentt",3,0,0,48,407540],[513545,"Mamadou Sangaré",3,0,0,null,310468],[502500,"Igor Thiago",4,22,1,9,null],[444180,"Jaidon Anthony",4,0,0,11,null],[75115,"Callum Wilson",4,0,0,13,null],[533463,"Dango Ouattara",4,7,8,19,null],[249231,"Keane Lewis-Potter",4,3,4,23,null],[654150,"Theo Mawene",4,0,0,36,429445],[626464,"Gustavo Nunes",4,0,0,39,null],[593174,"Kaye Furo",4,0,0,47,413398]],"36":[[489639,"Bart Verbruggen",1,0,0,1,null],[49262,"Jason Steele",1,0,0,23,null],[209288,"Tom McGill",1,0,0,38,null],[223434,"Igor Julio",2,0,0,3,null],[83299,"Lewis Dunk",2,1,1,5,null],[439135,"Eiran Cashin",2,0,0,16,195966],[204120,"Olivier Boscagli",2,0,1,21,22227],[231416,"Ferdi Kadioglu",2,1,2,24,null],[465730,"Maxim De Cuyper",2,2,3,29,284544],[547720,"Charlie Tasker",2,0,0,47,398790],[451490,"Costinha",2,0,0,null,278396],[610799,"Luka Vuskovic",2,0,0,null,356510],[454490,"Michael Svoboda",2,0,0,null,310460],[222694,"Pascal Struijk",2,0,1,null,null],[513433,"Brajan Gruda",3,0,0,8,null],[532529,"Jack Hinshelwood",3,4,5,13,null],[535301,"Carlos Baleba",3,0,0,17,null],[451340,"Kaoru Mitoma",3,3,1,22,null],[514254,"Diego Gómez",3,5,1,25,null],[509416,"Yasin Ayari",3,3,4,26,null],[467779,"Mats Wieffer",3,2,4,27,null],[60307,"Pascal Groß",3,1,6,30,null],[219249,"Matt O'Riley",3,1,0,33,null],[611695,"Malick Yalcouyé",3,0,0,36,null],[661018,"Jesse Middleton",3,0,0,75,429449],[519324,"Amario Cozier-Duberry",3,0,0,null,null],[463067,"Georginio Rutter",4,3,5,10,null],[592031,"Yankuba Minteh",4,3,8,11,null],[647850,"Charalampos Kostoulas",4,2,1,19,429447],[487117,"Evan Ferguson",4,0,0,28,null],[574402,"Mark O'Mahony",4,0,0,51,null],[667902,"George Munday",4,0,0,null,429448],[612855,"Ibrahim Osman",4,0,0,null,null],[700308,"Zadok Yohanna",4,0,0,null,465794]],"8":[[215059,"Robert Sánchez",1,0,1,1,null],[499857,"Teddy Sharman-Lowe",1,0,0,28,310472],[518892,"Ted Curd",1,0,0,35,356538],[549939,"Mike Penders",1,0,0,39,398791],[471798,"Gaga Slonina",1,0,0,44,null],[220362,"Axel Disasi",2,0,0,2,null],[620109,"Marco Palestra",2,0,0,2,429451],[109646,"Tosin Adarabioyo",2,0,0,4,null],[242880,"Benoît Badiashile",2,0,0,5,null],[460028,"Levi Colwill",2,0,0,6,null],[574458,"Mamadou Sarr",2,0,0,19,413397],[551210,"Jorrel Hato",2,0,0,21,376674],[225796,"Reece James",2,2,6,24,null],[482609,"Malo Gusto",2,2,3,27,null],[444463,"Wesley Fofana",2,0,2,29,null],[622758,"Aaron Anselmino",2,0,0,30,398793],[577016,"Josh Acheampong",2,1,0,34,null],[616109,"Olutayo Subuloye",2,0,0,37,429452],[619166,"Calvin Diakite",2,0,0,42,413399],[437499,"Maxence Lacroix",2,1,2,null,null],[498444,"Pep Chavarría",2,0,0,null,398389],[491007,"Dário Essugo",3,0,0,6,286016],[448047,"Enzo Fernández",3,10,5,8,null],[244851,"Cole Palmer",3,10,2,10,null],[465920,"Mykhailo Mudryk",3,0,0,10,null],[244850,"Morgan Rogers",3,10,8,17,null],[486672,"Moisés Caicedo",3,3,1,25,null],[666276,"Reggie Watson",3,0,0,31,429453],[636846,"Mahdi Nicoll-Jazuli",3,0,0,32,429450],[549068,"Omari Kellyman",3,0,0,33,null],[536916,"Facundo Buonanotte",3,0,0,40,null],[514356,"Roméo Lavia",3,0,0,45,null],[611921,"Reggie Walsh",3,0,0,46,415285],[611912,"Landon Emenalo",3,0,0,56,415282],[593117,"Geovany Quenda",3,0,0,null,338881],[56979,"Jordan Henderson",3,1,3,null,null],[543158,"Valentín Barco",3,0,0,null,null],[247632,"Pedro Neto",4,5,7,7,null],[463034,"Liam Delap",4,1,2,9,null],[463936,"Jamie Gittens",4,0,2,11,286270],[517052,"Nicolas Jackson",4,0,0,15,null],[475168,"João Pedro",4,15,9,20,null],[520295,"David Datro Fofana",4,0,0,27,308068],[499309,"Marc Guiu",4,0,1,38,null],[624773,"Estêvão",4,2,5,41,291680],[50175,"Danny Welbeck",4,13,1,null,null],[503037,"Emmanuel Emegha",4,0,0,null,160116]],"9":[[484389,"Oliver Dovin",1,0,0,1,356531],[110690,"Ben Wilson",1,0,0,13,195957],[472739,"Carl Rushworth",1,0,0,null,null],[173878,"Jay Dasilva",2,0,0,3,170005],[461102,"Bobby Thomas",2,0,0,4,null],[436761,"Liam Kitching",2,0,0,15,195964],[465390,"Kaine Kesler-Hayden",2,0,0,20,284530],[80178,"Jake Bidwell",2,0,0,21,16803],[204813,"Joel Latibeaudiere",2,0,0,22,null],[220583,"Luke Woolfenden",2,0,0,26,null],[451284,"Milan van Ewijk",2,0,0,27,286006],[577411,"Miguel Ángel Brau",2,0,0,33,413424],[539142,"Aurèle Amenda",2,0,0,null,398788],[480457,"Jack Rudoni",3,0,0,5,284238],[168144,"Matt Grimes",3,0,0,6,null],[501459,"Tatsuhiro Sakamoto",3,0,0,7,187050],[439668,"Josh Eccles",3,0,0,28,284248],[226965,"Victor Torp",3,0,0,29,278799],[196100,"Gustavo Hamer",3,0,0,38,null],[629397,"Kai Andrews",3,0,0,54,429478],[661888,"Caleb Yirenkyi",3,0,0,null,429477],[428580,"Frank Onyeka",3,0,2,null,null],[218997,"Ellis Simms",4,0,0,9,null],[241293,"Ephron Mason-Clark",4,0,0,10,195951],[176412,"Haji Wright",4,0,0,11,33274],[492498,"Raphael Borges Rodrigues",4,0,0,17,303107],[230730,"Brandon Thomas-Asante",4,0,0,23,195949],[655972,"Aidan Dausch",4,0,0,59,429476],[469272,"Loum Tchaouna",4,0,0,null,303099]],"31":[[172649,"Dean Henderson",1,0,0,1,null],[169593,"Remi Matthews",1,0,0,31,null],[487818,"Joe Whitworth",1,0,0,41,null],[121709,"Walter Benítez",1,0,0,44,2370],[697694,"Lucca Benetton",1,0,0,null,465795],[247348,"Daniel Muñoz",2,4,4,2,null],[244723,"Tyrick Mitchell",2,1,3,3,null],[588901,"Mofe Jemide",2,0,0,4,413404],[651426,"Jaydee Canvot",2,0,0,6,429456],[223723,"Takehiro Tomiyasu",2,0,0,17,null],[218364,"Borna Sosa",2,0,0,24,50219],[427623,"Chris Richards",2,1,0,26,null],[242313,"Óscar Mingueza",2,0,0,30,128794],[515621,"Chadi Riad",2,0,1,34,null],[501468,"Tayo Adaramola",2,0,0,45,310474],[591384,"George King",2,0,0,60,413403],[643426,"Dean Benamar",2,0,0,72,429455],[635236,"Charlie Walker-Smith",2,0,0,75,429454],[244719,"Trialist 1",2,0,0,null,null],[152551,"Jefferson Lerma",3,0,5,8,null],[488024,"Yéremy Pino",3,2,2,10,15878],[209400,"Daichi Kamada",3,0,2,18,null],[108413,"Will Hughes",3,0,1,19,null],[496221,"Adam Wharton",3,1,6,20,null],[438464,"Cheick Doucouré",3,0,0,28,null],[531989,"David Ozoh",3,0,0,52,null],[489706,"Justin Devenny",3,1,0,55,null],[232185,"Ismaïla Sarr",4,9,2,7,null],[205533,"Eddie Nketiah",4,2,0,9,null],[536694,"Matheus França",4,0,0,11,286302],[231747,"Jean-Philippe Mateta",4,12,0,14,null],[606921,"Romain Esse",4,0,0,21,null],[247412,"Jørgen Strand Larsen",4,4,1,22,null],[485337,"Evann Guessand",4,1,3,29,286009],[450542,"Jesurun Rak-Sakyi",4,0,0,49,null],[672492,"Joél Drakes-Thomas",4,0,0,86,429457],[570794,"Anan Khalaili",4,0,0,null,407541],[433154,"Dwight McNeil",4,0,3,null,null]],"11":[[111234,"Jordan Pickford",1,0,0,1,null],[229600,"Mark Travers",1,0,0,12,null],[138001,"Tom King",1,0,0,31,null],[565410,"George Pickford",1,0,0,50,407542],[243571,"Nathan Patterson",2,0,0,2,null],[106611,"Michael Keane",2,3,1,5,null],[17761,"James Tarkowski",2,2,3,6,null],[512462,"Jake O'Brien",2,1,3,15,null],[224967,"Vitalii Mykolenko",2,0,1,16,null],[480455,"Jarrad Branthwaite",2,1,1,32,null],[496661,"Tyler Dibling",3,0,0,20,null],[215413,"Kiernan Dewsbury-Hall",3,8,7,22,null],[128295,"Christian Nørgaard",3,0,0,23,null],[502697,"Charly Alcaraz",3,0,1,24,null],[513466,"Merlin Röhl",3,1,1,34,278792],[232928,"James Garner",3,2,7,37,null],[499300,"Adam Aznou",3,0,0,39,376679],[490094,"Tim Iroegbunam",3,0,3,42,null],[609873,"Harrison Armstrong",3,0,0,45,415286],[614436,"Harvey Foster",3,0,0,null,429458],[244860,"Hayden Hackney",3,0,0,null,37052],[486385,"Beto",4,9,1,9,null],[440993,"Iliman Ndiaye",4,6,3,10,null],[586309,"Thierno Barry",4,8,0,11,356523],[550615,"Tyrique George",4,0,0,19,null],[629068,"Braiden Graham",4,0,0,58,415284],[536241,"Martin Sherif",4,0,0,67,356524],[242898,"Brennan Johnson",4,2,1,null,null]],"54":[[80201,"Bernd Leno",1,0,0,1,null],[86873,"Benjamin Lecomte",1,0,0,23,21589],[468682,"Alex Borto",1,0,0,36,310475],[167074,"Kenny Tete",2,1,0,2,null],[232892,"Calvin Bassey",2,1,1,3,null],[174874,"Joachim Andersen",2,0,1,5,null],[246301,"Jorge Cuenca",2,0,0,15,null],[166477,"Timothy Castagne",2,0,2,21,null],[169528,"Antonee Robinson",2,1,0,33,null],[547686,"Luc De Fougerolles",2,0,0,44,398794],[153366,"Harrison Reed",3,1,0,6,null],[76357,"Tom Cairney",3,2,0,10,null],[477555,"Oscar Bobb",3,0,2,14,null],[207189,"Sander Berge",3,0,3,16,null],[463210,"Shea Charles",3,0,0,19,null],[577725,"Josh King",3,1,3,24,null],[184349,"Ryan Sessegnon",3,3,3,30,null],[209289,"Emile Smith Rowe",3,3,1,32,null],[571779,"César Palacios",3,0,0,null,413405],[244042,"Rodrigo Muniz",4,1,1,9,null],[153133,"Alex Iwobi",4,4,3,17,null],[631786,"Jonah Kusi-Asare",4,0,0,18,429459],[560552,"Kevin",4,1,3,22,311195],[616069,"Macauley Zepa",4,0,0,48,429460],[551466,"Gonzalo García",4,0,0,null,401478]],"88":[[167825,"Dillon Phillips",1,0,0,12,16806],[105666,"Jack Butland",1,0,0,null,null],[473284,"Konstantinos Tzolakis",1,0,0,null,286014],[193278,"Lewie Coyle",2,0,0,2,195945],[232351,"Ryan Giles",2,0,0,3,null],[501902,"Charlie Hughes",2,0,0,4,310471],[146426,"Semi Ajayi",2,0,0,6,null],[108416,"John Egan",2,0,0,15,null],[449428,"Matty Jacob",2,0,0,16,310473],[433590,"Cody Drameh",2,0,0,18,null],[160817,"Paddy McNair",2,0,0,37,null],[597462,"Lucas Herrington",2,0,0,null,413406],[169359,"Matt Targett",2,0,0,null,null],[606930,"Nobel Mendy",2,0,0,null,415288],[465525,"Eliot Matazo",3,0,0,8,286010],[208481,"Abdülkadir Ömür",3,0,0,10,2674],[470294,"Darko Gyabi",3,0,0,24,null],[101282,"Matt Crooks",3,0,0,25,16805],[171270,"Kieran Dowell",3,0,0,26,null],[243413,"Regan Slater",3,0,0,27,null],[608227,"Elliot Stroud",3,0,0,null,415287],[445028,"Hidemasa Morita",3,0,0,null,195953],[552946,"Jens Hjertø-Dahl",3,0,0,null,381116],[469266,"Lucas Gourna-Douath",3,0,0,null,356519],[553783,"Óscar Zambrano",3,0,0,null,398795],[232905,"Liam Millar",4,0,0,7,157857],[169432,"Oliver McBurnie",4,0,0,9,null],[540324,"Mohamed Belloumi",4,0,0,10,356525],[213292,"David Akintola",4,0,0,11,2675],[462635,"Joe Gelhardt",4,0,0,null,null]],"40":[[112520,"Alex Palmer",1,0,0,1,null],[50093,"David Button",1,0,0,27,null],[108813,"Christian Walton",1,0,0,28,null],[546600,"Kayne van Oevelen",1,0,0,null,398787],[240514,"Kjell Scherpen",1,0,0,null,null],[455084,"Leif Davis",2,0,0,3,null],[183015,"Cédric Kipré",2,0,0,4,null],[222018,"Ben Johnson",2,0,0,18,null],[176420,"Darnell Furlong",2,0,0,19,null],[449429,"Jacob Greaves",2,0,0,24,null],[216616,"Dara O'Shea",2,0,0,26,null],[219924,"Issa Diop",2,1,0,null,null],[241117,"Azor Matusiwa",3,0,0,5,22237],[231899,"Jack Taylor",3,0,0,14,null],[461587,"Kasey McAteer",3,0,0,20,null],[524180,"Cameron Humphreys",3,0,0,30,null],[501390,"Marcelino Núñez",3,0,0,32,284551],[232457,"Anis Mehmeti",3,0,0,33,310462],[223336,"Dan Neil",3,0,0,null,284247],[216055,"Florentino",3,0,0,null,22241],[212314,"Sasa Lukic",3,1,4,null,null],[557012,"Sindre Egeli",4,0,0,8,413407],[222625,"George Hirst",4,0,0,9,null],[481624,"Jaden Philogene",4,0,0,11,286005],[462387,"Ali Al Hamadi",4,0,0,16,null],[229164,"Chiedozie Ogbene",4,0,0,21,null],[147675,"Chuba Akpom",4,0,0,29,null],[443261,"Jack Clarke",4,0,0,47,null],[531442,"Abdul Fatawu",4,0,0,null,null],[442967,"Daizen Maeda",4,0,0,null,187046],[543968,"Emersonn",4,0,0,null,382611]],"2":[[201595,"Lucas Perri",1,0,0,1,null],[97846,"Alex Cairns",1,0,0,21,16808],[576430,"Rory Mahady",1,0,0,49,413411],[519326,"Darryl Ombang",1,0,0,null,356536],[432720,"James Trafford",1,0,0,null,null],[226182,"Jayden Bogle",2,1,5,2,null],[243526,"Gabriel Gudmundsson",2,0,0,3,22230],[199598,"Ethan Ampadu",2,1,4,4,null],[214225,"Joe Rodon",2,2,0,6,null],[434752,"Jaka Bijol",2,1,3,15,22233],[437738,"Sebastiaan Bornauw",2,0,0,23,22231],[220627,"James Justin",2,2,1,24,null],[113564,"Sam Byram",2,0,0,25,null],[643970,"Jayden Lienou",2,0,0,65,429462],[522047,"Tarik Muharemovic",2,0,0,null,284559],[200617,"Daniel James",3,0,0,7,null],[180135,"Sean Longstaff",3,2,2,8,null],[427637,"Brenden Aaronson",3,4,8,11,null],[466525,"Anton Stach",3,5,6,18,25324],[248056,"Ao Tanaka",3,2,1,22,187048],[565863,"Sam Chambers",3,0,0,42,407543],[486520,"Ilia Gruev",3,0,4,44,286007],[577978,"Rhys Chadwick",3,0,0,47,413410],[592740,"Alfie Cresswell",3,0,0,51,413408],[600880,"Ollie Pickles",3,0,0,78,415289],[632460,"Callum Mills",3,0,0,null,429461],[597233,"Freddie Lane",3,0,0,null,413409],[153682,"Harry Wilson",3,10,9,null,null],[177815,"Dominic Calvert-Lewin",4,14,2,9,null],[235826,"Joël Piroe",4,0,0,10,22240],[174594,"Lukas Nmecha",4,6,1,14,null],[433952,"Largie Ramazani",4,0,0,17,null],[565297,"Mateo Joseph",4,0,0,19,null],[435997,"Noah Okafor",4,8,3,19,22238],[492859,"Wilfried Gnonto",4,0,3,29,null]],"14":[[116535,"Alisson Becker",1,0,0,1,331],[155503,"Freddie Woodman",1,0,0,28,null],[432987,"Vítezslav Jaros",1,0,0,56,null],[464353,"Harvey Davies",1,0,0,95,284625],[171287,"Joe Gomez",2,0,2,2,null],[97032,"Virgil van Dijk",2,6,1,4,null],[606702,"Jérémy Jacquet",2,0,0,5,410003],[544877,"Milos Kerkez",2,2,1,6,null],[492777,"Conor Bradley",2,0,2,12,null],[647681,"Giovanni Leoni",2,0,0,15,398792],[214285,"Kostas Tsimikas",2,0,0,21,null],[216094,"Jeremie Frimpong",2,0,5,30,27082],[445087,"Ronald Araujo",2,0,0,33,160137],[462491,"Luke Chambers",2,0,0,44,null],[489580,"Calvin Ramsay",2,0,0,47,null],[519328,"Calum Scanlon",2,0,0,48,284612],[718875,"Talla Ndiaye",2,0,0,75,465793],[591617,"Ifeanyi Ndukwe",2,0,0,83,407548],[605314,"Lucas Pitt",2,0,0,null,407549],[434551,"Natalia Ramos",2,0,0,null,359025],[158983,"Wataru Endo",3,0,1,3,null],[494595,"Florian Wirtz",3,5,4,7,27658],[424876,"Dominik Szoboszlai",3,6,7,8,null],[243016,"Alexis Mac Allister",3,2,5,10,null],[206915,"Curtis Jones",3,1,3,17,null],[444884,"Harvey Elliott",3,0,0,19,null],[441266,"Ryan Gravenberch",3,5,5,38,null],[591386,"Trey Nyoni",3,0,0,42,407547],[535928,"Stefan Bajcetic",3,0,0,43,null],[491501,"James McConnell",3,0,0,53,null],[596042,"Kieran Morrison",3,0,0,68,407546],[219168,"Alexander Isak",4,3,1,9,null],[223541,"Federico Chiesa",4,2,1,14,null],[243298,"Cody Gakpo",4,7,5,18,null],[510663,"Hugo Ekitiké",4,11,4,22,47485],[551499,"Víctor Muñoz",4,0,0,23,401479],[688136,"Joshua Abe",4,0,0,40,427897],[514514,"Lewis Koumas",4,0,0,67,382613],[611922,"Rio Ngumoha",4,2,1,73,415281],[631534,"Joshua Sonni-Lambie",4,0,0,82,415283]],"43":[[204936,"Gianluigi Donnarumma",1,0,0,1,762],[122074,"Marcus Bettinelli",1,0,0,13,null],[106921,"Gerónimo Rulli",1,0,0,28,2931],[171314,"Rúben Dias",2,2,0,3,null],[209036,"Marc Guéhi",2,3,5,6,null],[448514,"Rayan Aït-Nouri",2,0,2,21,null],[616222,"Vitor Reis",2,0,0,22,413401],[477424,"Josko Gvardiol",2,2,2,24,null],[472769,"Nico O'Reilly",2,5,4,33,null],[578153,"Abdukodir Khusanov",2,0,0,45,null],[477064,"Rico Lewis",2,0,1,82,null],[432710,"Finley Burns",2,0,0,94,null],[447880,"Josh Wilson-Esbrand",2,0,0,97,null],[433036,"Tijjani Reijnders",3,5,3,4,19220],[215379,"Elliot Anderson",3,4,5,5,null],[91651,"Mateo Kovacic",3,0,1,8,null],[114283,"Jack Grealish",3,2,6,10,null],[466052,"Rayan Cherki",3,4,13,10,25333],[465694,"Nico González",3,1,0,14,null],[220566,"Rodri",3,1,1,16,null],[465351,"Matheus Nunes",3,1,8,27,null],[575204,"Claudio Echeverri",3,0,0,30,413402],[209244,"Phil Foden",3,7,5,47,null],[438234,"Omar Marmoush",4,3,3,7,null],[223094,"Erling Haaland",4,27,8,9,null],[248875,"Jérémy Doku",4,5,8,11,null],[510281,"Savinho",4,1,2,26,null],[649208,"Jeremy Monga",4,0,0,40,null],[437730,"Antoine Semenyo",4,17,6,42,null]],"1":[[465247,"Senne Lammens",1,0,0,1,310461],[59735,"Karl Darlow",1,0,0,12,null],[21205,"Tom Heaton",1,0,0,22,null],[202641,"André Onana",1,0,0,24,null],[461537,"Dermot Mee",1,0,0,45,310463],[515642,"Solomon Honor",1,0,0,47,356537],[704237,"Fred Heath",1,0,0,78,465796],[216051,"Diogo Dalot",2,1,6,2,null],[230001,"Noussair Mazraoui",2,0,0,3,null],[209365,"Matthijs de Ligt",2,1,0,4,null],[95658,"Harry Maguire",2,1,2,5,null],[221820,"Lisandro Martínez",2,0,0,6,null],[596777,"Patrick Dorgu",2,4,4,13,null],[550864,"Leny Yoro",2,0,1,15,null],[106760,"Luke Shaw",2,1,1,23,null],[606745,"Ayden Heaven",2,0,1,26,null],[661712,"Diego León",2,0,0,35,429437],[577974,"Harry Amass",2,0,0,41,null],[564509,"Jaydan Kamason",2,0,0,66,407544],[576622,"Daniel Armer",2,0,0,null,413412],[184341,"Mason Mount",3,3,0,7,null],[141746,"Bruno Fernandes",3,9,24,8,null],[504598,"Daniel Gore",3,0,0,8,310464],[532605,"Andrey Santos",3,1,0,17,308027],[166989,"Youri Tielemans",3,0,4,18,null],[232112,"Manuel Ugarte",3,0,0,25,null],[516895,"Kobbie Mainoo",3,1,2,37,null],[547037,"Jack Fletcher",3,0,0,38,398789],[519913,"Tyler Fletcher",3,0,0,39,356534],[490881,"Toby Collyer",3,0,0,43,null],[613455,"Jacob Devaney",3,0,0,67,429463],[576634,"Jim Thwaites",3,0,0,77,413413],[176297,"Marcus Rashford",4,0,0,10,null],[430871,"Matheus Cunha",4,10,4,10,null],[458249,"Joshua Zirkzee",4,2,1,11,null],[493250,"Amad Diallo",4,2,5,16,null],[446008,"Bryan Mbeumo",4,11,3,19,null],[647429,"Tynan Thompson",4,0,0,27,429464],[485711,"Benjamin Sesko",4,11,2,30,284],[575034,"Ethan Wheatley",4,0,0,36,null],[576628,"Shea Lacey",4,0,0,61,413414],[688129,"Joseph Gabriel",4,0,0,77,465797]],"4":[[98747,"Nick Pope",1,0,1,1,null],[111452,"Odysseas Vlachodimos",1,0,0,19,null],[554578,"Ewen Jaouen",1,0,0,24,398786],[81441,"Mark Gillespie",1,0,0,29,null],[577980,"Aidan Harris",1,0,0,31,413415],[470551,"Lukás Hornícek",1,0,0,null,286011],[441191,"Tino Livramento",2,0,1,2,null],[487838,"Lewis Hall",2,1,2,3,null],[220237,"Sven Botman",2,1,1,4,null],[119471,"Fabian Schär",2,0,0,5,null],[629409,"Henry Johnson",2,0,0,12,429467],[465642,"Malick Thiaw",2,4,0,12,62758],[78916,"Dan Burn",2,1,3,33,null],[566331,"Dylan Charlton",2,0,0,35,407545],[599304,"Luke Craggs",2,0,0,36,415290],[578512,"Miodrag Pivas",2,0,0,48,413417],[553746,"Leo Shahar",2,0,0,51,398785],[180974,"Joelinton",3,2,1,7,null],[632794,"Aladji Bamba",3,0,0,8,429465],[201666,"Harvey Barnes",3,7,1,11,null],[636852,"Sean Steur",3,0,0,14,429470],[114243,"Jacob Murphy",3,3,2,23,null],[200089,"Joe Willock",3,0,2,28,null],[232653,"Jacob Ramsey",3,2,3,41,null],[591191,"Anthony Munda",3,0,0,45,413416],[604737,"Rory Finneran",3,0,0,61,415291],[547719,"Lewis Miley",3,1,4,67,null],[665243,"Mason Miley",3,0,0,76,429468],[216646,"Yoane Wissa",4,1,1,9,null],[538207,"William Osula",4,7,1,10,null],[611665,"Bazoumana Touré",4,0,0,17,413394],[449434,"Anthony Elanga",4,0,1,19,null],[470313,"Nick Woltemade",4,8,4,27,310466],[623110,"Park Seung-Soo",4,0,0,47,376681],[601767,"Vakhtang Salia",4,0,0,49,415293],[629408,"Matheos Ferreira",4,0,0,60,429469],[577726,"Trevan Sanusi",4,0,0,60,413418],[599303,"Sean Neave",4,0,0,62,415292],[640108,"Antoñito Cordero",4,0,0,null,429466]],"17":[[221389,"John Victor",1,0,0,12,9679],[85633,"Matz Sels",1,0,0,26,null],[428971,"Steven Benda",1,0,0,null,null],[568420,"Ousmane Diomande",2,0,0,2,286024],[215136,"Neco Williams",2,2,3,3,null],[485047,"Morato",2,1,0,4,null],[575476,"Murillo",2,1,0,5,null],[575458,"Jair Cunha",2,0,0,23,356528],[470315,"Luca Netz",2,0,0,25,22224],[204822,"Omar Richards",2,0,0,27,null],[227444,"Nikola Milenkovic",2,0,1,31,null],[159506,"Ola Aina",2,0,2,34,null],[500151,"Nicolò Savona",2,2,0,37,303109],[549067,"Zach Abbott",2,0,0,44,null],[210462,"Ibrahim Sangaré",3,2,2,6,null],[250199,"Nicolás Domínguez",3,1,1,8,null],[222531,"Morgan Gibbs-White",3,15,4,10,null],[230046,"Douglas Luiz",3,0,0,12,null],[204561,"Xaver Schlager",3,0,0,21,186],[204968,"Ryan Yates",3,0,2,22,null],[432714,"James McAtee",3,0,1,24,null],[209046,"Callum Hudson-Odoi",4,3,4,7,null],[210156,"Taiwo Awoniyi",4,4,2,9,null],[60689,"Chris Wood",4,3,0,11,null],[456512,"Dan Ndoye",4,1,2,14,276],[465680,"Arnaud Kalimuendo",4,0,0,15,36330],[569014,"Eric da Silva Moreira",4,0,0,17,null],[482973,"Igor Jesus",4,6,6,19,16749],[503301,"Omari Hutchinson",4,1,7,20,null],[476887,"Dilane Bakwa",4,0,2,29,310465]],"56":[[74854,"Simon Moore",1,0,0,21,null],[498016,"Robin Roefs",1,0,0,22,310479],[515046,"Melker Ellborg",1,0,0,31,382619],[223827,"Dan Ballard",2,2,2,5,157854],[93605,"Thomas Meunier",2,0,0,12,2032],[201895,"Omar Alderete",2,1,1,15,10004],[434399,"Reinildo Mandava",2,0,2,17,2668],[200834,"Nordi Mukiele",2,3,5,20,2671],[519634,"Jenson Seelt",2,0,0,23,356540],[487676,"Trai Hume",2,2,1,32,284529],[220684,"Aji Alese",2,0,0,42,284231],[232356,"Jenson Jones",2,0,0,51,310478],[578589,"Ben Kindon",2,0,0,null,413419],[171422,"Alan Browne",3,0,0,8,2359],[554197,"Chris Rigg",3,1,1,11,382612],[167512,"Luke O'Nien",3,0,1,13,170010],[629583,"Tom Proctor",3,0,0,15,429471],[547027,"Habib Diarra",3,2,6,19,413391],[577669,"Noah Sadiki",3,0,2,27,413421],[484420,"Enzo Le Fée",3,5,6,28,161918],[84450,"Granit Xhaka",3,1,6,34,null],[477851,"Abdoullah Ba",3,0,0,46,303104],[571087,"Jaydon Jones",3,0,0,52,413420],[570929,"Jack Whittaker",3,0,0,53,407550],[604174,"Archie Lightfoot",3,0,0,null,415294],[610822,"Charlie Dinsdale",3,0,0,null,415295],[549912,"Chemsdine Talbi",4,4,2,7,398796],[441264,"Brian Brobbey",4,7,2,9,308025],[551153,"Luís Semedo",4,0,0,9,413396],[536661,"Nilson Angulo",4,0,0,10,308074],[461199,"Romaine Mundle",4,0,0,14,null],[437505,"Wilson Isidor",4,6,1,18,278397],[535818,"Simon Adingra",4,1,1,24,null],[699989,"Djiamgone Jocelin Ta Bi",4,0,0,37,465798],[571088,"Trey Ogunsuyi",4,0,0,47,413422],[604211,"Tymur Tutierov",4,0,0,57,415298],[610818,"Finn Geragusyan",4,0,0,74,415297],[610820,"Felix Scott",4,0,0,null,415296]],"6":[[184254,"Guglielmo Vicario",1,0,0,1,null],[485055,"Antonín Kinsky",1,0,0,31,null],[67089,"Martin Dúbravka",1,0,0,39,null],[214572,"Brandon Austin",1,0,0,40,null],[688140,"Mikel Jack",1,0,0,null,465799],[122798,"Andy Robertson",2,1,0,3,null],[135720,"Kevin Danso",2,0,0,4,null],[221466,"Marcos Senesi",2,0,6,5,null],[469142,"Jan Paul van Hecke",2,3,3,6,null],[487053,"Destiny Udogie",2,0,1,13,null],[441164,"Pedro Porro",2,1,3,23,null],[553299,"Kota Takai",2,0,0,25,398797],[115556,"Ben Davies",2,1,0,33,null],[491279,"Micky van de Ven",2,4,1,37,null],[616221,"Souza",2,0,0,38,410451],[611920,"Malachi Hardy",2,0,0,66,null],[640730,"Miracle Adewole",2,0,0,84,429473],[666396,"Tyler Tingey",2,0,0,88,429475],[493362,"Xavi Simons",3,2,5,7,1465],[232787,"Conor Gallagher",3,1,1,8,null],[172780,"James Maddison",3,0,0,10,null],[547701,"Archie Gray",3,2,2,14,null],[570526,"Lucas Bergvall",3,1,3,15,null],[432422,"Sandro Tonali",3,0,2,16,null],[551226,"Mateus Fernandes",3,3,4,18,null],[460842,"Mohammed Kudus",3,2,6,20,null],[445044,"Dejan Kulusevski",3,0,0,21,null],[482442,"Pape Matar Sarr",3,2,4,29,null],[202993,"Rodrigo Bentancur",3,1,1,30,null],[513588,"Jamie Donley",3,0,0,43,null],[563934,"Tyrese Hall",3,0,0,49,407551],[519327,"George Abbott",3,0,0,50,356541],[536134,"Rio Kyerematen",3,0,0,57,356542],[611917,"Luca Williams-Barnett",3,0,0,68,415299],[644143,"Harry Byrne",3,0,0,78,429472],[680832,"Tye Hall",3,0,0,89,465800],[212319,"Richarlison",4,11,4,9,null],[511499,"Mathys Tel",4,4,2,11,null],[154566,"Dominic Solanke",4,3,0,19,null],[550839,"Wilson Odobert",4,0,2,28,null],[490145,"Dane Scarlett",4,0,0,44,null],[499721,"Mikey Moore",4,0,0,47,null],[574799,"Damola Ajayi",4,0,0,63,413423],[663311,"Reiss Elliot-Parris",4,0,0,72,429474]]},"scorers":[[223094,43,"Haaland",27,8],[502500,94,"Thiago",22,1],[437730,43,"Semenyo",17,6],[178301,7,"Watkins",16,4],[475168,8,"João Pedro",15,9],[222531,17,"Gibbs-White",15,4],[177815,2,"Calvert-Lewin",14,2],[224117,3,"Gyökeres",14,1],[50175,8,"Welbeck",13,1],[560262,91,"Kroupi.Jr",13,0],[231747,31,"Mateta",12,0],[510663,14,"Ekitiké",11,4],[212319,6,"Richarlison",11,4],[446008,1,"Mbeumo",11,3],[485711,1,"Šeško",11,2],[437495,3,"Meslier",11,0],[153682,2,"Wilson",10,9],[244850,8,"Rogers",10,8],[448047,8,"Enzo",10,5],[430871,1,"Cunha",10,4]],"assisters":[[141746,1,"B.Fernandes",24,9],[466052,43,"Cherki",13,4],[223340,3,"Saka",10,7],[475168,8,"João Pedro",9,15],[153682,2,"Wilson",9,10],[204480,3,"Rice",9,4],[223094,43,"Haaland",8,27],[244850,8,"Rogers",8,10],[533463,94,"O.Dango",8,7],[248875,43,"Doku",8,5],[427637,2,"Aaronson",8,4],[592031,36,"Minteh",8,3],[465351,43,"Matheus N.",8,1],[208706,3,"Bruno G.",7,9],[215413,11,"Dewsbury-Hall",7,8]],"cups":{"ucl":{"name":"Champions League","note":"League-phase draw late Aug 2026 — your games appear here automatically once drawn.","byTeam":{}},"uel":{"name":"Europa League","note":"League-phase draw late Aug 2026 — your games appear here automatically once drawn.","byTeam":{}},"uecl":{"name":"Conference League","note":"League-phase draw late Aug 2026 — your games appear here automatically once drawn.","byTeam":{}},"efl":{"name":"EFL Cup","note":"Round 3 draw late Aug 2026 (most PL clubs enter R3) — fills in after the draw.","byTeam":{}},"fac":{"name":"FA Cup","note":"PL clubs enter Round 3 (early Jan 2027) — fills in after the draw.","byTeam":{}}}};
+  /*BAKE_END*/
+var BUILD_TAG='Build 14 Jul 2026 v12 (squad photos 92% — diacritic/entity + loanee search, no wrong faces)';
+(function(){
+  "use strict";
+  var D=LFC_DATA, T=D.teams, M=D.meta, AF=null;
+  var LIVE_RE=/^(1H|2H|HT|ET|BT|P|LIVE|INT)$/;
+  var POS={1:'Goalkeepers',2:'Defenders',3:'Midfielders',4:'Forwards'};
+  function el(id){return document.getElementById(id);}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function tName(c){return (T[c]&&T[c][0])||'TBD';}
+  function tShort(c){return (T[c]&&T[c][1])||'TBD';}
+  function badge(c){return 'https://resources.premierleague.com/premierleague/badges/50/t'+c+'.png';}
+  var PH="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27110%27 height=%27140%27%3E%3Crect width=%27110%27 height=%27140%27 fill=%27%23e6e7eb%27/%3E%3Ccircle cx=%2755%27 cy=%2752%27 r=%2724%27 fill=%27%23c4c8cf%27/%3E%3Crect x=%2722%27 y=%2784%27 width=%2766%27 height=%2752%27 rx=%2726%27 fill=%27%23c4c8cf%27/%3E%3C/svg%3E";
+  function photo(code){return 'https://resources.premierleague.com/premierleague/photos/players/110x140/p'+code+'.png';}
+  // squad photo: prefer the API-Football headshot (full coverage) baked as p[6]; else the PL photo
+  function sqPhoto(p){return (p[6]!=null)?('https://media.api-sports.io/football/players/'+p[6]+'.png'):photo(p[0]);}
+  function imgErr(){return "this.onerror=null;this.src='"+PH+"'";}
+  function bErr(){return "this.style.visibility='hidden'";}
+
+  // followed team (code), persisted
+  var FT, FIRST=false;
+  try{var _sv=localStorage.getItem('lfc_team');FIRST=!_sv;FT=parseInt(_sv,10);}catch(e){}
+  if(!FT||!T[FT])FT=D.defaultTeam;
+
+  // time helpers (viewer local tz)
+  function parseKO(iso){if(!iso)return null;var d=new Date(iso);return isNaN(d.getTime())?null:d;}
+  function fmtDate(d){return d?d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}):'TBC';}
+  function fmtTime(d){return d?d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}):'';}
+  function daysTo(d){if(!d)return null;return Math.ceil((d.getTime()-Date.now())/86400000);}
+  function countdown(d){if(!d)return '';var ms=d.getTime()-Date.now();if(ms<=0)return 'now';var h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000);if(h>48)return 'in '+Math.round(h/24)+' days';if(h>0)return 'in '+h+'h '+m+'m';return 'in '+m+'m';}
+
+  function formPills(seq){var h='<div class="form">';for(var i=0;i<seq.length;i++){var r=seq.charAt(i);h+='<span class="fp '+r+'">'+r+'</span>';}return h+'</div>';}
+  function miniForm(seq){var h='<span class="miniform">';for(var i=0;i<seq.length;i++){h+='<i class="'+seq.charAt(i)+'"></i>';}return h+'</span>';}
+
+  function teamFixtures(c){var a=[];for(var i=0;i<D.fixtures.length;i++){var f=D.fixtures[i];if(f[2]===c||f[3]===c)a.push(f);}return a;}
+  function fxKey(f){return f[2]+'_'+f[3];}
+  function afEntry(key){return (AF&&AF.m&&AF.m[key])||null;}
+  function fxHasStats(f){var e=afEntry(fxKey(f));return !!(e&&(e.stats||e.lineups||(e.events&&e.events.length)));}
+  function rowFixture(f){ // [gw,ko,h,a,hs,as,status]
+    var d=parseKO(f[1]), done=(f[6]==='C'&&f[4]!=null);
+    var clk=fxHasStats(f), key=fxKey(f);
+    var h='<div class="fixwrap'+(clk?' clk':'')+'"'+(clk?' data-fx="'+key+'" role="button" tabindex="0"':'')+'>';
+    h+='<div class="fixrow">';
+    h+='<img class="b" src="'+badge(f[2])+'" data-team="'+f[2]+'" onerror="'+bErr()+'" alt=""/>';
+    h+='<span class="tn" data-team="'+f[2]+'">'+esc(tShort(f[2]))+'</span>';
+    if(done)h+='<span class="sc">'+f[4]+'–'+f[5]+'</span>';
+    else h+='<span class="vs">v</span>';
+    h+='<span class="tn r" data-team="'+f[3]+'">'+esc(tShort(f[3]))+'</span>';
+    h+='<img class="b" src="'+badge(f[3])+'" data-team="'+f[3]+'" onerror="'+bErr()+'" alt=""/></div>';
+    h+='<div class="fmeta">'+esc(fmtDate(d))+(d?' · '+fmtTime(d):'')+(done?'':' <span class="cd">'+countdown(d)+'</span>')+(clk?'<span class="mstat">Match stats ›</span>':'')+'</div>';
+    h+='</div>';
+    return h;
+  }
+
+  // ===== HUB =====
+  function renderHub(){
+    var lt=null;for(var i=0;i<D.table.length;i++){if(D.table[i][1]===FT){lt=D.table[i];break;}}
+    var tf=teamFixtures(FT);
+    var next=null,last=null;
+    for(var j=0;j<tf.length;j++){if(tf[j][6]==='C'&&tf[j][4]!=null)last=tf[j];else if(!next)next=tf[j];}
+    var start=parseKO(M.startDate), dleft=daysTo(start);
+    var h='<div class="hero"><div class="top"><img src="'+badge(FT)+'" data-team="'+FT+'" onerror="'+bErr()+'" alt=""/>'+
+          '<div><div class="tn">'+esc(tName(FT))+'</div><div class="ssub">Premier League '+esc(M.season)+'</div></div>';
+    if(M.plPlayed===0&&dleft!=null&&dleft>0){h+='<div class="cdbig"><b>'+dleft+'</b><span>days to kick-off</span></div>';}
+    h+='</div>';
+    if(lt&&M.plPlayed>0){
+      h+='<div class="pos"><span class="posnum">'+lt[0]+ord(lt[0])+'</span><span class="poslab">'+lt[2]+' played · '+lt[3]+'W '+lt[4]+'D '+lt[5]+'L</span>'+
+         '<span class="ptsb"><b>'+lt[7]+'</b><br><span class="poslab">pts</span></span></div>'+formPills(lt[8]||'');
+    } else {
+      h+='<div class="pos" style="margin-top:10px"><span class="poslab">Season kicks off '+esc(fmtDate(start))+'. Position &amp; form appear once games are played.</span></div>';
+    }
+    if(next){h+='<div class="lab">Next match</div>'+rowFixture(next);}
+    if(last){h+='<div class="lab">Last result</div>'+rowFixture(last);}
+    h+='</div>';
+    h+='<div class="card"><h2>'+esc(tName(FT))+' — all Premier League games</h2>';
+    if(tf.length){for(var k=0;k<tf.length;k++)h+=rowFixture(tf[k]);}
+    else h+='<div class="empty">Fixtures not released yet.</div>';
+    h+='</div>';
+    el('v-hub').innerHTML=h;
+  }
+  function ord(n){return n==1?'st':n==2?'nd':n==3?'rd':'th';}
+
+  // ===== TABLE =====
+  function renderTable(){
+    var h='';
+    if(M.plPlayed>0){
+      h+='<div class="card"><h2>Premier League '+esc(M.season)+'</h2>'+tableHtml(D.table)+
+         '<div class="legend"><span class="eu">Top 5 (Europe)</span><span class="rel">Bottom 3</span></div></div>';
+    } else {
+      h+='<div class="banner">⚽ '+esc(M.season)+' starts '+esc(fmtDate(parseKO(M.startDate)))+'. The live table fills in as games are played — here\'s how last season finished.</div>';
+      h+='<div class="card"><h2>'+esc(M.fplSeason)+' final table</h2>'+lastTableHtml()+'</div>';
+    }
+    el('v-table').innerHTML=h;
+  }
+  function tableHtml(rows){
+    var xg=teamXG();
+    var h='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="lg"><thead><tr><th>#</th><th style="text-align:left">Club</th><th>Pl</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>xGD</th><th>Pts</th><th>Form</th></tr></thead><tbody>';
+    for(var i=0;i<rows.length;i++){var r=rows[i];var cls=r[1]===FT?'me':(r[0]<=5?'eu':(r[0]>=18?'rel':''));
+      var xe=xg[r[1]],xgd=xe?(xe.f-xe.a):null;
+      h+='<tr class="'+cls+'" data-team="'+r[1]+'"><td>'+r[0]+'</td><td class="tm"><img src="'+badge(r[1])+'" onerror="'+bErr()+'" alt=""/>'+esc(tShort(r[1]))+'</td>'+
+         '<td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td><td>'+(r[6]>0?'+':'')+r[6]+'</td>'+
+         '<td class="xg">'+(xgd==null?'–':(xgd>0?'+':'')+xgd.toFixed(1))+'</td>'+
+         '<td class="pt">'+r[7]+'</td><td>'+miniForm(r[8]||'')+'</td></tr>';
+    }
+    return h+'</tbody></table></div>';
+  }
+  function lastTableHtml(){
+    var rows=D.lastTable,h='<table class="lg"><thead><tr><th>#</th><th style="text-align:left">Club</th><th>Pl</th><th>GD</th><th>Pts</th></tr></thead><tbody>';
+    for(var i=0;i<rows.length;i++){var r=rows[i];
+      h+='<tr class="'+(r[0]<=5?'eu':(r[0]>=18?'rel':''))+'" data-team="'+r[5]+'"><td>'+r[0]+'</td><td class="tm"><img src="'+badge(r[5])+'" onerror="'+bErr()+'" alt=""/>'+esc(r[1])+'</td><td>'+r[2]+'</td><td>'+(r[4]>0?'+':'')+r[4]+'</td><td class="pt">'+r[3]+'</td></tr>';
+    }
+    return h+'</tbody></table>';
+  }
+
+  // ===== FIXTURES =====
+  var fixFilter=null;
+  function renderFixtures(){
+    if(fixFilter==null)fixFilter=FT;
+    var h='<div class="chips"><button data-f="'+FT+'"'+(fixFilter===FT?' class="on"':'')+'>'+esc(tShort(FT))+'</button>'+
+          '<button data-f="0"'+(fixFilter===0?' class="on"':'')+'>All clubs</button></div>';
+    var list=[];for(var i=0;i<D.fixtures.length;i++){var f=D.fixtures[i];if(fixFilter===0||f[2]===fixFilter||f[3]===fixFilter)list.push(f);}
+    h+='<div class="card">';
+    if(!list.length)h+='<div class="empty">No fixtures yet.</div>';
+    var lastGw=null;
+    for(var j=0;j<list.length;j++){var f=list[j];if(f[0]!==lastGw){lastGw=f[0];h+='<div class="gw">'+(f[0]?'Gameweek '+f[0]:'TBC')+'</div>';}h+=rowFixture(f);}
+    h+='</div>';
+    el('v-fixtures').innerHTML=h;
+  }
+
+  // ===== CUPS =====
+  // a cup fixture (opponents can be non-PL): [koISO, homeName, homeBadge, awayName, awayBadge, hs, as, status, round]
+  function cupRow(f){
+    var d=parseKO(f[0]), done=(f[7]==='C'&&f[5]!=null);
+    var h='<div class="fixrow">';
+    h+='<img class="b" src="'+esc(f[2])+'" onerror="'+bErr()+'" alt=""/><span class="tn">'+esc(f[1])+'</span>';
+    if(done)h+='<span class="sc">'+f[5]+'–'+f[6]+'</span>';else h+='<span class="vs">v</span>';
+    h+='<span class="tn r">'+esc(f[3])+'</span><img class="b" src="'+esc(f[4])+'" onerror="'+bErr()+'" alt=""/></div>';
+    h+='<div class="fmeta">'+(f[8]?esc(f[8])+' · ':'')+esc(fmtDate(d))+(d?' · '+fmtTime(d):'')+(done?'':' <span class="cd">'+countdown(d)+'</span>')+'</div>';
+    return h;
+  }
+  function renderCups(){
+    var c=D.cups,h='';
+    var icons={ucl:'⭐',uel:'🌍',uecl:'🌐',efl:'🏆',fac:'🌹'};
+    function cupCard(icon,cup){
+      var mine=(cup.byTeam&&cup.byTeam[FT])||[];
+      var s='<div class="card"><div class="cup"><div class="ic">'+icon+'</div><div class="cn">'+esc(cup.name)+'</div></div>';
+      if(mine.length){for(var j=0;j<mine.length;j++)s+=cupRow(mine[j]);}
+      else s+='<div class="note">'+esc(cup.note)+'</div>';
+      return s+'</div>';
+    }
+    function hasGames(k){return !!(c[k]&&c[k].byTeam&&c[k].byTeam[FT]&&c[k].byTeam[FT].length);}
+    // European cups: a club plays in at most one. Show a specific card only where fixtures exist;
+    // before the draws show ONE honest note rather than implying every club is in the Champions League.
+    var euKeys=['ucl','uel','uecl'],euShown=false;
+    for(var e=0;e<euKeys.length;e++){var ek=euKeys[e];if(c[ek]&&hasGames(ek)){h+=cupCard(icons[ek],c[ek]);euShown=true;}}
+    if(!euShown){
+      h+='<div class="card"><div class="cup"><div class="ic">🌍</div><div class="cn">European football</div></div>'+
+         '<div class="note">Champions League, Europa League &amp; Conference League fixtures appear here for clubs that qualify, once the league-phase draws are made (late Aug 2026).</div></div>';
+    }
+    // Domestic cups: every PL club enters both — always shown.
+    var domKeys=['efl','fac'];
+    for(var dd=0;dd<domKeys.length;dd++){var dk=domKeys[dd];if(c[dk])h+=cupCard(icons[dk],c[dk]);}
+    h+='<div class="note" style="text-align:center;margin-top:6px">'+esc(tName(FT))+'’s cup games appear here automatically as each draw is made.</div>';
+    el('v-cups').innerHTML=h;
+  }
+
+  // ===== SQUAD =====
+  function renderSquad(){
+    var sq=D.squads[FT];
+    var h='<div class="card"><h2>'+esc(tName(FT))+' squad</h2>';
+    if(!sq||!sq.length){h+='<div class="empty">Squad list not available yet for '+esc(tName(FT))+'.</div></div>';el('v-squad').innerHTML=h;return;}
+    var by={1:[],2:[],3:[],4:[]};for(var i=0;i<sq.length;i++){if(by[sq[i][2]])by[sq[i][2]].push(sq[i]);}
+    for(var p=1;p<=4;p++){if(!by[p].length)continue;h+='<div class="posh">'+POS[p]+'</div><div class="grid">';
+      for(var j=0;j<by[p].length;j++){var s=by[p][j]; // [code,name,pos,g,a,shirt]
+        var st=(s[5]?'#'+s[5]:'')+(s[3]?(s[5]?' · ':'')+'<b>'+s[3]+'</b>⚽':'')+(s[4]?' <b>'+s[4]+'</b>🅰':'');
+        h+='<div class="pl"><img src="'+sqPhoto(s)+'" referrerpolicy="no-referrer" loading="lazy" onerror="'+imgErr()+'" alt=""/><div class="nm">'+esc(s[1])+'</div>'+
+           '<div class="st">'+(st||'&nbsp;')+'</div></div>';
+      }h+='</div>';
+    }
+    h+='<div class="note" style="margin-top:10px">Current squad (official Premier League) — updates as transfers are confirmed. Any goals/assists shown are '+esc(M.fplSeason)+'; new signings have no tally yet.</div></div>';
+    el('v-squad').innerHTML=h;
+  }
+
+  // ===== STATS =====
+  function plur(n,word){return n+' '+word+(n===1?'':'s');}
+  function renderStats(){
+    var h='<div class="banner">Top scorers &amp; assists below are '+esc(M.fplSeason)+' (final). They reset when '+esc(M.season)+' kicks off.</div>';
+    h+='<div class="card"><h2>Top scorers — '+esc(M.fplSeason)+'</h2>';
+    for(var i=0;i<D.scorers.length;i++){var s=D.scorers[i];h+=scrRow(i+1,s[0],s[1],s[2],s[3],plur(s[4],'assist'));}
+    h+='</div><div class="card"><h2>Most assists — '+esc(M.fplSeason)+'</h2>';
+    for(var k=0;k<D.assisters.length;k++){var a=D.assisters[k];h+=scrRow(k+1,a[0],a[1],a[2],a[3],plur(a[4],'goal'));}
+    h+='</div>';
+    el('v-stats').innerHTML=h;
+  }
+  function scrRow(rk,pcode,tcode,name,big,sub){
+    return '<div class="scr"><span class="rk">'+rk+'</span><img class="pp" src="'+photo(pcode)+'" referrerpolicy="no-referrer" loading="lazy" onerror="'+imgErr()+'" alt=""/>'+
+      '<img class="bb" src="'+badge(tcode)+'" data-team="'+tcode+'" onerror="'+bErr()+'" alt=""/><span class="nm">'+esc(name)+'</span>'+
+      '<span class="g">'+big+'</span><span class="a">'+esc(sub)+'</span></div>';
+  }
+
+  // ===== shell =====
+  var RENDERED={};
+  function rerenderAll(){RENDERED={};fixFilter=FT;var on=document.querySelector('.view.on');show(on?on.id.replace('v-',''):'hub');applyHeader();}
+  function show(v){
+    var btns=el('tabs').getElementsByTagName('button');
+    for(var i=0;i<btns.length;i++)btns[i].className=btns[i].getAttribute('data-v')===v?'on':'';
+    var views=document.getElementsByClassName('view');
+    for(var j=0;j<views.length;j++)views[j].className='view'+(views[j].id==='v-'+v?' on':'');
+    if(!RENDERED[v]){({hub:renderHub,news:renderNews,table:renderTable,fixtures:renderFixtures,cups:renderCups,squad:renderSquad,stats:renderStats}[v])();RENDERED[v]=true;}
+    window.scrollTo(0,0);try{location.hash=v;}catch(e){}
+  }
+  el('tabs').addEventListener('click',function(e){var b=e.target;while(b&&b.tagName!=='BUTTON')b=b.parentNode;if(b&&b.getAttribute('data-v'))show(b.getAttribute('data-v'));});
+  el('v-fixtures').addEventListener('click',function(e){var b=e.target;while(b&&b!==this&&b.tagName!=='BUTTON')b=b.parentNode;if(b&&b.getAttribute&&b.getAttribute('data-f')!=null){fixFilter=parseInt(b.getAttribute('data-f'),10);RENDERED.fixtures=false;renderFixtures();RENDERED.fixtures=true;}});
+
+  // ===== MATCH STATS (API-Football, baked keyless into prem_afstats.json) =====
+  function num(v){return (v===0||v)?+v:null;}
+  function statBar(label,hv,av,dec){
+    if(hv==null&&av==null)return '';
+    var hn=num(hv),an=num(av);
+    var hs=(hn==null)?'–':(dec?hn.toFixed(1):hn), as=(an==null)?'–':(dec?an.toFixed(1):an);
+    var tot=(hn==null?0:hn)+(an==null?0:an), hp=tot>0?Math.round((hn==null?0:hn)/tot*100):50;
+    return '<div class="srow"><div class="tp"><b>'+hs+'</b><span class="lab">'+esc(label)+'</span><b>'+as+'</b></div>'+
+           '<div class="bar"><i class="h" style="width:'+hp+'%"></i><i class="a" style="width:'+(100-hp)+'%"></i></div></div>';
+  }
+  // ===== live-clock reconciliation =====
+  // Two independent snapshots of a match live on this page: the pulselive FIXTURE (status + score,
+  // NO minute, baked) and the afstats entry (minute + phase, baked). A live match only moves forward,
+  // so a "complete" fixture must beat a stale afstats live-minute. clockNum/bestLiveClock are the WC
+  // page's tested "furthest-along clock" — installed verbatim so a fresh client-side PL live feed can
+  // drop straight in as the 2nd minute source (today it carries none, so bestLiveClock returns the bake).
+  function clockNum(s){var mt=/(\d+)(?:\s*\+\s*(\d+))?/.exec(String(s||''));if(!mt)return null;return parseInt(mt[1],10)+(mt[2]?parseInt(mt[2],10):0);}
+  function bestLiveClock(af,st){var ft=(st&&st.t)||'',fn=clockNum(ft);
+    if(af&&(af.st==='P'||af.st==='PEN'))return 'PENS';
+    if(fn==null&&/HT|PEN/i.test(ft))return ft;
+    var an=(af&&af.min!=null&&af.min!==''&&af.st!=='FT'&&af.st!=='NS')?clockNum(af.min):null;
+    if(an!=null&&(fn==null||an>fn))return ((af.st==='ET'||af.st==='BT')?'ET ':'')+an+"'";
+    if(fn!=null)return ft;
+    return ft||'Live';}
+  function fxByKey(key){for(var i=0;i<D.fixtures.length;i++){var f=D.fixtures[i];if(f[2]+'_'+f[3]===key)return f;}return null;}
+  function fixtureDone(f){return !!(f&&f[6]==='C'&&f[4]!=null);}   // pulselive says finished (has a final score)
+  function statusLabel(e,f){
+    if(fixtureDone(f))return 'Full time';                          // fresh FT beats a stale afstats live-minute
+    var s=e.st;
+    if(s==='FT')return 'Full time';if(s==='AET')return 'After extra time';
+    if(s==='PEN'||s==='P')return 'Penalties';if(s==='HT')return 'Half time';
+    if(s==='NS')return 'Kick-off soon';
+    if(LIVE_RE.test(s))return bestLiveClock(e,{t:''});             // furthest-along minute (2nd feed has none yet)
+    return s||'';}
+  function evIcon(t,detail){t=(t||'').toLowerCase();detail=detail||'';
+    if(t==='goal')return /own/i.test(detail)?'⚽':(/pen/i.test(detail)?'🎯':'⚽');
+    if(t==='card')return /red/i.test(detail)?'🟥':'🟨';
+    if(t==='subst')return '🔁';return '•';}
+  function eventsHtml(evs){var h='<div class="tml">',n=0;
+    for(var i=0;i<evs.length;i++){var ev=evs[i],t=(ev[2]||'').toLowerCase();
+      if(t!=='goal'&&t!=='card'&&t!=='subst')continue;n++;
+      h+='<div class="te '+(ev[1]==='h'?'h':'a')+'"><span class="min">'+(ev[0]!=null?ev[0]+"'":'')+'</span>'+
+         '<span class="ic">'+evIcon(ev[2],ev[3])+'</span><span class="pl">'+esc(ev[4]||'')+
+         (ev[5]&&t==='goal'?' <em>('+esc(ev[5])+')</em>':'')+'</span></div>';
+    }
+    return n?h+'</div>':'';
+  }
+  function xiList(side){if(!side)return '<div class="lul"></div>';var h='';if(side.form)h+='<div class="luf">'+esc(side.form)+'</div>';
+    h+='<ul class="lul">';var xi=side.xi||[];for(var i=0;i<xi.length;i++){h+='<li><b>'+(xi[i][0]!=null?xi[i][0]:'')+'</b> '+esc(xi[i][1]||'')+'</li>';}
+    h+='</ul>';var subs=side.subs||[];if(subs.length){var ss=[];for(var j=0;j<subs.length;j++)ss.push(esc(subs[j][1]||''));h+='<div class="lusb"><b>Subs:</b> '+ss.join(', ')+'</div>';}
+    if(side.coach)h+='<div class="luco">Coach: '+esc(side.coach)+'</div>';return h;}
+  function lineupsHtml(lu){return '<div class="lus"><div class="lu">'+xiList(lu.home)+'</div><div class="lu">'+xiList(lu.away)+'</div></div>';}
+  // ---- season xG difference per team, from the baked API-Football match data ----
+  var _xg=null, AFP=null, AFP_TRIED=false, curMatch=null;
+  function teamXG(){
+    if(_xg)return _xg; _xg={};
+    if(AF&&AF.m){for(var k in AF.m){var e=AF.m[k],s=e.stats;if(!s)continue;
+      var hx=s.home&&s.home.xg, ax=s.away&&s.away.xg; if(hx==null&&ax==null)continue;
+      hx=parseFloat(hx)||0; ax=parseFloat(ax)||0;
+      var H=_xg[e.hc]||(_xg[e.hc]={f:0,a:0}); H.f+=hx; H.a+=ax;
+      var A=_xg[e.ac]||(_xg[e.ac]={f:0,a:0}); A.f+=ax; A.a+=hx;
+    }}
+    return _xg;
+  }
+  // ---- player ratings / player-of-the-match (lazy-loaded prem_afplayers.json) ----
+  function loadAFP(cb){
+    if(AFP||AFP_TRIED){cb&&cb();return;}
+    AFP_TRIED=true;
+    if(!window.fetch){cb&&cb();return;}
+    fetch('prem_afplayers.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;})
+      .then(function(d){if(d&&d.m)AFP=d;cb&&cb();}).catch(function(){cb&&cb();});
+  }
+  function ratLine(p){ var b=[]; if(p[3])b.push(p[3]+"'"); if(p[4])b.push(p[4]+(p[4]>1?' goals':' goal'));
+    if(p[5])b.push(p[5]+(p[5]>1?' assists':' assist')); if(p[6])b.push(p[6]+(p[6]>1?' shots':' shot')); return b.join(' · '); }
+  function gaStr(p){ var s=''; if(p[4])s+='⚽'+p[4]; if(p[5])s+=(s?' ':'')+'🅰'+p[5]; return s; }
+  function ratingsHtml(pl,hc,ac){
+    var all=[],i;
+    for(i=0;i<(pl.home||[]).length;i++){if(pl.home[i][8]!=null)all.push({p:pl.home[i],c:hc});}
+    for(i=0;i<(pl.away||[]).length;i++){if(pl.away[i][8]!=null)all.push({p:pl.away[i],c:ac});}
+    if(!all.length)return '';
+    all.sort(function(a,b){return b.p[8]-a.p[8];});
+    var top=all[0]; for(var t=0;t<all.length;t++){if(all[t].p[3]>=60){top=all[t];break;}}  // POTM prefers a player who actually played the game
+    var h='<div class="potm"><div class="rt">'+top.p[8].toFixed(1)+'</div><div>'+
+      '<div class="tp2">★ Player of the match</div><div class="nm">'+esc(top.p[0])+'</div>'+
+      '<div class="role">'+esc(tName(top.c))+' · '+esc(ratLine(top.p))+'</div></div></div><div style="margin-top:4px">';
+    for(i=0;i<Math.min(all.length,10);i++){var x=all[i],rt=x.p[8],cls=rt>=7.5?'hi':(rt>=6.8?'mid':'lo');
+      h+='<div class="rr"><img src="'+badge(x.c)+'" onerror="'+bErr()+'" alt="" style="width:16px;height:16px;object-fit:contain"/>'+
+         '<span class="rnm">'+esc(x.p[0])+'</span><span class="rga">'+gaStr(x.p)+'</span>'+
+         '<span class="rv '+cls+'">'+rt.toFixed(1)+'</span></div>';
+    }
+    return h+'</div>';
+  }
+  function matchHtml(e,key){
+    var hc=e.hc,ac=e.ac,st=e.stats||{},hh=st.home||{},aa=st.away||{};
+    var f=fxByKey(key), done=fixtureDone(f);
+    // score: show the furthest-along snapshot (a live score only rises; a finished fixture is final)
+    var hg=e.hg, ag=e.ag;
+    if(f&&f[4]!=null&&(done||((f[4]+f[5])>((e.hg||0)+(e.ag||0))))){hg=f[4];ag=f[5];}
+    var live=LIVE_RE.test(e.st)&&!done, scored=(hg!=null&&ag!=null);
+    var h='<div class="mmhd">';
+    h+='<div class="mmt" data-team="'+hc+'"><img src="'+badge(hc)+'" onerror="'+bErr()+'" alt=""/><span>'+esc(tName(hc))+'</span></div>';
+    h+='<div class="mmsc">'+(scored?hg+'<span class="dash">–</span>'+ag:'<span class="dash">v</span>')+
+       '<div class="mmst'+(live?' live':'')+'">'+esc(statusLabel(e,f))+'</div></div>';
+    h+='<div class="mmt" data-team="'+ac+'"><img src="'+badge(ac)+'" onerror="'+bErr()+'" alt=""/><span>'+esc(tName(ac))+'</span></div>';
+    h+='</div>';
+    var iso=e.date&&e.date.length>=16?e.date+':00Z':e.date, d=parseKO(iso);
+    if(d)h+='<div class="mmdate">'+esc(fmtDate(d))+' · '+esc(fmtTime(d))+'</div>';
+    if(st.home||st.away){
+      h+='<div class="mmsec">';
+      h+=statBar('Possession %',hh.poss,aa.poss,false);
+      h+=statBar('Expected goals (xG)',hh.xg,aa.xg,true);
+      h+=statBar('Shots',hh.sh,aa.sh,false);
+      h+=statBar('Shots on target',hh.sot,aa.sot,false);
+      h+=statBar('Corners',hh.cor,aa.cor,false);
+      h+=statBar('Fouls',hh.fouls,aa.fouls,false);
+      h+=statBar('Offsides',hh.off,aa.off,false);
+      h+=statBar('Yellow cards',hh.yc,aa.yc,false);
+      if((num(hh.rc)||0)>0||(num(aa.rc)||0)>0)h+=statBar('Red cards',hh.rc,aa.rc,false);
+      h+=statBar('Goalkeeper saves',hh.saves,aa.saves,false);
+      h+=statBar('Pass accuracy %',hh.passp,aa.passp,false);
+      h+='</div>';
+    } else {
+      h+='<div class="mmempty">Match stats appear here once the game kicks off.</div>';
+    }
+    var ev=e.events?eventsHtml(e.events):'';
+    if(ev)h+='<div class="mmh">Goals &amp; cards</div>'+ev;
+    if(e.lineups&&(e.lineups.home||e.lineups.away))h+='<div class="mmh">Line-ups</div>'+lineupsHtml(e.lineups);
+    var pk=key||(e.hc+'_'+e.ac), pl=AFP&&AFP.m&&AFP.m[pk];
+    if(pl&&(pl.home||pl.away)){var rh=ratingsHtml(pl,e.hc,e.ac);if(rh)h+='<div class="mmh">Player ratings</div>'+rh;}
+    return h;
+  }
+  function openMatch(key){var e=afEntry(key);if(!e)return;closeTeam();curMatch=key;el('mmBody').innerHTML=matchHtml(e,key);el('mm').classList.add('on');document.body.style.overflow='hidden';el('mmClose').focus();
+    loadAFP(function(){if(curMatch===key&&el('mm').classList.contains('on'))el('mmBody').innerHTML=matchHtml(e,key);});}
+  function closeMatch(){el('mm').classList.remove('on');if(!el('tm').classList.contains('on'))document.body.style.overflow='';}
+  el('mmClose').onclick=closeMatch;
+  el('mm').addEventListener('click',function(e){if(e.target===this)closeMatch();});
+  // one click router: the closest crest/name (data-team) or match row (data-fx) wins
+  function actEl(t){while(t&&t!==document){if(t.getAttribute){if(t.getAttribute('data-team')!=null)return{type:'team',v:t.getAttribute('data-team')};if(t.getAttribute('data-fx')!=null)return{type:'match',v:t.getAttribute('data-fx')};}t=t.parentNode;}return null;}
+  function doAct(a){if(!a)return;if(a.type==='team')openTeam(parseInt(a.v,10));else openMatch(a.v);}
+  document.addEventListener('click',function(e){doAct(actEl(e.target));});
+  document.addEventListener('keydown',function(e){if(e.keyCode===27){if(el('mm').classList.contains('on'))closeMatch();else if(el('tm').classList.contains('on'))closeTeam();return;}if(e.keyCode!==13&&e.keyCode!==32)return;var a=actEl(e.target);if(a){e.preventDefault();doAct(a);}});
+  function applyAF(){var on=document.querySelector('.view.on');if(!on)return;var v=on.id.replace('v-','');if(v==='hub'||v==='fixtures'||v==='table'){var y=window.pageYOffset;RENDERED[v]=false;({hub:renderHub,fixtures:renderFixtures,table:renderTable}[v])();RENDERED[v]=true;window.scrollTo(0,y);}}
+  function loadAF(){if(!window.fetch)return;fetch('prem_afstats.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(d){if(d&&d.m){AF=d;_xg=null;applyAF();}}).catch(function(){});}
+
+  // ===== NEWS =====
+  // Real RSS baked keyless into prem_news.json (BBC Sport + The Guardian). We show the headline +
+  // the publisher's own summary and always link BACK to the source — never a rehosted article.
+  var NEWS=null, NEWS_TRIED=false;
+  function curView(){var on=document.querySelector('.view.on');return on?on.id.replace('v-',''):'';}
+  function loadNews(){
+    if(NEWS||NEWS_TRIED)return; NEWS_TRIED=true;
+    if(!window.fetch)return;
+    fetch('prem_news.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;})
+      .then(function(d){if(d&&(d.team||d.league))NEWS=d;if(curView()==='news')renderNews();})
+      .catch(function(){if(curView()==='news')renderNews();});
+  }
+  function timeAgo(d){if(!d)return '';var s=(Date.now()-d.getTime())/1000;if(s<0)return '';
+    if(s<60)return 'just now';var m=Math.floor(s/60);if(m<60)return m+'m ago';
+    var h=Math.floor(m/60);if(h<24)return h+'h ago';var dd=Math.floor(h/24);return dd===1?'yesterday':dd+'d ago';}
+  function newsRow(it){ // [title,link,iso,source,desc]
+    var d=parseKO(it[2]);
+    return '<a class="nw" href="'+esc(it[1])+'" target="_blank" rel="noopener noreferrer">'+
+      '<div class="nwt">'+esc(it[0])+'</div>'+
+      (it[4]?'<div class="nwd">'+esc(it[4])+'</div>':'')+
+      '<div class="nwm"><span class="nws">'+esc(it[3])+'</span>'+(d?' · '+esc(timeAgo(d)):'')+'</div></a>';
+  }
+  function newsHero(it){ // [title,link,iso,source,desc,img] — the club's top story
+    var d=parseKO(it[2]);
+    return '<a class="nh" href="'+esc(it[1])+'" target="_blank" rel="noopener noreferrer">'+
+      (it[5]?'<div class="nhi"><img src="'+esc(it[5])+'" alt="" loading="lazy" onerror="this.parentNode.style.display=\'none\'"/></div>':'')+
+      '<div class="nhb"><div class="nhk">Top story</div><div class="nht">'+esc(it[0])+'</div>'+
+      (it[4]?'<div class="nhd">'+esc(it[4])+'</div>':'')+
+      '<div class="nwm"><span class="nws">'+esc(it[3])+'</span>'+(d?' · '+esc(timeAgo(d)):'')+'</div></div></a>';
+  }
+  function newsCard(title,items){
+    if(!items||!items.length)return '';
+    var h='<div class="card"><h2>'+esc(title)+'</h2>';
+    for(var i=0;i<items.length;i++)h+=newsRow(items[i]);
+    return h+'</div>';
+  }
+  function renderNews(){
+    if(!NEWS){el('v-news').innerHTML='<div class="card"><div class="empty">Loading the latest football news…</div></div>';loadNews();return;}
+    var mine=(NEWS.team&&NEWS.team[FT])||[];
+    var h='<div class="card"><h2>'+esc(tName(FT))+' — latest</h2>';
+    if(mine.length){h+=newsHero(mine[0]);for(var i=1;i<mine.length;i++)h+=newsRow(mine[i]);}
+    else h+='<div class="empty">No '+esc(tName(FT))+' stories in the feed right now.</div>';
+    h+='</div>';
+    h+=newsCard('Transfer gossip',NEWS.gossip);
+    h+=newsCard('Premier League',NEWS.league);
+    h+='<div class="note" style="margin-top:10px">Headlines from BBC Sport &amp; The Guardian — tap any story to read it in full at the source.</div>';
+    el('v-news').innerHTML=h;
+  }
+
+  // ===== TEAM HUB (tap any crest / name — real data only) =====
+  function teamTableRow(code){for(var i=0;i<D.table.length;i++){if(D.table[i][1]===code)return D.table[i];}return null;}
+  function lastRow(code){var lt=D.lastTable||[];for(var i=0;i<lt.length;i++){if(lt[i][5]===code)return lt[i];}return null;}
+  function computeRecord(code){
+    var r={pld:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,form:'',home:{w:0,d:0,l:0},away:{w:0,d:0,l:0}};
+    var tf=teamFixtures(code),fs=[];
+    for(var i=0;i<tf.length;i++){var f=tf[i];if(f[6]!=='C'||f[4]==null)continue;
+      var home=f[2]===code,gf=home?f[4]:f[5],ga=home?f[5]:f[4],s=home?r.home:r.away;
+      r.pld++;r.gf+=gf;r.ga+=ga;
+      if(gf>ga){r.w++;s.w++;fs.push('W');}else if(gf===ga){r.d++;s.d++;fs.push('D');}else{r.l++;s.l++;fs.push('L');}}
+    r.pts=r.w*3+r.d;r.gd=r.gf-r.ga;r.form=fs.slice(-5).join('');return r;
+  }
+  function tmCell(val,lab,hl){return '<div class="tmcell'+(hl?' hl':'')+'"><b>'+val+'</b><span>'+lab+'</span></div>';}
+  function ordSup(n){return '<sup style="font-size:.5em">'+ord(n)+'</sup>';}
+  function teamHtml(code){
+    var rec=computeRecord(code),lr=lastRow(code),xg=(teamXG()||{})[code];
+    var tr=teamTableRow(code),pos=(tr&&M.plPlayed>0)?tr[0]:null;
+    var tf=teamFixtures(code),next=null,last=null;
+    for(var i=0;i<tf.length;i++){if(tf[i][6]==='C'&&tf[i][4]!=null)last=tf[i];else if(!next)next=tf[i];}
+    var h='<div class="tmhd"><img class="tmcr" src="'+badge(code)+'" onerror="'+bErr()+'" alt=""/>'+
+      '<div><div class="tmn">'+esc(tName(code))+'</div><div class="tmsub">Premier League '+esc(M.season)+'</div></div>'+
+      (pos?'<div class="tmpos"><b>'+pos+ordSup(pos)+'</b><span>in the table</span></div>':'')+'</div>';
+    h+='<div class="mmh">This season · '+esc(M.season)+'</div>';
+    if(rec.pld>0){
+      h+='<div class="tmgrid">'+tmCell(rec.pld,'Played')+tmCell(rec.w,'Won')+tmCell(rec.d,'Drawn')+tmCell(rec.l,'Lost')+'</div>';
+      h+='<div class="tmgrid">'+tmCell(rec.gf,'Goals')+tmCell(rec.ga,'Conceded')+tmCell((rec.gd>0?'+':'')+rec.gd,'Goal diff')+tmCell(rec.pts,'Points',1)+'</div>';
+      if(rec.form)h+='<div style="margin-top:8px">'+formPills(rec.form)+'</div>';
+      if(xg)h+='<div class="tmxg"><div><b>'+xg.f.toFixed(1)+'</b> <span class="lab">xG for</span></div><div><span class="lab">xG against</span> <b>'+xg.a.toFixed(1)+'</b></div></div>';
+      h+='<div class="tmsplit"><div class="tmha"><div class="t">Home</div><div class="v">'+rec.home.w+'W '+rec.home.d+'D '+rec.home.l+'L</div></div>'+
+         '<div class="tmha"><div class="t">Away</div><div class="v">'+rec.away.w+'W '+rec.away.d+'D '+rec.away.l+'L</div></div></div>';
+    } else {
+      h+='<div class="tmnote">Season kicks off '+esc(fmtDate(parseKO(M.startDate)))+'. Live position, form, goals and xG appear here as games are played.</div>';
+    }
+    if(next||last){h+='<div class="mmh">Fixtures</div>';if(next)h+=rowFixture(next);if(last)h+=rowFixture(last);}
+    if(lr){h+='<div class="mmh">2025/26 final</div>';
+      h+='<div class="tmgrid">'+tmCell(lr[0]+ordSup(lr[0]),'Finished')+tmCell(lr[6],'Won')+tmCell(lr[7],'Drawn')+tmCell(lr[8],'Lost')+'</div>';
+      h+='<div class="tmgrid">'+tmCell(lr[9],'Goals')+tmCell(lr[10],'Conceded')+tmCell((lr[4]>0?'+':'')+lr[4],'Goal diff')+tmCell(lr[3],'Points',1)+'</div>';}
+    var ts=[];for(var j=0;j<D.scorers.length;j++){if(D.scorers[j][1]===code)ts.push(D.scorers[j]);}
+    if(ts.length){h+='<div class="mmh">Top scorers · '+esc(M.fplSeason)+'</div>';
+      for(var k=0;k<Math.min(ts.length,5);k++){var s=ts[k];h+=scrRow(k+1,s[0],s[1],s[2],s[3],s[4]+' assists');}}
+    var sq=D.squads[code];
+    if(sq)h+='<div class="tmnote" style="margin-top:12px">Squad: '+sq.length+' players — follow this club and open the Squad tab for the full list.</div>';
+    return h;
+  }
+  function openTeam(code){if(!T[code])return;closeMatch();el('tmBody').innerHTML=teamHtml(code);el('tm').classList.add('on');document.body.style.overflow='hidden';el('tmClose').focus();}
+  function closeTeam(){el('tm').classList.remove('on');if(!el('mm').classList.contains('on'))document.body.style.overflow='';}
+  el('tmClose').onclick=closeTeam;
+  el('tm').addEventListener('click',function(e){if(e.target===this)closeTeam();});
+
+  // team picker
+  function buildPicker(){
+    var names=[];for(var c in T)names.push([parseInt(c,10),T[c][0]]);names.sort(function(a,b){return a[1]<b[1]?-1:1;});
+    var h='';for(var i=0;i<names.length;i++)h+='<option value="'+names[i][0]+'"'+(names[i][0]===FT?' selected':'')+'>'+esc(names[i][1])+'</option>';
+    el('teamSel').innerHTML=h;
+    if(el('pickSel'))el('pickSel').innerHTML=h;
+    el('teamSel').onchange=function(){FT=parseInt(this.value,10);try{localStorage.setItem('lfc_team',FT);}catch(e){}rerenderAll();};
+  }
+  function applyHeader(){
+    el('hcrest').style.visibility='visible';el('hcrest').onerror=function(){this.onerror=null;this.style.visibility='hidden';};el('hcrest').src=badge(FT);
+    el('htitle').textContent=tName(FT);
+    el('hsub').textContent='Premier League '+M.season;
+  }
+
+  el('shareBtn').onclick=function(){var url=location.href.split('#')[0];
+    if(navigator.share){navigator.share({title:'Follow your Premier League team',text:'Pick your club — fixtures, table, cups, scorers',url:url}).catch(function(){});}
+    else if(navigator.clipboard){navigator.clipboard.writeText(url);this.textContent='Copied!';var b=this;setTimeout(function(){b.textContent='Share';},1500);}
+  };
+
+  if(M.built){var bd=new Date(M.built);el('built').textContent='Updated '+(isNaN(bd)?M.built:bd.toLocaleString());}
+  el('buildtag').textContent=BUILD_TAG;
+  // light / dark theme (persisted; defaults to the device preference)
+  (function(){
+    function applyTheme(t){var d=document.documentElement;if(t==='light')d.classList.add('light');else d.classList.remove('light');
+      var mt=document.querySelector('meta[name=theme-color]');if(mt)mt.setAttribute('content',t==='light'?'#f2f0f2':'#0b0708');
+      var b=el('themeBtn');if(b)b.textContent=(t==='light'?'☀️':'🌙');}
+    var th=null;try{th=localStorage.getItem('prem_theme');}catch(e){}
+    if(th!=='light'&&th!=='dark')th=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';
+    applyTheme(th);
+    var tb=el('themeBtn');if(tb)tb.onclick=function(){th=document.documentElement.classList.contains('light')?'dark':'light';try{localStorage.setItem('prem_theme',th);}catch(e){}applyTheme(th);};
+  })();
+  buildPicker();applyHeader();
+  el('pickGo').onclick=function(){var v=parseInt(el('pickSel').value,10);if(v&&T[v]){FT=v;el('teamSel').value=String(v);try{localStorage.setItem('lfc_team',FT);}catch(e){}}el('pick').classList.remove('on');document.body.style.overflow='';rerenderAll();};
+  var init=(location.hash||'').replace('#','');
+  show(({hub:1,news:1,table:1,fixtures:1,cups:1,squad:1,stats:1}[init])?init:'hub');
+  if(FIRST){el('pick').classList.add('on');document.body.style.overflow='hidden';}
+  loadAF();
+})();
+</script>
+<!-- GoatCounter: privacy-friendly visitor analytics -> https://premym.goatcounter.com -->
+<script data-goatcounter="https://premym.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
-
-
