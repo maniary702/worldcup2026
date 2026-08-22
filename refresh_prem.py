@@ -55,7 +55,7 @@ def main():
         as_ = fx['team_a_score']
 
         if fx['finished'] or fx.get('finished_provisional'):
-            status = 'FT'
+            status = 'C'
         elif fx['started']:
             mins = fx.get('minutes', 0)
             if mins and mins <= 45:
