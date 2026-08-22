@@ -133,6 +133,9 @@
   .mmdate{text-align:center;color:var(--mut);font-size:11px;font-weight:700;margin:2px 0 12px}
   .mmsec{border-top:1px solid var(--line);padding-top:10px}
   .mmempty{border-top:1px solid var(--line);padding:18px 4px;text-align:center;color:var(--mut);font-weight:600;font-size:13px}
+  .mmloading{text-align:center;color:var(--faint);padding:48px 16px;font-size:14px;font-weight:600}
+  .mmloading::after{content:'';display:block;width:24px;height:24px;border:3px solid var(--line2);border-top-color:var(--pink);border-radius:50%;margin:14px auto 0;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .srow{margin:10px 0}
   .srow .tp{display:flex;justify-content:space-between;align-items:baseline}
   .srow .tp b{font-size:13px;font-weight:900}
@@ -418,8 +421,8 @@ var BUILD_TAG='Build 14 Jul 2026 v12 (squad photos 92% — diacritic/entity + lo
 
   function teamFixtures(c){var a=[];for(var i=0;i<D.fixtures.length;i++){var f=D.fixtures[i];if(f[2]===c||f[3]===c)a.push(f);}return a;}
   function fxKey(f){return f[2]+'_'+f[3];}
-  function afEntry(key){return (AF&&AF.m&&AF.m[key])||null;}
-  function fxHasStats(f){var e=afEntry(fxKey(f));return !!(e&&(e.stats||e.lineups||(e.events&&e.events.length)));}
+  function afEntry(key){return (AF&&AF.m&&AF.m[key])||(AF_LIVE&&AF_LIVE[key])||null;}
+  function fxHasStats(f){var e=afEntry(fxKey(f));if(e&&(e.stats||e.lineups||(e.events&&e.events.length)))return true;if(API_KEY&&(f._fdoId||f[6]==='C'||LIVE_RE.test(f[6])))return true;return false;}
   function rowFixture(f){ // [gw,ko,h,a,hs,as,status]
     var d=parseKO(f[1]), done=(f[6]==='C'&&f[4]!=null), live=LIVE_RE.test(f[6]);
     var scored=(done||live)&&f[4]!=null;
@@ -435,7 +438,7 @@ var BUILD_TAG='Build 14 Jul 2026 v12 (squad photos 92% — diacritic/entity + lo
     var meta='';
     if(live){meta='<span class="live-pulse"></span>'+esc(f[6]==='HT'?'Half-time':'Live')+(f._min?'<span class="live-min">'+f._min+"'</span>":'');}
     else{meta=esc(fmtDate(d))+(d?' · '+fmtTime(d):'')+(done?'':' <span class="cd">'+countdown(d)+'</span>');}
-    h+='<div class="fmeta">'+meta+(clk?'<span class="mstat">Match stats ›</span>':'')+'</div>';
+    h+='<div class="fmeta">'+meta+(clk?'<span class="mstat">Match centre ›</span>':'')+'</div>';
     h+='</div>';
     return h;
   }
@@ -731,8 +734,21 @@ var BUILD_TAG='Build 14 Jul 2026 v12 (squad photos 92% — diacritic/entity + lo
     if(pl&&(pl.home||pl.away)){var rh=ratingsHtml(pl,e.hc,e.ac);if(rh)h+='<div class="mmh">Player ratings</div>'+rh;}
     return h;
   }
-  function openMatch(key){var e=afEntry(key);if(!e)return;closeTeam();curMatch=key;el('mmBody').innerHTML=matchHtml(e,key);el('mm').classList.add('on');document.body.style.overflow='hidden';el('mmClose').focus();
-    loadAFP(function(){if(curMatch===key&&el('mm').classList.contains('on'))el('mmBody').innerHTML=matchHtml(e,key);});}
+  function openMatch(key){
+    var e=afEntry(key);
+    if(e){closeTeam();curMatch=key;el('mmBody').innerHTML=matchHtml(e,key);el('mm').classList.add('on');document.body.style.overflow='hidden';el('mmClose').focus();
+      loadAFP(function(){if(curMatch===key&&el('mm').classList.contains('on'))el('mmBody').innerHTML=matchHtml(afEntry(key)||e,key);});
+      startLiveModal(key);return;}
+    // No static entry - try live API fetch
+    var f=fxByKey(key);
+    if(!f||!API_KEY)return;
+    if(!(f._fdoId||f[6]==='C'||LIVE_RE.test(f[6])))return;
+    closeTeam();curMatch=key;
+    el('mmBody').innerHTML='<div class="mmloading">Loading match centre…</div>';
+    el('mm').classList.add('on');document.body.style.overflow='hidden';
+    if(f._fdoId){fetchMatchDetail(f._fdoId,key);}
+    else{fetchMatchByDate(f,key);}
+  }
   function closeMatch(){el('mm').classList.remove('on');if(!el('tm').classList.contains('on'))document.body.style.overflow='';}
   el('mmClose').onclick=closeMatch;
   el('mm').addEventListener('click',function(e){if(e.target===this)closeMatch();});
@@ -1005,6 +1021,107 @@ var BUILD_TAG='Build 14 Jul 2026 v12 (squad photos 92% — diacritic/entity + lo
   });
   el('apiKeyInput').addEventListener('keydown',function(e){if(e.keyCode===13)this.blur();});
   document.addEventListener('click',function(e){var p=el('apiPanel');if(p&&p.classList.contains('open')&&!p.contains(e.target)&&e.target!==el('apiBtn')&&!el('apiBtn').contains(e.target))p.classList.remove('open');});
+
+  /* ═══════ Match Centre (football-data.org detail) ═══════ */
+  var liveModalTimer=null;
+
+  function fdoToAfEntry(data,hc,ac){
+    var e={hc:hc,ac:ac,st:mapFdoStatus(data.status,data)||'U',date:data.utcDate};
+    if(data.score){
+      if(data.score.fullTime&&data.score.fullTime.home!==null){e.hg=data.score.fullTime.home;e.ag=data.score.fullTime.away;}
+      else if(data.score.halfTime&&data.score.halfTime.home!==null){e.hg=data.score.halfTime.home;e.ag=data.score.halfTime.away;}
+    }
+    if(data.minute)e.min=data.minute+"'";
+    // Events
+    var evs=[];
+    var homeId=data.homeTeam?data.homeTeam.id:null;
+    if(data.goals){for(var i=0;i<data.goals.length;i++){var g=data.goals[i];
+      var side=(g.team&&g.team.id===homeId)?'h':'a';
+      var detail=g.type==='OWN'?'own goal':(g.type==='PENALTY'?'penalty':'');
+      evs.push([g.minute,side,'goal',detail,g.scorer?g.scorer.name:'',g.assist?g.assist.name:'']);}}
+    if(data.bookings){for(var i=0;i<data.bookings.length;i++){var b=data.bookings[i];
+      var side=(b.team&&b.team.id===homeId)?'h':'a';
+      evs.push([b.minute,side,'card',b.card==='RED_CARD'?'red':'yellow',b.player?b.player.name:'','']);}}
+    if(data.substitutions){for(var i=0;i<data.substitutions.length;i++){var s=data.substitutions[i];
+      var side=(s.team&&s.team.id===homeId)?'h':'a';
+      var nm=(s.playerIn?s.playerIn.name:'');if(s.playerOut)nm+=' ← '+s.playerOut.name;
+      evs.push([s.minute,side,'subst','',nm,'']);}}
+    evs.sort(function(a,b){return (a[0]||0)-(b[0]||0);});
+    if(evs.length)e.events=evs;
+    // Lineups
+    var lu={};
+    function parseSide(t){if(!t||!t.lineup||!t.lineup.length)return null;
+      return{form:t.formation||'',xi:t.lineup.map(function(p){return[p.shirtNumber,p.name];}),
+        subs:(t.bench||[]).map(function(p){return[p.shirtNumber,p.name];}),
+        coach:t.coach?t.coach.name:''};}
+    lu.home=parseSide(data.homeTeam);lu.away=parseSide(data.awayTeam);
+    if(lu.home||lu.away)e.lineups=lu;
+    // Stats from referees/possession etc if available
+    if(data.statistics&&data.statistics.length){
+      var hs={},as={};
+      for(var i=0;i<data.statistics.length;i++){var st=data.statistics[i];
+        if(st.type==='Ball Possession'){hs.poss=parseInt(st.home,10);as.poss=parseInt(st.away,10);}
+        if(st.type==='Total Shots'){hs.sh=parseInt(st.home,10);as.sh=parseInt(st.away,10);}
+        if(st.type==='Shots on Goal'){hs.sot=parseInt(st.home,10);as.sot=parseInt(st.away,10);}
+        if(st.type==='Corner Kicks'){hs.cor=parseInt(st.home,10);as.cor=parseInt(st.away,10);}
+        if(st.type==='Fouls'){hs.fouls=parseInt(st.home,10);as.fouls=parseInt(st.away,10);}
+        if(st.type==='Offsides'){hs.off=parseInt(st.home,10);as.off=parseInt(st.away,10);}
+        if(st.type==='Yellow Cards'){hs.yc=parseInt(st.home,10);as.yc=parseInt(st.away,10);}
+        if(st.type==='Red Cards'){hs.rc=parseInt(st.home,10);as.rc=parseInt(st.away,10);}
+        if(st.type==='Goalkeeper Saves'){hs.saves=parseInt(st.home,10);as.saves=parseInt(st.away,10);}
+        if(st.type==='expected_goals'){hs.xg=parseFloat(st.home);as.xg=parseFloat(st.away);}}
+      if(Object.keys(hs).length)e.stats={home:hs,away:as};}
+    return e;
+  }
+
+  function fetchMatchDetail(fdoId,key){
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET','https://api.football-data.org/v4/matches/'+fdoId);
+    xhr.setRequestHeader('X-Auth-Token',API_KEY);
+    xhr.onload=function(){
+      if(xhr.status!==200){if(curMatch===key)el('mmBody').innerHTML='<div class="mmloading">Could not load ('+xhr.status+')</div>';return;}
+      try{var data=JSON.parse(xhr.responseText);
+        var hc=mapFdoTeam(data.homeTeam),ac=mapFdoTeam(data.awayTeam);
+        if(hc===null||ac===null){if(curMatch===key)el('mmBody').innerHTML='<div class="mmloading">Team not recognised</div>';return;}
+        var entry=fdoToAfEntry(data,hc,ac);
+        AF_LIVE[key]=entry;
+        if(curMatch===key&&el('mm').classList.contains('on')){el('mmBody').innerHTML=matchHtml(entry,key);startLiveModal(key);}
+      }catch(e){console.warn('[PL] detail parse',e);if(curMatch===key)el('mmBody').innerHTML='<div class="mmloading">Parse error</div>';}
+    };
+    xhr.onerror=function(){if(curMatch===key)el('mmBody').innerHTML='<div class="mmloading">Network error</div>';};
+    try{xhr.send();}catch(e){}
+  }
+
+  function fetchMatchByDate(f,key){
+    var ds=f[1]?f[1].slice(0,10):todayStr();
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET','https://api.football-data.org/v4/competitions/PL/matches?dateFrom='+ds+'&dateTo='+ds);
+    xhr.setRequestHeader('X-Auth-Token',API_KEY);
+    xhr.onload=function(){
+      if(xhr.status!==200){if(curMatch===key)el('mmBody').innerHTML='<div class="mmloading">Could not load ('+xhr.status+')</div>';return;}
+      try{var data=JSON.parse(xhr.responseText),mm=data.matches||[];
+        for(var i=0;i<mm.length;i++){var am=mm[i];
+          var hc=mapFdoTeam(am.homeTeam),ac=mapFdoTeam(am.awayTeam);
+          if(hc===f[2]&&ac===f[3]){f._fdoId=am.id;fetchMatchDetail(am.id,key);return;}}
+        if(curMatch===key)el('mmBody').innerHTML='<div class="mmloading">Match not found in API</div>';
+      }catch(e){if(curMatch===key)el('mmBody').innerHTML='<div class="mmloading">Parse error</div>';}
+    };
+    xhr.onerror=function(){if(curMatch===key)el('mmBody').innerHTML='<div class="mmloading">Network error</div>';};
+    try{xhr.send();}catch(e){}
+  }
+
+  function startLiveModal(key){
+    if(liveModalTimer){clearInterval(liveModalTimer);liveModalTimer=null;}
+    var f=fxByKey(key);
+    if(!f||!f._fdoId||!API_KEY||!LIVE_RE.test(f[6]))return;
+    liveModalTimer=setInterval(function(){
+      if(curMatch!==key||!el('mm').classList.contains('on')){clearInterval(liveModalTimer);liveModalTimer=null;return;}
+      fetchMatchDetail(f._fdoId,key);
+    },30000);
+  }
+
+  var _origCloseMatch=closeMatch;
+  closeMatch=function(){if(liveModalTimer){clearInterval(liveModalTimer);liveModalTimer=null;}_origCloseMatch();};
 
   // Init live scores
   loadApiKey();
