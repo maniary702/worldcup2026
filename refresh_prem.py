@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
-Refresh prem.html with live FPL data.
+Refresh prem.html with live FPL data + prem_news.json with RSS headlines.
 Reads prem.html, updates LFC_DATA (fixtures, table, scorers, squads, meta), writes back.
+Fetches BBC Sport, Guardian, Sky Sports RSS and writes prem_news.json.
 Run on schedule via GitHub Actions or manually.
 """
-import json, urllib.request, re, sys, os
+import json, urllib.request, re, sys, os, xml.etree.ElementTree as ET
 from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 
 FPL_BOOT = 'https://fantasy.premierleague.com/api/bootstrap-static/'
 FPL_FX   = 'https://fantasy.premierleague.com/api/fixtures/'
@@ -166,5 +168,158 @@ def main():
         for fx in live:
             print(f'  LIVE: {id2short[fx["team_h"]]} {fx["team_h_score"]}-{fx["team_a_score"]} {id2short[fx["team_a"]]}')
 
+# ============================================================
+# NEWS: fetch RSS feeds and write prem_news.json
+# ============================================================
+RSS_FEEDS = [
+    ('https://feeds.bbci.co.uk/sport/football/premier-league/rss.xml', 'BBC Sport', 'league'),
+    ('https://feeds.bbci.co.uk/sport/football/gossip/rss.xml', 'BBC Sport', 'gossip'),
+    ('https://www.theguardian.com/football/premierleague/rss', 'The Guardian', 'league'),
+    ('https://www.skysports.com/rss/11660', 'Sky Sports', 'league'),
+]
+
+# Keywords -> FPL team code. Order matters: longer/more specific first.
+TEAM_KW = {
+    'Manchester United': 1, 'Man United': 1, 'Man Utd': 1, 'MUFC': 1,
+    'Leeds United': 2, 'Leeds': 2,
+    'Arsenal': 3, 'Gunners': 3,
+    'Newcastle United': 4, 'Newcastle': 4, 'Magpies': 4,
+    'Tottenham': 6, 'Spurs': 6,
+    'Aston Villa': 7, 'Villa': 7,
+    'Chelsea': 8,
+    'Coventry City': 9, 'Coventry': 9,
+    'Everton': 11, 'Toffees': 11,
+    'Liverpool': 14, 'Reds': 14,
+    "Nott'm Forest": 17, 'Nottingham Forest': 17, "Nott'ham Forest": 17, 'Forest': 17,
+    'Crystal Palace': 31, 'Palace': 31,
+    'Brighton': 36, 'Seagulls': 36,
+    'Ipswich Town': 40, 'Ipswich': 40,
+    'Man City': 43, 'Manchester City': 43, 'MCFC': 43,
+    'Fulham': 54, 'Cottagers': 54,
+    'Sunderland': 56,
+    'Hull City': 88, 'Hull': 88,
+    'Bournemouth': 91, 'AFC Bournemouth': 91, 'Cherries': 91,
+    'Brentford': 94, 'Bees': 94,
+}
+# Sort by length desc so "Manchester United" matches before "Manchester"
+_KW_SORTED = sorted(TEAM_KW.keys(), key=len, reverse=True)
+
+def fetch_xml(url):
+    """Fetch RSS XML, return parsed root or None."""
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        data = urllib.request.urlopen(req, timeout=20).read()
+        return ET.fromstring(data)
+    except Exception as e:
+        print(f'  RSS fetch failed: {url} - {e}')
+        return None
+
+def parse_rss_date(s):
+    """Parse RFC-2822 date to ISO string, or return empty."""
+    if not s:
+        return ''
+    try:
+        dt = parsedate_to_datetime(s)
+        return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+    except Exception:
+        return s
+
+def item_image(item):
+    """Extract image URL from RSS item (media:thumbnail, enclosure, or media:content)."""
+    ns = {'media': 'http://search.yahoo.com/mrss/'}
+    # media:thumbnail
+    thumb = item.find('media:thumbnail', ns)
+    if thumb is not None:
+        return thumb.get('url', '')
+    # enclosure
+    enc = item.find('enclosure')
+    if enc is not None and 'image' in (enc.get('type', '') or ''):
+        return enc.get('url', '')
+    if enc is not None and enc.get('url', '').split('?')[0].split('.')[-1] in ('jpg','jpeg','png','webp','gif'):
+        return enc.get('url', '')
+    # media:content
+    mc = item.find('media:content', ns)
+    if mc is not None:
+        return mc.get('url', '')
+    return ''
+
+def match_teams(text):
+    """Return set of FPL team codes mentioned in text."""
+    codes = set()
+    t = text or ''
+    for kw in _KW_SORTED:
+        if kw.lower() in t.lower():
+            codes.add(TEAM_KW[kw])
+    return codes
+
+def build_news(output_path):
+    """Fetch all RSS feeds and write prem_news.json."""
+    print('Refreshing news...')
+    team_items = {}   # code -> list of [title, link, iso, source, desc, img]
+    league_items = []
+    gossip_items = []
+
+    for url, source, category in RSS_FEEDS:
+        root = fetch_xml(url)
+        if root is None:
+            continue
+        items = root.findall('.//item')
+        print(f'  {source} ({category}): {len(items)} items')
+        for it in items:
+            title = (it.findtext('title') or '').strip()
+            link = (it.findtext('link') or '').strip()
+            pub = parse_rss_date(it.findtext('pubDate'))
+            desc = (it.findtext('description') or '').strip()
+            # Strip HTML from description
+            desc = re.sub(r'<[^>]+>', '', desc).strip()
+            if len(desc) > 200:
+                desc = desc[:197] + '...'
+            img = item_image(it)
+            row = [title, link, pub, source, desc]
+            if img:
+                row.append(img)
+
+            if category == 'gossip':
+                gossip_items.append(row)
+            else:
+                league_items.append(row)
+
+            # Also file under matching teams
+            codes = match_teams(title + ' ' + desc)
+            for c in codes:
+                team_items.setdefault(str(c), []).append(row)
+
+    # Sort each list by date descending
+    def sort_key(r):
+        return r[2] if len(r) > 2 and r[2] else ''
+    league_items.sort(key=sort_key, reverse=True)
+    gossip_items.sort(key=sort_key, reverse=True)
+    for c in team_items:
+        team_items[c].sort(key=sort_key, reverse=True)
+        team_items[c] = team_items[c][:15]  # cap per team
+
+    league_items = league_items[:25]
+    gossip_items = gossip_items[:20]
+
+    news = {
+        'meta': {
+            'built': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+            'sources': ['BBC Sport', 'Sky Sports', 'The Guardian']
+        },
+        'team': team_items,
+        'league': league_items,
+        'gossip': gossip_items
+    }
+
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(news, f, separators=(',', ':'), ensure_ascii=False)
+
+    total_team = sum(len(v) for v in team_items.values())
+    print(f'  News written: {len(league_items)} league, {len(gossip_items)} gossip, {total_team} team-tagged across {len(team_items)} clubs')
+
+
 if __name__ == '__main__':
     main()
+    # Also refresh news sidecar
+    news_path = os.path.join(os.path.dirname(sys.argv[1] if len(sys.argv) > 1 else 'prem.html'), 'prem_news.json')
+    build_news(news_path)
