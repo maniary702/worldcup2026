@@ -119,9 +119,11 @@
   .mstat{float:right;color:var(--pur);font-weight:800;font-size:11px}
   .mm{position:fixed;inset:0;z-index:60;background:rgba(20,10,25,.55);display:none;align-items:flex-end;justify-content:center}
   .mm.on{display:flex}
-  .mmcard{background:var(--card);width:100%;max-width:680px;max-height:92vh;overflow-y:auto;border-radius:18px 18px 0 0;padding:16px 14px 26px;position:relative;-webkit-overflow-scrolling:touch}
-  @media(min-width:560px){.mm{align-items:center}.mmcard{border-radius:18px}}
-  .mmx{position:absolute;top:10px;right:10px;border:0;background:var(--bg);color:var(--ink);width:30px;height:30px;border-radius:50%;font-size:15px;font-weight:800;cursor:pointer;z-index:2}
+  .mmcard{background:var(--card);width:100%;max-width:680px;max-height:92vh;overflow-y:auto;border-radius:18px 18px 0 0;padding:16px 14px 26px;position:relative;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .mmcard::before{content:'';display:block;width:36px;height:4px;border-radius:2px;background:var(--line2);margin:-8px auto 6px}
+  @media(min-width:560px){.mm{align-items:center}.mmcard{border-radius:18px}.mmcard::before{display:none}}
+  .mmx{position:-webkit-sticky;position:sticky;top:0;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-bottom:-34px;border:0;background:var(--bg);color:var(--ink);width:34px;height:34px;border-radius:50%;font-size:16px;font-weight:800;cursor:pointer;z-index:3;box-shadow:0 2px 8px rgba(0,0,0,.18);-webkit-tap-highlight-color:transparent;line-height:1;text-align:center}
+  .mmx::after{content:'';position:absolute;inset:-7px;border-radius:50%}
   .mmhd{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:6px 0 2px}
   .mmt{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
   .mmt img{width:46px;height:46px;object-fit:contain}
@@ -274,7 +276,7 @@
   /* ===== team hub (tap any crest / name) ===== */
   [data-team]{cursor:pointer}
   table.lg tr[data-team]{cursor:pointer}
-  .tmhd{display:flex;align-items:center;gap:13px;margin:2px 0 8px}
+  .tmhd{display:flex;align-items:center;gap:13px;margin:2px 0 8px;padding-right:40px}
   .tmhd .tmcr{width:54px;height:54px;object-fit:contain;flex:0 0 auto;filter:drop-shadow(0 2px 8px var(--glow))}
   .tmn{font-size:20px;font-weight:900;line-height:1.05}
   .tmsub{font-size:12px;color:var(--mut);font-weight:700;margin-top:3px}
@@ -1905,6 +1907,33 @@ var BUILD_TAG='Build 26 Aug 2026 v13 — live matchday, keyless ESPN feed, match
       if(Date.now()-LIVE.ts>120000)loadWindow(shiftKey(todayKey(),-7),shiftKey(todayKey(),21),function(){loadStandings(function(){repaintLive();});});
     }
   });
+
+  // Swipe-down to dismiss modals on mobile
+  (function(){
+    var startY=null,dy=0,card=null,closeFn=null;
+    document.addEventListener('touchstart',function(e){
+      var c=e.target.closest('.mmcard');if(!c)return;
+      if(c.scrollTop>2)return;
+      card=c;startY=e.touches[0].clientY;dy=0;
+      var m=c.closest('.mm');
+      closeFn=m&&m.id==='tm'?closeTeam:closeMatch;
+      card.style.transition='none';
+    },{passive:true});
+    document.addEventListener('touchmove',function(e){
+      if(startY===null)return;
+      dy=e.touches[0].clientY-startY;
+      if(dy<0){dy=0;return;}
+      if(dy>8)e.preventDefault();
+      card.style.transform='translateY('+dy+'px)';
+    },{passive:false});
+    document.addEventListener('touchend',function(){
+      if(startY===null)return;
+      card.style.transition='transform .22s ease';
+      if(dy>80){card.style.transform='translateY(110%)';setTimeout(function(){closeFn();card.style.transform='';card.style.transition='';},240);}
+      else{card.style.transform='';setTimeout(function(){card.style.transition='';},240);}
+      startY=null;dy=0;card=null;closeFn=null;
+    },{passive:true});
+  })();
 })();
 </script>
 <!-- GoatCounter: privacy-friendly visitor analytics -> https://premym.goatcounter.com -->
