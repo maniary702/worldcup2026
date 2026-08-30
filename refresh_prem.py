@@ -82,6 +82,22 @@ def carry_af_ids(old_squads):
     return keep
 
 
+def load_cups(script_dir):
+    """Load cup fixtures from cups.json so every refresh re-bakes them.
+    The PL-page-deploy workflow pushes a local prem.html that has empty cups;
+    this ensures the next auto-refresh restores cup data from the canonical file."""
+    cups_path = os.path.join(script_dir, 'cups.json')
+    if not os.path.exists(cups_path):
+        print('  cups.json not found, skipping cups')
+        return None
+    with open(cups_path, 'r', encoding='utf-8') as f:
+        cups = json.load(f)
+    total = sum(len(g) for comp in cups.values()
+                for g in comp.get('byTeam', {}).values())
+    print('  cups.json loaded: %d competitions, %d fixtures' % (len(cups), total))
+    return cups
+
+
 def main():
     html_path = sys.argv[1] if len(sys.argv) > 1 else 'prem.html'
     print('Refreshing %s ...' % html_path)
@@ -145,6 +161,12 @@ def main():
     data['scorers'] = scorers
     data['assisters'] = assisters
     data['squads'] = squads
+
+    # Always re-inject cups from cups.json so PL-page-deploy wipes get restored
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    cups = load_cups(script_dir)
+    if cups is not None:
+        data['cups'] = cups
 
     blob = json.dumps(data, separators=(',', ':'), ensure_ascii=False)
     new_html = re.sub(r'var LFC_DATA=\{.*?\};', lambda _: 'var LFC_DATA=' + blob + ';', html, flags=re.DOTALL)
