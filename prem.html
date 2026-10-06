@@ -1370,17 +1370,16 @@ var BUILD_TAG='Build 26 Aug 2026 v13 — live matchday, keyless ESPN feed, match
        '<button data-lm="1"'+(liveOnlyMine?' class="on"':'')+'>'+esc(tShort(FT))+' only</button>'+
        '<button data-lm="today">Today</button><button data-lm="next">Next matchday</button></div>';
     var mineOnDay=list.some(function(f){return f[2]===FT||f[3]===FT;});
-    var mineF=allGamesFor(FT),nextMine=null,liveMine=null,lastMine=null;
-    for(var k=0;k<mineF.length;k++){
-      if(isLive(mineF[k])){liveMine=mineF[k];break;}
-      if(!fixtureDone(mineF[k])&&!nextMine)nextMine=mineF[k];
-      if(fixtureDone(mineF[k]))lastMine=mineF[k];
-    }
+    var mineF=allGamesFor(FT),liveMine=null;
+    for(var k=0;k<mineF.length;k++){if(isLive(mineF[k])){liveMine=mineF[k];break;}}
     if(!mineOnDay){
       if(liveMine){h+='<div class="card"><h2>'+esc(tName(FT))+' are playing now</h2>'+liveCard(liveMine)+'</div>';}
-      else if(nextMine){var nd=parseKO(nextMine[1]);
-        h+='<div class="card"><h2>'+esc(tName(FT))+' next</h2>'+rowFixture(nextMine)+
-           '<div class="note" style="margin-top:6px">Kick-off '+esc(fmtDate(nd))+' at '+esc(fmtTime(nd))+' your time - '+esc(countdown(nd))+'.</div></div>';}
+      else{var viewEnd=keyToDate(liveDay);viewEnd.setDate(viewEnd.getDate()+1);var nextAfter=null;
+        for(var k2=0;k2<mineF.length;k2++){var mf=mineF[k2],md=parseKO(mf[1]);
+          if(!fixtureDone(mf)&&md&&md>=viewEnd){nextAfter=mf;break;}}
+        if(nextAfter){var nd=parseKO(nextAfter[1]);
+          h+='<div class="card"><h2>'+esc(tName(FT))+' next</h2>'+rowFixture(nextAfter)+
+             '<div class="note" style="margin-top:6px">Kick-off '+esc(fmtDate(nd))+' at '+esc(fmtTime(nd))+' your time - '+esc(countdown(nd))+'.</div></div>';}}
     }
     if(list.length){for(var i=0;i<list.length;i++)h+=liveCard(list[i]);}
     else{
