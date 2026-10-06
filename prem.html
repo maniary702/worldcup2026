@@ -1300,7 +1300,7 @@ var BUILD_TAG='Build 26 Aug 2026 v13 — live matchday, keyless ESPN feed, match
     var a=[],i;
     for(i=0;i<D.fixtures.length;i++){var f=D.fixtures[i];if(dayKeyOf(f)===key)a.push(f);}
     for(i=0;i<CUPS.list.length;i++){var g=CUPS.list[i];if(dayKeyOf(g)===key)a.push(g);}
-    a.sort(function(x,y){return (x[1]||'')<(y[1]||'')?-1:1;});return a;
+    a.sort(function(x,y){var mx=(x[2]===FT||x[3]===FT)?0:1,my=(y[2]===FT||y[3]===FT)?0:1;if(mx!==my)return mx-my;return (x[1]||'')<(y[1]||'')?-1:1;});return a;
   }
   function nextMatchDayKey(){
     var now=Date.now(),best=null,bt=Infinity,all=D.fixtures.concat(CUPS.list);
@@ -1505,6 +1505,7 @@ var BUILD_TAG='Build 26 Aug 2026 v13 — live matchday, keyless ESPN feed, match
       list.push(f);}
     h+='<div class="card">';
     if(!list.length)h+='<div class="empty">Nothing matches that filter.</div>';
+    list.sort(function(a,b){var ga=(a[0]||99),gb=(b[0]||99);if(ga!==gb)return ga-gb;var ma=(a[2]===FT||a[3]===FT)?0:1,mb=(b[2]===FT||b[3]===FT)?0:1;if(ma!==mb)return ma-mb;return (a[1]||'')<(b[1]||'')?-1:1;});
     var lastGw=null;
     for(var j=0;j<list.length;j++){var f2=list[j];if(f2[0]!==lastGw){lastGw=f2[0];h+='<div class="gw">'+(f2[0]?'Gameweek '+f2[0]:'TBC')+'</div>';}h+=rowFixture(f2);}
     h+='</div>';
