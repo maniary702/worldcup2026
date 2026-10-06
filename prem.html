@@ -1369,6 +1369,19 @@ var BUILD_TAG='Build 26 Aug 2026 v13 — live matchday, keyless ESPN feed, match
     h+='<div class="chips"><button data-lm="0"'+(!liveOnlyMine?' class="on"':'')+'>All clubs</button>'+
        '<button data-lm="1"'+(liveOnlyMine?' class="on"':'')+'>'+esc(tShort(FT))+' only</button>'+
        '<button data-lm="today">Today</button><button data-lm="next">Next matchday</button></div>';
+    var mineOnDay=list.some(function(f){return f[2]===FT||f[3]===FT;});
+    var mineF=allGamesFor(FT),nextMine=null,liveMine=null,lastMine=null;
+    for(var k=0;k<mineF.length;k++){
+      if(isLive(mineF[k])){liveMine=mineF[k];break;}
+      if(!fixtureDone(mineF[k])&&!nextMine)nextMine=mineF[k];
+      if(fixtureDone(mineF[k]))lastMine=mineF[k];
+    }
+    if(!mineOnDay){
+      if(liveMine){h+='<div class="card"><h2>'+esc(tName(FT))+' are playing now</h2>'+liveCard(liveMine)+'</div>';}
+      else if(nextMine){var nd=parseKO(nextMine[1]);
+        h+='<div class="card"><h2>'+esc(tName(FT))+' next</h2>'+rowFixture(nextMine)+
+           '<div class="note" style="margin-top:6px">Kick-off '+esc(fmtDate(nd))+' at '+esc(fmtTime(nd))+' your time - '+esc(countdown(nd))+'.</div></div>';}
+    }
     if(list.length){for(var i=0;i<list.length;i++)h+=liveCard(list[i]);}
     else{
       var nk=nextMatchDayKey(),nl=fixturesOnDay(nk);
@@ -1378,16 +1391,6 @@ var BUILD_TAG='Build 26 Aug 2026 v13 — live matchday, keyless ESPN feed, match
         for(var j=0;j<nl.length;j++)h+=liveCard(nl[j]);
       }
     }
-    var mineF=allGamesFor(FT),nextMine=null,liveMine=null;
-    for(var k=0;k<mineF.length;k++){
-      if(isLive(mineF[k])){liveMine=mineF[k];break;}
-      if(!fixtureDone(mineF[k])&&!nextMine)nextMine=mineF[k];
-    }
-    if(liveMine&&fixturesOnDay(liveDay).indexOf(liveMine)<0){
-      h+='<div class="card"><h2>'+esc(tName(FT))+' are playing now</h2>'+liveCard(liveMine)+'</div>';
-    } else if(!liveMine&&nextMine){var nd=parseKO(nextMine[1]);
-      h+='<div class="card"><h2>'+esc(tName(FT))+' next</h2>'+rowFixture(nextMine)+
-         '<div class="note" style="margin-top:6px">Kick-off '+esc(fmtDate(nd))+' at '+esc(fmtTime(nd))+' your time — '+esc(countdown(nd))+'.</div></div>';}
     el('v-live').innerHTML=h;
     paintBar();
   }
